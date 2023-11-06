@@ -7,7 +7,7 @@ The AlloPipe tool currently takes two variant annotated exomes as input and retu
 
 ## Table of contents
 
-1. [Start from scratch for your very first time: Prepare the environment](#before)
+1. [Start from scratch for your very first time: Create a conda environment](#before)
    	1. [Check the requirements](#requirements)
 	2. [Install AlloPipe](#install)
 
