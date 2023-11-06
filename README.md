@@ -7,8 +7,8 @@ The AlloPipe tool currently takes two variant annotated exomes as input and retu
 
 ## Table of contents
 
-1. [Starting from scratch for the first time: Prepare your environment](#before)
-   	1. [Requirements](#requirements)
+1. [Start from scratch for your very first time: Prepare the environment](#before)
+   	1. [Check the requirements](#requirements)
 	2. [Install AlloPipe](#install)
 
 
@@ -23,23 +23,19 @@ The AlloPipe tool currently takes two variant annotated exomes as input and retu
 	7. [Exploring the AAMS mismatches table](#aams_mismatches)
 
 
-## Preparing the environment for the first time <a name="before"></a>
-
-Before lauching your very first AlloPipe run, you must ensure the two upcoming steps, i.e. [requirements](#requirements) and [installation of AlloPipe](#install)
+## Prepare the environment <a name="before"></a>
+Before lauching your very first AlloPipe run, you must ensure the two upcoming steps, i.e. all the [requirements](#requirements) are set up and [AlloPipe](#install) is correctly installed 
 
 ### Requirements <a name="requirements"></a>
 
-AlloPipe first requires the requirements.txt
-The following can be downloaded by using xxx
-
-The pipeline then specifically requires
+AlloPipe specifically requires
 1. [VEP](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) (>=v104) annotated VCF files, with the VEP information contained in the INFO field of the VCF file (online tool or command line tool, example given below).
 2. [Python](https://www.python.org/downloads/) (>=3.6,developed on 3.9) and associated [packages](requirements.txt).
 3. [NetMHCpan4.1](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) downloaded as a command line tool.
 
 Note that in order to download NetMHCpan, you will have to fill a form on the netMHCpan website, and all the installation instructions will then be provided.  
 
-### Install AlloPipe <a name="install"></a>
+### Install AlloPipe and the reauired packages <a name="install"></a>
 
 To download the pipeline, clone the repository and install the required python packages needed for the pipeline to run.
 
