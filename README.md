@@ -1,40 +1,53 @@
 # AlloPipe
 
 ---
-The AlloPipe tool currently takes two exomes as input and returns quantitative and qualitative measurements of the differences within the pair. 
+The AlloPipe tool currently takes two variant annotated exomes as input and returns quantitative and qualitative measurements of the differences within the pair. 
 
+---
 
 ## Table of contents
 
----
-1. [Installation and Requirements](#requirements)
+1. [Starting from scratch for the first time: Prepare your environment](#before)
+   	1. [Requirements](#requirements)
+	2. [Install AlloPipe](#install)
 
-2. [Typical run](#typical)
+
+
+2. [Run AlloPipe](#typical)
 	1. [VEP annotation](#vep)
-	2. [Launch your first AMS run](#ams_run)
+	2. [Launch AlloPipe-count](#ams_run)
 	3. [Getting your AMS results](#ams_results)
 	4. [Exploring the AMS mismatches table](#ams_mismatches)
-	5. [Launch your first AAMS run](#aams_run)
+	5. [Launch AlloPipe-affinity](#aams_run)
 	6. [Getting your AAMS results](#aams_results)
 	7. [Exploring the AAMS mismatches table](#aams_mismatches)
 
 
-## Installation and Requirements <a name="requirements"></a>
+## Preparing the environment for the first time <a name="before"></a>
 
----
-The pipeline requires :
+Before lauching your very first AlloPipe run, you must ensure the two upcoming steps, i.e. [requirements](#requirements) and [installation of AlloPipe](#install)
 
+### Requirements <a name="requirements"></a>
+
+AlloPipe first requires the requirements.txt
+The following can be downloaded by using xxx
+
+The pipeline then specifically requires
 1. [VEP](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) (>=v104) annotated VCF files, with the VEP information contained in the INFO field of the VCF file (online tool or command line tool, example given below).
 2. [Python](https://www.python.org/downloads/) (>=3.6,developed on 3.9) and associated [packages](requirements.txt).
 3. [NetMHCpan4.1](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) downloaded as a command line tool.
 
 Note that in order to download NetMHCpan, you will have to fill a form on the netMHCpan website, and all the installation instructions will then be provided.  
 
+### Install AlloPipe <a name="install"></a>
+
 To download the pipeline, clone the repository and install the required python packages needed for the pipeline to run.
 
 	git clone http://gitlab.lcqb.upmc.fr/allogenomics/AMS_workflow.git
 	cd AMS_workflow
 	python -m pip install -r requirements.txt
+
+---
 
 ## Typical run <a name="typical"></a>
 
