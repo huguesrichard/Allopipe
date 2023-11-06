@@ -1,9 +1,7 @@
 # AlloPipe
 
 ---
-The AlloPipe tool currently takes two exomes as inputs and returns quantitative and qualitative results allowing the measurement of the difference between the two samples.
-
-improve the matching process of a pair of individuals for kidney and bone marrow (HSC), which is until now based on a HLA matching.
+The AlloPipe tool currently takes two exomes as input and returns quantitative and qualitative measurements of the differences within the pair. 
 
 
 ## Table of contents
