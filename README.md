@@ -74,8 +74,8 @@ First,
 
 	When you are done, run the following command at the root of the AlloPipe directory :  
 	
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf.gz -o tutorial/donor_annotated_VEP.vcf --vcf
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf.gz -o tutorial/recipient_annotated_VEP.vcf --vcf
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf
 
 **Please note that all specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 

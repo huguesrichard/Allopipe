@@ -10,6 +10,8 @@ import re
 import pandas as pd
 import numpy as np
 
+#TODO: check better technique for file paths
+FILE_CONSEQUENCE = "../data/consequences.txt"
 
 class VepIndices:
     """
@@ -159,7 +161,7 @@ def extract_aa_from_vep(df_infos, vep_indices):
                     selected_df (pd.DataFrame): dataframe containing the amino-acid information
     """
     # get the selected consequences from file
-    with open("../docs/consequences.txt", encoding="utf-8") as file:
+    with open(FILE_CONSEQUENCE, encoding="utf-8") as file:
         consequences = file.readline().split("\t")
     for conseq in consequences:
         # count number of times consequence appears in row and add count to the corresponding column
