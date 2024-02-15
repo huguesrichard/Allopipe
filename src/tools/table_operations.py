@@ -82,23 +82,27 @@ def create_AMS_df(ams_exp_path):
 ####################################################################
 
 # build transcripts table for an individual
-def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices):
+def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv_type):
     """
     Returns the vep dataframe of the individual containing the transcripts information
                     Parameters :
                                     vep_table_path (str): path of the table containing vep information
                                     merged_ams (pd.DataFrame): merged dataframe of the individuals
                                     vep_indices (object): object containing all relevant vep indices
+                                    indiv_type (str): "donor" or "recipient"
                     Returns :
                                     vep_table (pd.DataFrame): vep table containing transcript information
     """
     # read the VEP table
     vep_table = pd.read_pickle(vep_table_path)
     # merged_ams = pd.read_csv(merged_ams_path,sep="\t")
-    if "D0" in vep_table_path or "donor" in vep_table_path:
+    if indiv_type == "donor":
         indiv = "x"
-    else:
+    elif indiv_type == "recipient":
         indiv = "y"
+    else:
+	    raise Exception("Error: format donor/recipient incorrect")	
+	    
     # get the positions and the aminoacids associated to the indiv, from the AMS table
     positions = merged_ams[
         [

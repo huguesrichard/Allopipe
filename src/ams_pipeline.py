@@ -73,10 +73,10 @@ def main():
         )
 
         transcripts_donor = table_operations.build_transcripts_table_indiv(
-            vep_donor, merged_df, vep_indices_donor
+            vep_donor, merged_df, vep_indices_donor, "donor"
         )
         transcripts_recipient = table_operations.build_transcripts_table_indiv(
-            vep_recipient, merged_df, vep_indices_recipient
+            vep_recipient, merged_df, vep_indices_recipient, "recipient"
         )
         merged_transcripts = table_operations.build_transcripts_table(
             transcripts_donor, transcripts_recipient, merged_df
