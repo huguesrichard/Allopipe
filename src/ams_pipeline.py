@@ -5,6 +5,7 @@ command line help : python3 ams_pipeline.py [-h]
 """
 import os
 import sys
+import datetime
 from tools import ams_helpers, arguments_handling, table_operations
 
 
@@ -16,42 +17,46 @@ def main():
     # get args from cmd line
     args = arguments_handling.arguments()
     process = ams_helpers.handle_overwrite(args)
-    if not process:
-        sys.exit()
+    formatted_datetime=""
+    # append timestamp instead of overwriting
+    if process:
+        current_datetime = datetime.datetime.now()
+        timestamp = current_datetime.timestamp()
+        datetime_object = datetime.datetime.fromtimestamp(timestamp)
+        formatted_datetime = datetime_object.strftime("_%Y-%m-%d_%H-%M-%S")
+        print("Warning: directory already exists and contains an AMS file with the same run parameters.\nTimestamp will be added to output files names instead of overwriting.")
     # create run dependencies
     run_path, run_tables, run_plots, run_ams = ams_helpers.create_run_directory(
         args.run_name
     )
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
-        run_tables, args.donor, args, args.wc_donor
-    )
+        run_tables, args.donor, args, args.wc_donor, formatted_datetime
+    )    
     # output : filtered donor file
     df_donor.to_csv(
         f"{run_tables}/{args.run_name}_"
         f"{args.donor.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
-        f"bl_{args.base_length}.tsv",
+        f"bl_{args.base_length}{formatted_datetime}.tsv",
         sep="\t",
         index=False,
     )
     # same for recipient
     df_recipient, vep_recipient, vep_indices_recipient = ams_helpers.prepare_indiv_df(
-        run_tables, args.recipient, args, args.wc_recipient
+        run_tables, args.recipient, args, args.wc_recipient, formatted_datetime
     )
     df_recipient.to_csv(
         f"{run_tables}/{args.run_name}_"
         f"{args.recipient.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
-        f"bl_{args.base_length}.tsv",
+        f"bl_{args.base_length}{formatted_datetime}.tsv",
         sep="\t",
         index=False,
     )
-
     # merge dataframes based on the orientation of the comparison
-
     merged_df, side, opposite = ams_helpers.merge_dfs(
         df_donor, df_recipient, args.orientation
     )
@@ -67,7 +72,7 @@ def main():
             f"{run_tables}/{args.pair}_"
             f"{args.run_name}_mismatches_{args.min_dp}_"
             f"{args.max_dp}_{args.min_ad}_gq_{args.min_gq}_"
-            f"{args.homozygosity_thr}_bl_{args.base_length}.tsv",
+            f"{args.homozygosity_thr}_bl_{args.base_length}{formatted_datetime}.tsv",
             sep="\t",
             index=False,
         )
@@ -87,13 +92,13 @@ def main():
                 f"{args.pair}_{args.run_name}_transcripts_pair_codons_"
                 f"{args.min_dp}_{args.max_dp}_{args.min_ad}_gq_"
                 f"{args.min_gq}_{args.homozygosity_thr}_bl_"
-                f"{args.base_length}.tsv",
+                f"{args.base_length}{formatted_datetime}.tsv",
             ),
             sep="\t",
             index=False,
         )
     # create small df with pair and AMS
-    table_operations.save_mismatch(run_ams, args, mismatch)
+    table_operations.save_mismatch(run_ams, args, mismatch, formatted_datetime)
     print(mismatch)
     return 0
 

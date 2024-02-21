@@ -224,7 +224,7 @@ def extract_aa_from_vep(df_infos, vep_indices):
     selected_df["gnomADe_AF"] = gnomad_subset["gnomADe_AF"]
     return selected_df
 
-def vep_infos_parser(run_tables, df_indiv, vep_indices, vcf_path_indiv, args):
+def vep_infos_parser(run_tables, df_indiv, vep_indices, vcf_path_indiv, args, formatted_datetime):
     """
     Returns the dataframe of the individual after adding VEP information and the path of the individual vep table
     Parameters :
@@ -232,7 +232,8 @@ def vep_infos_parser(run_tables, df_indiv, vep_indices, vcf_path_indiv, args):
                     df_indiv (pd.DataFrame): dataframe of the individual
                     vep_indices (VepIndices object): object containing the indices for the VEP field parsing
                     vcf_path_indiv (str): path of the VCF file of the individual
-                    args (argparse.Namespace) : object containing arguments from the command line
+                    args (argparse.Namespace): object containing arguments from the command line
+                    formatted_datetime (str): timestamp if overwrite, empty otherwise
     Returns :
                     (pd.DataFrame): dataframe containing the VEP information
                     vep_table_indiv (str): path of the individual vep table
@@ -247,7 +248,7 @@ def vep_infos_parser(run_tables, df_indiv, vep_indices, vcf_path_indiv, args):
     vep_table_indiv = os.path.join(
         run_tables,
         f"{indiv}_vep_infos_table_{args.min_dp}_"
-        f"{args.max_dp}_{args.min_ad}_{args.homozygosity_thr}.pkl",
+        f"{args.max_dp}_{args.min_ad}_{args.homozygosity_thr}{formatted_datetime}.pkl",
     )
     save.to_pickle(vep_table_indiv)
     # return an inner merge from the gained infos from group_from_vep function and the df_indiv dataframe
