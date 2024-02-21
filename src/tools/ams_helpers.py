@@ -40,47 +40,26 @@ def create_run_directory(run_name):
     Path(run_ams).mkdir(parents=True, exist_ok=True)
     return run_path, run_tables, run_plots, run_ams
 
-def query_overwrite(question):
-    """
-    Returns a boolean after receiving the question asked to the user
-    Note:
-            if the user presses space the default answer is no
-    Parameters:
-            question (str): string presenting the user the overwrite question
-    Returns:
-            answer (bool)
-    """
-    accepted = {"yes":True,"y":True,"ye":True,"no":False,"n":False}
-    prompt = " [y/N] "
-    answer = ""
-    while answer == "":
-        sys.stdout.write(question+prompt)
-        choice = input().lower()
-        if choice == "":
-            answer = False
-        elif choice in accepted:
-            answer = accepted[choice]
-        else:
-            sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n')")
-    return answer
-
 
 def handle_overwrite(args):
     """
-    Returns a boolean after checking if the directory already exists and asking the user if they wish to overwrite
+    Returns a boolean after checking if the file already exists
     Parameters:
             run_name (str): string containing the name of the run
     Returns:
-            overwrite (bool): True if the user wants to overwrite, False otherwise
+            overwrite (bool): True if the file exists, False otherwise
     """
     run_path = f"../output/runs/{args.run_name}"
     if os.path.isdir(run_path) and os.listdir(run_path)!=[]:
         if Path(os.path.join(run_path),f"AMS/{args.run_name}_AMS_{args.min_dp}"
             f"_{args.max_dp}_{args.min_ad}_{args.homozygosity_thr}_{args.min_gq}"
-            f"_{args.orientation}_{args.base_length}").is_dir():
-            overwrite = query_overwrite(f"The '{args.run_name}' directory already exists and contains an AMS directory with the same run parameters.\nDo you wish to overwrite ?")
+            f"_{args.orientation}_{args.base_length}/"
+            f"AMS_{args.run_name}_{args.pair}_{args.min_dp}_{args.max_dp}"
+            f"_{args.min_ad}_{args.homozygosity_thr}_{args.min_gq}"
+            f"_{args.orientation}_{args.base_length}").is_file():
+            overwrite = True
             return overwrite
-    return True
+    return False
 
 """
 Uncomment this to run the filtering part for nanopore files
@@ -463,7 +442,7 @@ def clean_df(df_indiv, vcf_path_indiv):
 
 # build DataFrame from vcf file
 # str,int,int -> pandas.DataFrame
-def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path):
+def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, formatted_datetime):
     """
     Returns a dataframe containing all important information, the VEP table and all relevant indices
                     Parameters :
@@ -491,7 +470,7 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path):
     df_indiv = convert(df_indiv, subset, args.homozygosity_thr)
     # parse VEP information and add to dataframe
     df_indiv, vep_table_indiv = parsing_functions.vep_infos_parser(
-        run_tables, df_indiv, vep_indices, vcf_path_indiv, args
+        run_tables, df_indiv, vep_indices, vcf_path_indiv, args, formatted_datetime
     )
     if args.wc:
         vep_conseq_infos = parsing_functions.worst_consequences_parser(

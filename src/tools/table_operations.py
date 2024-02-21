@@ -17,13 +17,14 @@ import sklearn.linear_model as lm
 ################################################################################
 
 
-def save_mismatch(run_ams, args, mismatch):
+def save_mismatch(run_ams, args, mismatch, formatted_datetime):
     """
     Returns the path of the saved file containing the AMS value and related pair
                     Parameters :
                                     run_ams (str): path of the run
                                     args (argparse.Namespace): object containing run parameters
                                     mismatch (int): AMS value
+                                    formatted_datetime (str): timestamp if overwrite, empty otherwise
                     Returns :
                                     ams_exp_path (str): path of AMS table
     """
@@ -57,8 +58,8 @@ def save_mismatch(run_ams, args, mismatch):
             args.base_length
         ),
     )
-    save_ams.to_pickle(AMS_fname)
-    save_ams.to_csv(AMS_fname+".csv",index=False)
+    save_ams.to_pickle(AMS_fname+formatted_datetime)
+    save_ams.to_csv(AMS_fname+formatted_datetime+".csv",index=False)
     return ams_exp_path
 
 
