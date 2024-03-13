@@ -27,16 +27,16 @@ def launch_aams_pipeline(command_line):
     return f"Done estimating AAMS for the couple {donor} {recipient}"
 
 
-# get list of mismatches
-# get list of transcripts
 
 ### HSC genoidentical with gnomad ###
+# get list of mismatches
 MISMATCHES = [
     file
     for file in glob.glob("../output/runs/gnomad_run/run_tables/*.tsv")
     if "mismatches" in file
 ]
 
+# get list of transcripts
 TRANSCRIPTS = [
     file
     for file in glob.glob("../output/runs/gnomad_run/run_tables/*.tsv")

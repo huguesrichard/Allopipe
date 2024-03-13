@@ -24,26 +24,6 @@ def launch_ams_pipeline(command_line):
     return f"Done comparing the couple {donor} {recipient}"
 
 
-# get list of donors
-# get list of recipients
-
-### FULL MATCH KIDNEY ###
-# donors = [file for file in glob.glob("../output/indiv_vcf/Full_Match/giab_filtered/**/*.vcf.gz") if "Twist_D_" in file and "P21" not in file and "P24" not in file]
-# recipients = [file for file in glob.glob("../output/indiv_vcf/Full_Match/giab_filtered/**/*.vcf.gz") if "Twist_R_" in file and "P21" not in file and "P24" not in file]
-
-### HSC genoidentical ###
-# donors = [
-#     file
-#     for file in glob.glob("../output/indiv_vcf/joint_genotyping/hard-filtered/**/*.vcf")
-#     if "D0-" in file and "bed." in file
-# ]
-
-# recipients = [
-#     file
-#     for file in glob.glob("../output/indiv_vcf/joint_genotyping/hard-filtered/**/*.vcf")
-#     if "R0-" in file and "bed." in file
-# ]
-
 ### HSC genoidentical with gnomad ###
 donors = [
     file
@@ -57,13 +37,6 @@ recipients = [
     if "R0-" in file and "bed" in file and "gnomad" in file
 ]
 
-### podocytes ###
-# donors = [f for f in glob.glob("../output/indiv_vcf/podocytes/**/*.vcf.gz") if not f.split("SRR")[1].split("_")[0][-1].isdigit() and "giab" in f]
-# recipients = [f for f in glob.glob("../output/indiv_vcf/podocytes/**/*.vcf.gz") if f.split("SRR")[1].split("_")[0][-1].isdigit() and "giab" in f]
-
-### KIDNEY ###
-# donors = [f for f in glob.glob("../output/indiv_vcf/cohort_GQPDOMB/**/*.vcf.gz") if ("D0-" in f or "donor" in f) and ("filtered" in f)]
-# recipients = [f for f in glob.glob("../output/indiv_vcf/cohort_GQPDOMB/**/*.vcf.gz") if ("R0-" in f or "recipient" in f) and ("filtered" in f)]
 
 print("donors : ",len(donors))
 print("recipients : ",len(recipients))
