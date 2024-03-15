@@ -61,22 +61,7 @@ def handle_overwrite(args):
             return overwrite
     return False
 
-"""
-Uncomment this to run the filtering part for nanopore files
 
-# def fix_ad_field_for_np(dp,ad,gt):
-#     if "," not in ad:
-#         x = int(dp)-int(ad)
-#         if gt=="0/0" or gt=="0/1":
-#             new = "{},{}".format(ad,x)
-#         elif gt=="1/1":
-#             new = "{},{}".format(x,ad)
-#         else:
-#             print(gt,ad)
-#         return(new)
-#     else:
-#         return(ad)
-"""
 #############
 # giab v1.3 #
 #############
@@ -92,13 +77,6 @@ def explode_gt_ad(df_indiv):
     # get a subset of the dataframe
     subset = df_indiv[["CHROM", "POS", "REF", "ALT", "GT", "AD"]].copy()
     indiv_name = list(df_indiv.columns)[-1]
-    """
-    Uncomment this to run the filtering part for nanopore files
-
-    # if indiv_name=="Sample":
-    #     subset = df_indiv[["CHROM","POS","REF","ALT","GT","DP","AD"]].copy()
-    #     subset["AD"] = subset.apply(lambda x: fix_ad_field_for_np(x["DP"],x["AD"],x["GT"]),axis=1)
-    """
     # split Allelic Depth field (format usually as follows for 0/0 : 221,0 for 0/1: 138,116 for 1/1: 0,30)
     subset["AD"] = subset["AD"].apply(lambda x: x.split(","))
     # explode dataframe -> duplicate lines except for the AD field, the previously contained list is exploded
@@ -232,15 +210,15 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     df_indiv["GT"] = df_indiv["GT"].replace("1", "1/1")
     df_indiv = df_indiv.dropna(subset=["GT"])
     df_indiv = df_indiv.drop(["select", "split_indices"], axis=1)
-    # filter genotype quality
     #############
     # giab v1.3 #
     # #############
+    # filter genotype quality
     df_indiv = df_indiv[df_indiv["GQ"].astype(float) > min_gq]
-    # filter REF calls with higher length than 3, value should be selected in cmd line instead of written manually here
     ###############
     # legacy v1.2 #
     ###############
+    # filter REF calls with higher length than 3, value should be selected in cmd line instead of written manually here
     df_indiv = df_indiv[df_indiv["REF"].str.len() <= base_length]
     #### ADD CSV EXCLUDED
     ###############
@@ -256,13 +234,13 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     # remove DP field if present
     if "DP" in df_indiv.columns:
         df_indiv = df_indiv.drop("DP", axis=1)
-    # explode df_indiv to get only the right AD values for the given GT
     # ###################################
+    # explode df_indiv to get only the right AD values for the given GT
     subset = explode_gt_ad(df_indiv)
-    # filter AD
     ###############
     # legacy v1.1 #
     ###############
+    # filter AD
     subset["AD"] = subset["AD"].astype(int)
     subset = subset[subset["AD"] >= min_ad]
     # filter ALT longer than threshold (here 3), should also be selected in cmd line
@@ -279,8 +257,8 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     ###############
     ###################################
     subset = subset[subset["ALT_length"] <= base_length]
-    # put the DP column for the exploded subset
     ###################################
+    # put the DP column for the exploded subset
     subset = pd.merge(subset, sub, how="outer", on=["CHROM", "POS"])
     subset = subset[
         (subset[["CHROM", "POS"]].duplicated(keep=False))
@@ -309,10 +287,10 @@ def filter_on_depth(df_indiv, subset, min_dp, max_dp):
                                     df_indiv (pd.DataFrame): dataframe filtered on Depth
                                     subset (pd.DataFrame): subset of dataframe filtered on Depth
     """
-    # filter df_indiv and subset on DP
     ###############
     # legacy v1.1 #
     ###############
+    # filter df_indiv and subset on DP
     df_indiv = df_indiv[df_indiv["DP"].between(min_dp, max_dp)]
     subset = subset[subset["DP"].between(min_dp, max_dp)]
     print("filtering on depth complete")
