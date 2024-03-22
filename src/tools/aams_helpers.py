@@ -70,7 +70,7 @@ def filter_on_refseq(ams_transcripts, refseq_transcripts_path):
     refseq_transcripts = pd.read_csv(refseq_transcripts_path, sep="\t")
     print(f"REFSEQ transcripts : {len(refseq_transcripts)}")
     refseq_transcripts = refseq_transcripts.rename(
-        {"transcript_stable_id": "Transcript_id"}, axis=1
+        {"Transcript stable ID": "Transcript_id"}, axis=1
     )
     transcripts_df = pd.merge(
         transcripts_df, refseq_transcripts["Transcript_id"], how="inner"
