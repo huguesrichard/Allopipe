@@ -5,6 +5,7 @@ the ams pipeline command line easy to use and user friendly
 """
 import argparse
 import sys
+import os
 
 # Custom Parser
 
@@ -41,7 +42,7 @@ class UniqueStore(argparse.Action):
 
 
 # Error Handling
-def check_file(parser, arg, wc=False):
+def check_file(parser, arg, wc=False, csv=False):
     """
     Returns the file name after checking if it exists and if the format is accepted
 
@@ -49,6 +50,7 @@ def check_file(parser, arg, wc=False):
                     parser (CustomParser Object): parser object
                     arg (str): file name
                     wc (bool): boolean that is True if the worst consequences are toggled
+                    csv (bool): boolean that is True if the expected arg is a CSV file
     Returns:
                     arg (str): file name
     """
@@ -59,12 +61,20 @@ def check_file(parser, arg, wc=False):
         parser.error(f"OS error: {err}")
     else:
         # check file extension
-        if not arg.endswith("vcf") and not arg.endswith("vcf.gz") and not wc:
-            parser.error(
-                f"{arg} has an invalid extension :\nsupported file extensions : vcf, vcf.gz"
-            )
+        if csv:
+            if not arg.endswith("csv") and not wc:
+             parser.error(
+                    f"{arg} has an invalid extension :\nsupported file extension : csv"
+                )
+            else:
+                return arg
         else:
-            return arg
+            if not arg.endswith("vcf") and not arg.endswith("vcf.gz") and not wc:
+                parser.error(
+                    f"{arg} has an invalid extension :\nsupported file extensions : vcf, vcf.gz"
+                )
+            else:
+                return arg
     return None
 
 
@@ -120,27 +130,44 @@ def check_threshold_value(parser, arg):
     return threshold
 
 
-def arguments():
+def arguments(from_filePair : bool = False):
     """
     Returns the parsed arguments of the ams pipeline
     Returns:
                     args (argparse.Namespace): object containing all parameters
     """
-    parser = CustomParser(
-        prog="ams_pipeline.py",
-        usage="python %(prog)s [options] donor recipient orientation",
-        description="Compute the AMS for a pair of individuals",
-    )
-    parser.add_argument(
-        "donor",
-        help="donor file, accepted formats are vcf and vcf.gz",
-        type=lambda x: check_file(parser, x),
-    )
-    parser.add_argument(
-        "recipient",
-        help="recipient file, accepted formats are vcf and vcf.gz",
-        type=lambda x: check_file(parser, x),
-    )
+    if from_filePair:
+        parser = CustomParser(
+            prog="multiprocess_ams.py",
+            usage="python %(prog)s [options] file_pairs.csv orientation",
+            description="Compute the AMS for a list of pairs of individuals",
+            )
+        parser.add_argument(
+            "multi_vcf",
+            help="multi-sample VCF file, accepted formats are vcf and vcf.gz",
+            type=lambda x: check_file(parser, x)
+            )
+        parser.add_argument(
+            "file_pairs",
+            help="file with pairs of donors and recipients, accepted format is csv",
+            type=lambda x: check_file(parser, x, False, True)
+        ) 
+    else:
+        parser = CustomParser(
+            prog="ams_pipeline.py",
+            usage="python %(prog)s [options] donor recipient orientation",
+            description="Compute the AMS for a pair of individuals",
+        )
+        parser.add_argument(
+            "donor",
+            help="donor file, accepted formats are vcf and vcf.gz",
+            type=lambda x: check_file(parser, x),
+        )
+        parser.add_argument(
+            "recipient",
+            help="recipient file, accepted formats are vcf and vcf.gz",
+            type=lambda x: check_file(parser, x),
+        )
     parser.add_argument(
         "orientation",
         help="choose the orientation of the comparison of the pair",
