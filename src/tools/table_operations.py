@@ -102,8 +102,8 @@ def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv
     elif indiv_type == "recipient":
         indiv = "y"
     else:
-	    raise Exception("Error: format donor/recipient incorrect")	
-	    
+        raise Exception("Error: format donor/recipient incorrect")
+        
     # get the positions and the aminoacids associated to the indiv, from the AMS table
     positions = merged_ams[
         [
@@ -280,55 +280,48 @@ def get_ref_ratio_pair(donor_df, recipient_df):
 #
 def get_ref_ratio(
     run_name,
+    pair_name,
     run_path,
     ams_exp_path,
+    donor_path,
+    recipient_path,
     min_DP,
     max_DP,
     min_AD,
     homozygosity_threshold,
+    min_GQ,
     orientation,
+    base_length,
 ):
+
     donors = [
         file
         for file in glob.glob(os.path.join(run_path, "**/*.tsv"))
-        if (
-            ("-D0" in file or "donor" in file)
-            and (
-                min_DP in file
-                and max_DP in file
-                and min_AD in file
-                and homozygosity_threshold in file
-                and "TRANSCRIPTS" in file
-                and "20_" in file
-            )
-        )
+        if ("D0_" in file and "transcripts" not in file and "mismatches" not in file)
     ]
     recipients = [
         file
         for file in glob.glob(os.path.join(run_path, "**/*.tsv"))
-        if ("-R0" in file or "recipient" in file)
-        and (
-            min_DP in file
-            and max_DP in file
-            and min_AD in file
-            and homozygosity_threshold in file
-            and "TRANSCRIPTS" in file
-            and "20_" in file
-        )
+        if ("R0_" in file and "transcripts" not in file and "mismatches" not in file)
     ]
-    ams_folder = os.path.join(ams_exp_path, "{}_AMS_{}_{}_{}_{}_{}").format(
-        run_name, min_DP, max_DP, min_AD, homozygosity_threshold, orientation
+    ams_folder = os.path.join(ams_exp_path, "AMS_{}_{}_{}_{}_{}_{}_{}_{}_{}").format(
+        run_name, pair_name, min_DP, max_DP, min_AD, homozygosity_threshold, min_GQ, orientation, base_length
     )
-    ams = [file.path for file in os.scandir(ams_folder) if "tsv" not in file.path]
-    donors.sort(key=lambda x: int("".join(filter(str.isdigit, x))))
-    recipients.sort(key=lambda x: int("".join(filter(str.isdigit, x))))
-    ams.sort(key=lambda x: int("".join(filter(str.isdigit, x))))
+    ams = [
+    file
+    for file in glob.glob(ams_exp_path + "/*")
+    if (".csv" not in file and ".tsv" not in file)
+    ]
+    donors.sort()
+    recipients.sort()
+    ams.sort()
+
     infos = []
     for donor, recipient, ams_pair in zip(donors, recipients, ams):
         print(
             ams_pair.split("/")[-1].split("_")[0],
-            donor.split("/")[-1].split("_")[0],
-            recipient.split("/")[-1].split("_")[0],
+            donor.split("/")[-1].split("_")[2],
+            recipient.split("/")[-1].split("_")[2],
         )
         donor_df, recipient_df = pd.read_csv(
             donor, sep="\t", dtype={"CHROM": str}
@@ -342,14 +335,11 @@ def get_ref_ratio(
         ]
         infos.append(ams_pair_df)
     ams_df = pd.concat(infos).reset_index(drop=True)
-    return (ams_df, ams_folder)
-
-
-# ams_df,ams_folder = get_ref_ratio("../../output/indiv_vcf/joint_genotyping/hard-filtered","20","400","5","0.8","rd")
+    return (ams_df, ams_exp_path)
 
 
 #
-def add_norm(ams_df, ams_folder):
+def add_norm(ams_df, ams_exp_path):
     x, y = ams_df["ref_ratio"].values.reshape(-1, 1), ams_df["AMS"].values.reshape(
         -1, 1
     )
@@ -359,10 +349,7 @@ def add_norm(ams_df, ams_folder):
         float(reg.coef_) * (ref_ratio_mean - ams_df["ref_ratio"]) + ams_df["AMS"]
     )
     ams_df = ams_df.rename({"AMS": "AMS_giab"}, axis=1)
-    ams_df.to_csv(os.path.join(ams_folder, "AMS_df.tsv"), sep="\t", index=False)
-
-
-# add_norm(ams_df,ams_folder)
+    ams_df.to_csv(os.path.join(ams_exp_path, "AMS_df.tsv"), sep="\t", index=False)
 
 
 #
@@ -552,9 +539,9 @@ def regroup_dataframes(path, min_DP, max_DP):
 
 
 # def add_sorted_columns(general_df_path,df_path):
-# 	gen_df = pd.read_csv(general_df_path,sep="\t")
-# 	df_to_add = pd.read_csv(,sep="\t")
-# 	gen_df_merged = pd.merge(gen_df,df_to_add,how="inner",on=["pair"])
+#     gen_df = pd.read_csv(general_df_path,sep="\t")
+#     df_to_add = pd.read_csv(,sep="\t")
+#     gen_df_merged = pd.merge(gen_df,df_to_add,how="inner",on=["pair"])
 
 
 def gvh_vs_sex_mismatch(clinical_df_path):
@@ -642,7 +629,7 @@ def filter_vcf_regions_ams(directory):
         if "bed" in file
     ]
     # for vcf in gz_vcf_files:
-    # 	os.system("gzip -dk {}".format(vcf))
+    #     os.system("gzip -dk {}".format(vcf))
     d_vcf_files = [
         file
         for file in glob.glob(os.path.join(directory, "**/*.vcf"))
@@ -817,20 +804,20 @@ def process_geno_hla(hla_dataframe):
 # print(files_ams)
 
 # for i in range(len(files_ams)):
-# 	print(files_pep[i],files_ams[i])
-# 	for netmhc in files_netmhc:
-# 		if str(Path(netmhc).stem).split("-")[0] == str(Path(files_pep[i]).name).split("_")[0]:
-# 			print(netmhc)
-# 			netmhc_df,pep_df = clean_pep_df(netmhc,files_pep[i])
-# 			merge_netmhc(netmhc_df,pep_df,files_ams[i],ELR_thr,pair)
+#     print(files_pep[i],files_ams[i])
+#     for netmhc in files_netmhc:
+#         if str(Path(netmhc).stem).split("-")[0] == str(Path(files_pep[i]).name).split("_")[0]:
+#             print(netmhc)
+#             netmhc_df,pep_df = clean_pep_df(netmhc,files_pep[i])
+#             merge_netmhc(netmhc_df,pep_df,files_ams[i],ELR_thr,pair)
 
 
 # file = "Twist_GIAB_hg38.bed"
 # genome = "chrom_sizes.txt"
 # for i in range(200,8200,200):
-# 	os.system("bedtools slop -i {} -g {} -b {} > {}_{}.bed".format(file,genome,i,file.split(".")[0],i))
+#     os.system("bedtools slop -i {} -g {} -b {} > {}_{}.bed".format(file,genome,i,file.split(".")[0],i))
 
 # for file in files:
-# 	sorted_file = "{}_sorted.bed".format(file.split(".")[0])
-# 	os.system("sort -V -k1,1 -k2,2n {} > {}".format(file,sorted_file))
-# 	os.system("bedtools merge -i {} > {}_merged.bed".format(sorted_file,file.split(".")[0]))
+#     sorted_file = "{}_sorted.bed".format(file.split(".")[0])
+#     os.system("sort -V -k1,1 -k2,2n {} > {}".format(file,sorted_file))
+#     os.system("bedtools merge -i {} > {}_merged.bed".format(sorted_file,file.split(".")[0]))

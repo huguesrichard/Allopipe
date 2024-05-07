@@ -53,7 +53,7 @@ def bedfile_genes(hla_file, mhags_file):
     hla["Chromosome"] = "chr" + hla["Chromosome"].astype(int).astype(str)
     hla[["start", "end"]] = hla["Position"].str.split("-", expand=True)
     hla["Group"] = "HLA"
-    # 	kir = kir[["Chromosome","Position"]].copy()
+    #     kir = kir[["Chromosome","Position"]].copy()
     kir = pd.DataFrame(
         [["chr19", "54700000-54900000", "KIR"]],
         columns=["Chromosome", "Position", "Group"],
@@ -83,7 +83,7 @@ def bedfile_genes(hla_file, mhags_file):
     )
 
 
-# 	return()
+#     return()
 
 
 #########################################################################
@@ -187,15 +187,15 @@ def estimate_ams(path_out_mockbed, merged_ams, flank_bed, genome_file):
 # ls_merged_ams = glob.glob("../../output/indiv_vcf/joint_genotyping/hard-filtered/**/bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv")
 
 # for merged in ls_merged_ams:
-# 	lst_ams_df = []
-# 	for flank in flank_bedfiles:
-# 		path_mockbed = merged_ams_to_mockbed(merged)
-# 		path_out_mockbed = intersect_mockbed(path_mockbed,flank,"ams_merged_mockbed.bed")
-# 		df,ams = estimate_ams(path_out_mockbed,merged,flank,"../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/chrom_sizes.txt")
-# 		print(ams)
-# 		lst_ams_df.append(df)
-# 	pair_flanks_df = pd.concat(lst_ams_df)
-# 	pair_flanks_df.to_csv(os.path.join(Path(path_mockbed).parent,"flanks_with_cov_dataframe.csv"),index=False)
+#     lst_ams_df = []
+#     for flank in flank_bedfiles:
+#         path_mockbed = merged_ams_to_mockbed(merged)
+#         path_out_mockbed = intersect_mockbed(path_mockbed,flank,"ams_merged_mockbed.bed")
+#         df,ams = estimate_ams(path_out_mockbed,merged,flank,"../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/chrom_sizes.txt")
+#         print(ams)
+#         lst_ams_df.append(df)
+#     pair_flanks_df = pd.concat(lst_ams_df)
+#     pair_flanks_df.to_csv(os.path.join(Path(path_mockbed).parent,"flanks_with_cov_dataframe.csv"),index=False)
 
 #################################################################
 ######################## bedtools flanks ########################
@@ -229,8 +229,8 @@ def sloping_regions(bedfile, genome_file, slop_size):
 
 
 # def ams_concentration(merged_bedfile,merged_ams):
-# 	bed = pd.read_csv(merged_bedfile,sep="\t",names=["CHROM","start","end"])
-# 	ams = pd.read_csv(merged_ams,sep="\t")
+#     bed = pd.read_csv(merged_bedfile,sep="\t",names=["CHROM","start","end"])
+#     ams = pd.read_csv(merged_ams,sep="\t")
 
 
 def filter_bedfile_intervals(bedfile, threshold):
@@ -361,8 +361,8 @@ def estimate_cov(bedfile_with_goi, ams_mockbed, merged_ams, mock_name, genome_si
 # sorted_merged = sorted(mergeds,key=lambda x:int(x.split("/")[-1].split("_")[0].split("R")[1]))
 # lst = []
 # for bed in bedfiles:
-# 	for i in range(len(sorted_mocks)):
-# 		lst.append(estimate_cov(bed,sorted_mocks[i],sorted_merged[i],Path(sorted_mocks[i]).name.split(".")[0]+"_f.bed",3.3*10**9))
+#     for i in range(len(sorted_mocks)):
+#         lst.append(estimate_cov(bed,sorted_mocks[i],sorted_merged[i],Path(sorted_mocks[i]).name.split(".")[0]+"_f.bed",3.3*10**9))
 
 
 def main():

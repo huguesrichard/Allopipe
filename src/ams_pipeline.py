@@ -32,11 +32,11 @@ def main():
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
         run_tables, args.donor, args, args.wc_donor, formatted_datetime
-    )    
+    )
     # output : filtered donor file
     df_donor.to_csv(
-        f"{run_tables}/{args.run_name}_"
-        f"{args.donor.split('/')[-1].split('.')[0]}_"
+        f"{run_tables}/{args.pair}_{args.run_name}_"
+        f"D0_{args.donor.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
         f"bl_{args.base_length}{formatted_datetime}.tsv",
@@ -48,8 +48,8 @@ def main():
         run_tables, args.recipient, args, args.wc_recipient, formatted_datetime
     )
     df_recipient.to_csv(
-        f"{run_tables}/{args.run_name}_"
-        f"{args.recipient.split('/')[-1].split('.')[0]}_"
+        f"{run_tables}/{args.pair}_{args.run_name}_"
+        f"R0_{args.recipient.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
         f"bl_{args.base_length}{formatted_datetime}.tsv",
@@ -98,8 +98,18 @@ def main():
             index=False,
         )
     # create small df with pair and AMS
-    table_operations.save_mismatch(run_ams, args, mismatch, formatted_datetime)
+    ams_exp_path = table_operations.save_mismatch(run_ams, args, mismatch, formatted_datetime)
     print(mismatch)
+    
+    # score normalization (multiprocess_ams only)
+    if args.norm_score:
+        ams_df, ams_exp_path = table_operations.get_ref_ratio(
+            args.run_name, args.pair, run_path, ams_exp_path, args.donor, args.recipient,
+            args.min_dp, args.max_dp, args.min_ad, args.homozygosity_thr, args.min_gq,
+            args.orientation, args.base_length
+        )
+        table_operations.add_norm(ams_df, ams_exp_path)
+    
     return 0
 
 
