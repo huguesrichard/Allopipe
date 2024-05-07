@@ -139,7 +139,7 @@ def arguments(from_filePair : bool = False):
     if from_filePair:
         parser = CustomParser(
             prog="multiprocess_ams.py",
-            usage="python %(prog)s [options] multi_vcf file_pairs orientation",
+            usage="python %(prog)s [options] file_pairs.csv orientation",
             description="Compute the AMS for a list of pairs of individuals",
             )
         parser.add_argument(
