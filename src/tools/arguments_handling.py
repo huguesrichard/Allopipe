@@ -251,6 +251,12 @@ def arguments(from_filePair : bool = False):
         type=lambda x: check_if_accepted_str(parser, x),
     )
     parser.add_argument(
+        "-ns",
+        "--norm_score",
+        help="toggle score normalization (recommended for multiprocess_ams only)",
+        action="store_true",
+    )
+    parser.add_argument(
         "-wc",
         help="toggle worst consequence annotations from Variant Effect Predictor",
         action="store_true",
