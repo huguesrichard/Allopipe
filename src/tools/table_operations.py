@@ -102,8 +102,8 @@ def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv
     elif indiv_type == "recipient":
         indiv = "y"
     else:
-	    raise Exception("Error: format donor/recipient incorrect")	
-	    
+        raise Exception("Error: format donor/recipient incorrect")
+        
     # get the positions and the aminoacids associated to the indiv, from the AMS table
     positions = merged_ams[
         [
@@ -552,9 +552,9 @@ def regroup_dataframes(path, min_DP, max_DP):
 
 
 # def add_sorted_columns(general_df_path,df_path):
-# 	gen_df = pd.read_csv(general_df_path,sep="\t")
-# 	df_to_add = pd.read_csv(,sep="\t")
-# 	gen_df_merged = pd.merge(gen_df,df_to_add,how="inner",on=["pair"])
+#     gen_df = pd.read_csv(general_df_path,sep="\t")
+#     df_to_add = pd.read_csv(,sep="\t")
+#     gen_df_merged = pd.merge(gen_df,df_to_add,how="inner",on=["pair"])
 
 
 def gvh_vs_sex_mismatch(clinical_df_path):
@@ -642,7 +642,7 @@ def filter_vcf_regions_ams(directory):
         if "bed" in file
     ]
     # for vcf in gz_vcf_files:
-    # 	os.system("gzip -dk {}".format(vcf))
+    #     os.system("gzip -dk {}".format(vcf))
     d_vcf_files = [
         file
         for file in glob.glob(os.path.join(directory, "**/*.vcf"))
@@ -817,20 +817,20 @@ def process_geno_hla(hla_dataframe):
 # print(files_ams)
 
 # for i in range(len(files_ams)):
-# 	print(files_pep[i],files_ams[i])
-# 	for netmhc in files_netmhc:
-# 		if str(Path(netmhc).stem).split("-")[0] == str(Path(files_pep[i]).name).split("_")[0]:
-# 			print(netmhc)
-# 			netmhc_df,pep_df = clean_pep_df(netmhc,files_pep[i])
-# 			merge_netmhc(netmhc_df,pep_df,files_ams[i],ELR_thr,pair)
+#     print(files_pep[i],files_ams[i])
+#     for netmhc in files_netmhc:
+#         if str(Path(netmhc).stem).split("-")[0] == str(Path(files_pep[i]).name).split("_")[0]:
+#             print(netmhc)
+#             netmhc_df,pep_df = clean_pep_df(netmhc,files_pep[i])
+#             merge_netmhc(netmhc_df,pep_df,files_ams[i],ELR_thr,pair)
 
 
 # file = "Twist_GIAB_hg38.bed"
 # genome = "chrom_sizes.txt"
 # for i in range(200,8200,200):
-# 	os.system("bedtools slop -i {} -g {} -b {} > {}_{}.bed".format(file,genome,i,file.split(".")[0],i))
+#     os.system("bedtools slop -i {} -g {} -b {} > {}_{}.bed".format(file,genome,i,file.split(".")[0],i))
 
 # for file in files:
-# 	sorted_file = "{}_sorted.bed".format(file.split(".")[0])
-# 	os.system("sort -V -k1,1 -k2,2n {} > {}".format(file,sorted_file))
-# 	os.system("bedtools merge -i {} > {}_merged.bed".format(sorted_file,file.split(".")[0]))
+#     sorted_file = "{}_sorted.bed".format(file.split(".")[0])
+#     os.system("sort -V -k1,1 -k2,2n {} > {}".format(file,sorted_file))
+#     os.system("bedtools merge -i {} > {}_merged.bed".format(sorted_file,file.split(".")[0]))

@@ -243,14 +243,14 @@ def get_peptides_ref(transcripts_pair, k):
 
 
 # def select_different_kmers(donor_reduced,recipient_reduced,orientation):
-# 	test = pd.merge(transcripts_reduced_donor,transcripts_reduced_recipient,how="outer",on=["CHROM","POS","Gene_id","peptide","Transcript_id","Peptide_id"])
-# 	if orientation == "dr":
-# 		test["different_kmers"] = [','.join(set(a.split(','))-set(b.split(','))) for a,b in zip(test["kmers_x"], test["kmers_y"])]
-# 	else:
-# 		test["different_kmers"] = [','.join(set(b.split(','))-set(a.split(','))) for a,b in zip(test["kmers_x"], test["kmers_y"])]
+#     test = pd.merge(transcripts_reduced_donor,transcripts_reduced_recipient,how="outer",on=["CHROM","POS","Gene_id","peptide","Transcript_id","Peptide_id"])
+#     if orientation == "dr":
+#         test["different_kmers"] = [','.join(set(a.split(','))-set(b.split(','))) for a,b in zip(test["kmers_x"], test["kmers_y"])]
+#     else:
+#         test["different_kmers"] = [','.join(set(b.split(','))-set(a.split(','))) for a,b in zip(test["kmers_x"], test["kmers_y"])]
 
-# 	print(test)
-# 	return(different_kmers)
+#     print(test)
+#     return(different_kmers)
 
 
 def create_header_fasta(x):
@@ -319,52 +319,52 @@ def write_netmhc_fasta(pep_fasta_path, netmhc_fasta_file_name):
 ##################### OLD SAVING SYSTEM #####################
 #############################################################
 # def main():
-# 	start = time.time()
-# 	directories = [os.path.join("../output/indiv_vcf/joint_genotyping/hard-filtered",x) for x in os.listdir("../output/indiv_vcf/joint_genotyping/hard-filtered") if os.path.isdir(os.path.join("../output/indiv_vcf/joint_genotyping/hard-filtered",x)) and re.match("R\d+",x)]
-# 	print(directories)
-# 	# done = ['R908','R383','R1048','R6764']
-# 	print(len(directories))
-# 	for direct in directories:
-# 		if direct.split("/")[-1] not in done:
-# 			# get cdna transcripts from ensembl database
-# 			ensembl_transcripts = parsing.read_fasta("../output/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa")
-# 			# get cds transcripts from ensembl database
-# 			ensembl_transcripts_cds = parsing.read_fasta("../output/Ensembl/Homo_sapiens.GRCh38.cds.all.fa")
-# 			print("Ensembl transcripts in dictionary : {}".format(len(ensembl_transcripts.keys())))
-# 			# get proteins from ensembl database
-# 			proteins = parsing.read_pep_fa("../output/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa")
-# 			print("Ensembl proteins in dictionary : {}".format(len(proteins.keys())))
-# 			peptides_ensembl = dict_to_df(proteins)
-# 			print("{} peptides selected in ensembl refseq".format(len(peptides_ensembl)))
-# 			# print(peptides_ensembl)
+#     start = time.time()
+#     directories = [os.path.join("../output/indiv_vcf/joint_genotyping/hard-filtered",x) for x in os.listdir("../output/indiv_vcf/joint_genotyping/hard-filtered") if os.path.isdir(os.path.join("../output/indiv_vcf/joint_genotyping/hard-filtered",x)) and re.match("R\d+",x)]
+#     print(directories)
+#     # done = ['R908','R383','R1048','R6764']
+#     print(len(directories))
+#     for direct in directories:
+#         if direct.split("/")[-1] not in done:
+#             # get cdna transcripts from ensembl database
+#             ensembl_transcripts = parsing.read_fasta("../output/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa")
+#             # get cds transcripts from ensembl database
+#             ensembl_transcripts_cds = parsing.read_fasta("../output/Ensembl/Homo_sapiens.GRCh38.cds.all.fa")
+#             print("Ensembl transcripts in dictionary : {}".format(len(ensembl_transcripts.keys())))
+#             # get proteins from ensembl database
+#             proteins = parsing.read_pep_fa("../output/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa")
+#             print("Ensembl proteins in dictionary : {}".format(len(proteins.keys())))
+#             peptides_ensembl = dict_to_df(proteins)
+#             print("{} peptides selected in ensembl refseq".format(len(peptides_ensembl)))
+#             # print(peptides_ensembl)
 
-# 			# get merged file containing ams positions
-# 			merged_pair = pd.read_csv(os.path.join(direct,"bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv"),sep="\t")
-# 			# get list of transcripts in AMS and intersect it with ensembl transcripts
-# 			ams_transcripts = contributing_ams_transcripts(merged_pair,ensembl_transcripts)
-# 			print("Potential contributing transcripts after ensembl filtering : {}".format(len(ams_transcripts)))
-# 			refseq_transcripts_path = "../output/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv"
-# 			# filtering to keep transcripts present in refseq table
-# 			transcripts_df = filter_on_refseq(ams_transcripts,refseq_transcripts_path)
-# 			print("Transcripts after REFSEQ filter : {}".format(len(transcripts_df)))
-# 			# transcripts long format
-# 			transcripts_pair = pd.read_csv(os.path.join(direct,"transcripts_pair_codons_20_400_5_0.8_20_STOPLOST.tsv"),sep="\t")
-# 			# intersect filtered transcripts and long format to get a long format with all info
-# 			transcripts_pair = intersect_positions(transcripts_pair,transcripts_df)
-# 			transcripts_pair = aa_REF(transcripts_pair)
+#             # get merged file containing ams positions
+#             merged_pair = pd.read_csv(os.path.join(direct,"bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv"),sep="\t")
+#             # get list of transcripts in AMS and intersect it with ensembl transcripts
+#             ams_transcripts = contributing_ams_transcripts(merged_pair,ensembl_transcripts)
+#             print("Potential contributing transcripts after ensembl filtering : {}".format(len(ams_transcripts)))
+#             refseq_transcripts_path = "../output/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv"
+#             # filtering to keep transcripts present in refseq table
+#             transcripts_df = filter_on_refseq(ams_transcripts,refseq_transcripts_path)
+#             print("Transcripts after REFSEQ filter : {}".format(len(transcripts_df)))
+#             # transcripts long format
+#             transcripts_pair = pd.read_csv(os.path.join(direct,"transcripts_pair_codons_20_400_5_0.8_20_STOPLOST.tsv"),sep="\t")
+#             # intersect filtered transcripts and long format to get a long format with all info
+#             transcripts_pair = intersect_positions(transcripts_pair,transcripts_df)
+#             transcripts_pair = aa_REF(transcripts_pair)
 
-# 			# get pep seq on long format table
-# 			transcripts_pair = add_pep_seq(transcripts_pair,peptides_ensembl)
-# 			transcripts_pair.to_csv("ugly.tsv",sep="\t",index = False)
-# 			k=9
-# 			transcripts_reduced = get_peptides_ref(transcripts_pair,k)
-# 			orientation = "rd"
-# 			# print(transcripts_reduced)
-# 			transcripts_reduced.to_pickle(os.path.join(direct,"pep_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.pkl"))
-# 			write_pep_fasta(os.path.join(direct,"test_kmers.fa"),transcripts_reduced)
-# 			write_netmhc_fasta(os.path.join(direct,"test_kmers.fa"),"netmhc_fasta.fa")
-# 	end = time.time()
-# 	print((end-start)/60)
+#             # get pep seq on long format table
+#             transcripts_pair = add_pep_seq(transcripts_pair,peptides_ensembl)
+#             transcripts_pair.to_csv("ugly.tsv",sep="\t",index = False)
+#             k=9
+#             transcripts_reduced = get_peptides_ref(transcripts_pair,k)
+#             orientation = "rd"
+#             # print(transcripts_reduced)
+#             transcripts_reduced.to_pickle(os.path.join(direct,"pep_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.pkl"))
+#             write_pep_fasta(os.path.join(direct,"test_kmers.fa"),transcripts_reduced)
+#             write_netmhc_fasta(os.path.join(direct,"test_kmers.fa"),"netmhc_fasta.fa")
+#     end = time.time()
+#     print((end-start)/60)
 
 
 # considered inputs : run name
@@ -447,13 +447,13 @@ def main(run_name,ens_transcripts_path,ens_transcripts_cds_path,ens_pep_path,ref
 
     return 0
 
-    # 		transcripts_reduced.to_pickle(os.path.join(aams_run_tables,"pep_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.pkl"))
-    # 		# write in AAMS_run folder ?
-    # 		write_pep_fasta(os.path.join(direct,"test_kmers.fa"),transcripts_reduced)
-    # 		write_netmhc_fasta(os.path.join(direct,"test_kmers.fa"),"netmhc_fasta.fa")
+    #         transcripts_reduced.to_pickle(os.path.join(aams_run_tables,"pep_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.pkl"))
+    #         # write in AAMS_run folder ?
+    #         write_pep_fasta(os.path.join(direct,"test_kmers.fa"),transcripts_reduced)
+    #         write_netmhc_fasta(os.path.join(direct,"test_kmers.fa"),"netmhc_fasta.fa")
 
     # for direct in directories:
-    # 		# print(peptides_ensembl)
+    #         # print(peptides_ensembl)
 
 
 if __name__ == "__main__":
