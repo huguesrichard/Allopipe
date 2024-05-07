@@ -1,6 +1,6 @@
 #coding:utf-8
 """
-The aams pipeline estimates the mismatch between a donor and a recipient based on VCF information
+The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
 command line help : python3 aams_pipeline.py [-h]
 """
 import os
@@ -10,6 +10,7 @@ from tools import netmhc_arguments, aams_helpers, netmhc_tables_handler
 def main():
     """
     The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
+    command line help : python3 aams_pipeline.py [-h]
     """
     # get args from cmd line
     args = netmhc_arguments.netmhc_arguments()
