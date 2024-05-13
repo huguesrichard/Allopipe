@@ -32,7 +32,8 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 	1. [Requirements checking](#requirements)
 	2. [AlloPipe installation](#install)
 	3. [VEP annotation](#vep)
-
+    
+<br/>
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
