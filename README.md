@@ -1,43 +1,69 @@
 # AlloPipe
 
----
-The AlloPipe tool currently takes two variant annotated exomes as input and returns quantitative and qualitative measurements of the differences within the pair. 
+The AlloPipe tool is a computational workflow imputing directional amino acid mismatches then related minor histocompatibility antigens candidate from human genomic datasets.
+
+--- 
+## In a nutshell
+The AlloPipe tool is divided into two successive modules:
+
+<br/>
+
+- **Allo-Count:** performs a stringent data cleaning and a directional comparison of the samples' amino acid sequences.
+
+From two variant-annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default). The curated VCF file is then queried for the amino acid information to assess the amino acid mismatches.
+
+**Samples' comparison is directional** and counts either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or the other way around (*recipient-to-donor*: present by the recipient but absent in the donor.
+
+This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested direction, and related information stored in the **AMS-table**.
+
+<br/>
+
+- **Allo-Affinity:** reconstructs peptides around the amino acid changes then return the affinity mHAgs candidates towards HLA molecules thanks to [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)
+
+Allo-Affinity generates a set of candidate minor histocompatibility antigens around each previously assessed directional amino acid mismatches using sliding window. The user defines the length of the potentially HLA-embedded peptides, usually 9-mers for HLA class I and 15-mers for HLA class II molecules. The affinity values are computed using [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), respectively.
+
+This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested mismatch direction, and related information stored in the **AMS-table**. Please note that the 2-field HLA typing has to be provided by the user.
 
 ---
 
 ## Table of contents
 
-1. [Start from scratch for your very first time: Create a conda environment](#before)
-   	1. [Check the requirements](#requirements)
-	2. [Install AlloPipe](#install)
+1. [Before getting started](#before)
+   	1. [Requirements checking](#requirements)
+	2. [AlloPipe installation](#install)
 
 
-
-2. [Run AlloPipe](#typical)
+2. [Run the AlloPipe workflow](#run)
 	1. [VEP annotation](#vep)
-	2. [Launch AlloPipe-count](#ams_run)
-	3. [Getting your AMS results](#ams_results)
-	4. [Exploring the AMS mismatches table](#ams_mismatches)
-	5. [Launch AlloPipe-affinity](#aams_run)
-	6. [Getting your AAMS results](#aams_results)
-	7. [Exploring the AAMS mismatches table](#aams_mismatches)
+	2. [Launch Allo-Count](#ams_run)
+	3. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
+	4. [Exploring the AMS table](#ams_mismatches)
+	5. [Launch Allo-Affinity](#aams_run)
+	6. [Getting your affinity-AMS (af-AMS)](#aams_results)
+	7. [Exploring the af-AMS table](#aams_mismatches)
 
+---
 
-## Prepare the environment <a name="before"></a>
-Before lauching your very first AlloPipe run, you must ensure the two upcoming steps, i.e. all the [requirements](#requirements) are set up and [AlloPipe](#install) is correctly installed 
+## Before getting started <a name="before"></a>
 
-### Requirements <a name="requirements"></a>
+### Requirements checking <a name="requirements"></a>
 
 AlloPipe specifically requires
-1. [VEP](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) (>=v104) annotated VCF files, with the VEP information contained in the INFO field of the VCF file (online tool or command line tool, example given below).
-2. [Python](https://www.python.org/downloads/) (>=3.6,developed on 3.9) and associated [packages](requirements.txt).
-3. [NetMHCpan4.1](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) downloaded as a command line tool.
+1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
+2. [VEP](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v103
+3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tool.
+Note: you need an academic affiliation (ensured by an email address) to download NetMHCpan softwares from the DTU Health Tech website.
 
-Note that in order to download NetMHCpan, you will have to fill a form on the netMHCpan website, and all the installation instructions will then be provided.  
+As we recommend to create a conda environment to ensure a robust installation of AlloPipe, [conda](https://docs.anaconda.com/free/working-with-conda/) should be installed in the suitable version for your operating system and python version.
 
-### Install AlloPipe and the required packages <a name="install"></a>
+### AlloPipe installation <a name="install"></a>
 
-To download the pipeline, clone the repository and install the required python packages needed for the pipeline to run.
+To download and install the AlloPipe workflow, first clone the repository from git.\
+*(You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic))*
+
+We then recommend to create a conda environment dedicated to the AlloPipe workflow. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in the AlloPipe environment.
+
+The following command lines will perform the above-mentioned steps:
 
 	git clone https://github.com/huguesrichard/Allopipe.git
 	cd Allopipe
@@ -45,11 +71,12 @@ To download the pipeline, clone the repository and install the required python p
   	conda activate Allopipe
 	python -m pip install -r requirements.txt
 
----
-
-## Typical run <a name="typical"></a>
+**You are now ready to launch your first AlloPipe run !**
 
 ---
+
+## Run the AlloPipe workflow <a name="run"></a>
+
 In the **input/** directory, we prepared two examples for you to play with to understand how your data should look like for the run to complete.  
 
 ### VEP annotation <a name="vep"></a>
@@ -195,3 +222,7 @@ It contains the mismatches information from the AMS run along with information p
 
 
 You can now get started with your files, check the [documentation](#docs/documentation.pdf) if you want more control over the filters that we implemented.  
+
+
+
+o create suitable virtual environment for AlloPipe to run,
