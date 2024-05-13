@@ -115,6 +115,7 @@ To test your VEP installation, run the following command at the root of the Allo
 ## Run the AlloPipe workflow <a name="run"></a>
 
 We encourage you to test your AlloPipe installation with our test samples.
+WORSE CONSEQUENCE
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
