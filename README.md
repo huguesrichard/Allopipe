@@ -34,7 +34,7 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 	3. [VEP annotation](#vep)
 
 
-3. [Run the AlloPipe workflow](#run)
+2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
 		3. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
 		4. [Exploring the AMS table](#ams_mismatches)
@@ -99,10 +99,8 @@ The following command lines will perform the above-mentioned steps:
 AlloPipe input files must be variant-annotated files.\
 *We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
-We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate
-To perform the VEP annotation thanks the command line tool (recommended for any files > 50MB), run the following command 
-
-A at the root of the AlloPipe directory :  
+We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate (those files correspond to human chr6).\
+To test your VEP installation, run the following command at the root of the AlloPipe directory :  
 	
 		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
 		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
@@ -115,21 +113,22 @@ A at the root of the AlloPipe directory :
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
-In the **input/** directory, we prepared two examples for you to play with to understand how your data should look like for the run to complete.  
+We encourage you to test your AlloPipe installation with our test samples.
 
+### Launch Allo-Count  <a name="ams_run"></a>
 
-### Launch your first Allogenomics Mismatch Score (AMS) run  <a name="ams_run"></a>
-
-Once the annotation is complete, go to the root of the AlloPipe directory.   
+Once the VEP annotation is complete, go to the root of the AlloPipe directory.   
 Then, run the following commands in the terminal :  
 
 	cd src/
 	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
-### Getting your AMS results <a name="ams_results"></a>
+ If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
 
-After the run is complete, we look at the **output/runs/test_run/** directory that was created.  
-In this directory, we have the following structure :  
+### Getting your ALlogenomic Mismatch Score (AMS) <a name="ams_results"></a>
+
+After the run is complete, have look at the **output/runs/test_run/** directory that was created.  
+The directory is structured as followed :  
 1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a csv file.  
 2. the **plots/** subdirectory
 3. the **run_tables** subdirectory contains all the tables created during the run. 
@@ -144,7 +143,7 @@ Run the following command to estimate the AMS for this pair :
 
 If you have the same AMS for both runs (it should be 49), it means your VEP annotation worked as expected !  
 
-### Exploring the AMS mismatches table <a name="ams_mismatches"></a>
+### Exploring the AMS table <a name="ams_mismatches"></a>
 
 In the **run_tables/** directory, you can find the mismatches table that will give you direct information on the mismatched positions.  
 In this table, you can find the following information :  
@@ -182,9 +181,9 @@ In this table, you can find the following information :
 	3. **mismatch_type (str)**: type of mismatch (homozygous, heterozygous)
 
 
-### Launch your first Affinity AMS (AAMS) run <a name="aams_run"></a>
+### Launch Allo-Affinity <a name="aams_run"></a>
 
-Once the AMS run is complete, provided you have the class 1 HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
+Once the AMS run is complete, provided you have the class I HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
 To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal :  
 
 ```
@@ -202,7 +201,7 @@ To run the AAMS pipeline of AlloPipe on the previous example, go to its root dir
 ```
 
 
-### Getting your AAMS results <a name="aams_results"></a>
+### Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
 
 This second step of AlloPipe uses the AMS information of the first step.  
 You will find 3 new subdirectories in the **test_run/** directory :  
@@ -214,7 +213,7 @@ You will find 3 new subdirectories in the **test_run/** directory :
 
 The AAMS value obtained with VEP v107 and netMHCpan4.1 is 34.
 
-### Exploring the AAMS mismatches table <a name="aams_mismatches"></a>
+### Exploring the af-AMS table <a name="aams_mismatches"></a>
 
 If you want more in-depth information on the mismatches contributing to the AAMS, you will find a mismatches table in the **aams_run_tables/** directory.  
 It contains the mismatches information from the AMS run along with information provided by netMHCpan :
