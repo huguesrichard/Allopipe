@@ -36,11 +36,11 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
-		3. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
-		4. [Exploring the AMS table](#ams_mismatches)
+		1. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
+		2. [Exploring the AMS table](#ams_mismatches)
 	2. [Launch Allo-Affinity](#aams_run)
-		6. [Getting your affinity-AMS (af-AMS)](#aams_results)
-		7. [Exploring the af-AMS table](#aams_mismatches)
+		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
+		2. [Exploring the af-AMS table](#aams_mismatches)
 
 ---
 
