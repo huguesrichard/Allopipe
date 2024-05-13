@@ -99,7 +99,10 @@ The following command lines will perform the above-mentioned steps:
 AlloPipe input files must be variant-annotated files.\
 *We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
-To perform the VEP annotation thanks the command line tool (recommended for any files > 50MB), run the following command at the root of the AlloPipe directory :  
+We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate
+To perform the VEP annotation thanks the command line tool (recommended for any files > 50MB), run the following command 
+
+A at the root of the AlloPipe directory :  
 	
 		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
 		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
