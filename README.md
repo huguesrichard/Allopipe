@@ -29,18 +29,18 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 ## Table of contents
 
 1. [Before getting started](#before)
-   	1. [Requirements checking](#requirements)
+	1. [Requirements checking](#requirements)
 	2. [AlloPipe installation](#install)
+	3. [VEP annotation](#vep)
 
 
-2. [Run the AlloPipe workflow](#run)
-	1. [VEP annotation](#vep)
-	2. [Launch Allo-Count](#ams_run)
-	3. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
-	4. [Exploring the AMS table](#ams_mismatches)
-	5. [Launch Allo-Affinity](#aams_run)
-	6. [Getting your affinity-AMS (af-AMS)](#aams_results)
-	7. [Exploring the af-AMS table](#aams_mismatches)
+3. [Run the AlloPipe workflow](#run)
+	1. [Launch Allo-Count](#ams_run)
+		3. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
+		4. [Exploring the AMS table](#ams_mismatches)
+	2. [Launch Allo-Affinity](#aams_run)
+		6. [Getting your affinity-AMS (af-AMS)](#aams_results)
+		7. [Exploring the af-AMS table](#aams_mismatches)
 
 ---
 
@@ -50,9 +50,31 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
-2. [VEP](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v103
-3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tool.
-Note: you need an academic affiliation (ensured by an email address) to download NetMHCpan softwares from the DTU Health Tech website.
+   
+2. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v103
+> **_VEP annotation: On-line or command line installation_**\
+> VEP annotation can be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.
+> 
+>  - To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).
+>
+> 
+>  - To install the command line tool, follow the installation tutorial available [here](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download).\
+>		During the installation, you will be asked if you want to download **cache** files, **FASTA** files and **plugins**.
+>    - We **recommend to download the cache file** for the assembly of your VCF files to be able to run VEP offline.\
+	Use the VEP cache version which corresponds to your Ensembl VEP installation and genome reference !
+>    - We **recommend to download the FASTA file** for the assembly of your VCF files to be able to run VEP offline.\
+	Use the FASTA version which corresponds to your Ensembl VEP installation and genome reference !
+>    - We **don't recommend to download any plugin**
+>      
+> We then recommend to **add VEP to your PATH** by adding the following line to your ~/.profile or ~/.bash_profile:\
+> 	`export PATH=##path/to/vep##:${PATH}`\
+>*If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH.*
+>
+>For complete insights on VEP, see [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
+
+3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tool.\
+
+*Note: you need an academic affiliation (ensured by an email address) to download NetMHCpan softwares from the DTU Health Tech website.*
 
 As we recommend to create a conda environment to ensure a robust installation of AlloPipe, [conda](https://docs.anaconda.com/free/working-with-conda/) should be installed in the suitable version for your operating system and python version.
 
@@ -71,6 +93,21 @@ The following command lines will perform the above-mentioned steps:
   	conda activate Allopipe
 	python -m pip install -r requirements.txt
 
+
+### VEP annotation <a name="vep"></a>
+
+AlloPipe input files must be variant-annotated files. 
+*We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
+
+
+
+	When you are done, run the following command at the root of the AlloPipe directory :  
+	
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
+
+**Please note that all specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
+
 **You are now ready to launch your first AlloPipe run !**
 
 ---
@@ -79,34 +116,6 @@ The following command lines will perform the above-mentioned steps:
 
 In the **input/** directory, we prepared two examples for you to play with to understand how your data should look like for the run to complete.  
 
-### VEP annotation <a name="vep"></a>
-
----
-The VCF files that you provide to AlloPipe must be annotated with VEP. It can either be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.  
-
-
-1. To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).  
-First, 
-
-
-
-
-2. To install the command line tool, follow the installation tutorial available [here](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download).  
-
-	During the installation, VEP will also let you choose if you want to download cache files.  
-	We recommend that you download a cache file for the assembly your VCF files were annotated with to be able to run VEP offline. We tested the GRCh37 and GRCh38 Ensembl v103,v108 files.  
-	
-	We then recommend that you add VEP to your PATH by adding the following line to your ~/.profile or ~/.bash_profile (replace the ##path##):
-
-		export PATH=##path/to/vep##:${PATH}
-	If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH. 
-
-	When you are done, run the following command at the root of the AlloPipe directory :  
-	
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
-
-**Please note that all specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 
 ### Launch your first Allogenomics Mismatch Score (AMS) run  <a name="ams_run"></a>
 
@@ -225,4 +234,4 @@ You can now get started with your files, check the [documentation](#docs/documen
 
 
 
-o create suitable virtual environment for AlloPipe to run,
+
