@@ -141,19 +141,22 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 		cd src/
 		python ams_pipeline.py -f -n %%NAME-TEST%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
 
-Where :
-%%NAME-RUN%% = name of the run
-%%NAME-OF-THE-PAIR% = name of the pair
-%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the donor's annotated VCF 
-%%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the recipient's annotated VCF 
-%%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach 
+<br/>
+
+Where :\
+%%NAME-RUN%% = name of the run\
+%%NAME-OF-THE-PAIR% = name of the pair\
+%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the donor's annotated VCF \
+%%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the recipient's annotated VCF \
+%%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach \
 
 >Direction of the mismatch
 (see Appendix1: calculation method of AlloPipe)
 
 **MULTI-PROCESSING**
 
-python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
+		cd src/
+		python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
 
 Where :
 %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf 
