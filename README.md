@@ -100,27 +100,24 @@ The following command lines will perform the above-mentioned steps:
 AlloPipe input files must be variant-annotated files.\
 *We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
-We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate *(those files correspond to human chr6)*.\
-To test your VEP installation, run the following command at the root of the AlloPipe directory :  
+Run the following command to annotate you VCF files with VEP.\
+**All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  \
 	
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
+		```vep --cache --assembly GRCh38 --offline --af_gnomade -i %%PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE%%.vcf -o %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf --vcf ```
 
-**All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
+This command line works for individual VCF as well as multi-VCF.
 
-**You are now ready to launch your first AlloPipe run !**
+
+**Once the VEP annotation of your file(s) is complete, you are now ready to launch your first AlloPipe run !**
 
 ---
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
-We encourage you to test your AlloPipe installation with our test samples.
-WORSE CONSEQUENCE
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory.   
-Then, run the following commands in the terminal :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
 
 	cd src/
 	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
@@ -235,5 +232,16 @@ It contains the mismatches information from the AMS run along with information p
 You can now get started with your files, check the [documentation](#docs/documentation.pdf) if you want more control over the filters that we implemented.  
 
 
+We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate *(those files correspond to human chr6)*.\
+To test your VEP installation, run the following command at the root of the AlloPipe directory :  
+	
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf --force_overwrite
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf --force_overwrite 
 
 
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
+
+	cd src/
+	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+
+ If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
