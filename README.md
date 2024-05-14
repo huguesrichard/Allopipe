@@ -139,7 +139,7 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 **SIMPLE-PROCESSING**
 
 		cd src/
-		python ams_pipeline.py -f -n %%NAME-TEST%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
+		python ams_pipeline.py -f -n %%NAME-RUN%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
 
 <br/>
 
@@ -151,22 +151,29 @@ Where :\
 %%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach \
 
 >Direction of the mismatch
-(see Appendix1: calculation method of AlloPipe)
+>XX
+>XX
+>(see Appendix1: calculation method of AlloPipe)
+
+
+<br/>
+
+
 
 **MULTI-PROCESSING**
 
 		cd src/
 		python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
 
-Where :
-%%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf 
-%%PATH-TO-THE-PAIR-LIST%%.csv 
-%%DIRECTION OF THE MISMATCH%%
+Where :\
+%%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf = \
+%%PATH-TO-THE-PAIR-LIST%%.csv = \
+%%DIRECTION OF THE MISMATCH%% = \
 
 
 ### Getting your ALlogenomic Mismatch Score (AMS) <a name="ams_results"></a>
 
-After the run is complete, have look at the **output/runs/test_run/** directory that was created.  
+After the run is complete, have look at the **output/runs/%%TEST-NAME%%/** directory that was created.  
 The directory is structured as followed :  
 1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a csv file.  
 2. the **plots/** subdirectory
