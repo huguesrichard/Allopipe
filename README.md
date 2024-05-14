@@ -55,6 +55,9 @@ Command lines are given for each processing mode.
 	2. [Launch Allo-Affinity](#aams_run)
 		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
 		2. [Exploring the af-AMS table](#aams_mismatches)
+
+<br/>
+     
   3. [Tutorial](#tuto)
 ---
 
