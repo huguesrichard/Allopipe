@@ -88,11 +88,11 @@ We then recommend to create a conda environment dedicated to the AlloPipe workfl
 
 The following command lines will perform the above-mentioned steps:
 
-	git clone https://github.com/huguesrichard/Allopipe.git
-	cd Allopipe
- 	conda create --name Allopipe python=3.9
-  	conda activate Allopipe
-	python -m pip install -r requirements.txt
+		git clone https://github.com/huguesrichard/Allopipe.git
+		cd Allopipe
+ 		conda create --name Allopipe python=3.9
+  		conda activate Allopipe
+		python -m pip install -r requirements.txt
 
 
 ### VEP annotation <a name="vep"></a>
@@ -100,10 +100,10 @@ The following command lines will perform the above-mentioned steps:
 AlloPipe input files must be variant-annotated files.\
 *We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
-Run the following command to annotate you VCF files with VEP.\
+Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  \
 	
-		```vep --cache --assembly GRCh38 --offline --af_gnomade -i %%PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE%%.vcf -o %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf --vcf ```
+		vep --cache --assembly GRCh38 --offline --af_gnomade -i %%PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE%%.vcf -o %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf --vcf 
 
 This command line works for individual VCF as well as multi-VCF.
 
@@ -117,10 +117,10 @@ This command line works for individual VCF as well as multi-VCF.
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal (don't forget to activate your conda environment) :  
 
-	cd src/
-	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+		cd src/
+		python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
  If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
 
