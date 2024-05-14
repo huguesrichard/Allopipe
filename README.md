@@ -105,7 +105,8 @@ Run the following command to annotate you VCF file(s) with VEP.\
 	
 		vep --cache --assembly GRCh38 --offline --af_gnomade -i %%PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE%%.vcf -o %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf --vcf 
 
-This command line works for individual VCF as well as multi-VCF.
+This command line works for individual VCF as well as multi-VCF. 
+Run this command for every file you want to input in AlloPipe: for individual VCF you will need to run the command twice (once for the donor's VCF and once for the recipient's VCF)
 
 
 **Once the VEP annotation of your file(s) is complete, you are now ready to launch your first AlloPipe run !**
@@ -117,10 +118,10 @@ This command line works for individual VCF as well as multi-VCF.
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal (don't forget to activate your conda environment) :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 		cd src/
-		python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+		python ams_pipeline.py -f -n test_run -p test_pair %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
  If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
 
@@ -132,7 +133,7 @@ The directory is structured as followed :
 2. the **plots/** subdirectory
 3. the **run_tables** subdirectory contains all the tables created during the run. 
 
->![tree_run](tutorial/tree_run.png)  
+
   
 We also annotated the tutorial file with VEP for the donor and recipient, `donor.vcf.gz` and `recipient.vcf.gz` respectively.
 
