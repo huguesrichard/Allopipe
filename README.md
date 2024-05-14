@@ -4,11 +4,11 @@ The AlloPipe tool is a computational workflow imputing directional amino acid mi
 
 --- 
 ## In a nutshell
-The AlloPipe tool is divided into two successive modules:
+**THE ALLOPIPE TOOL IS DIVIDED INTO TWO DIFFERENT MODULES:**
 
 <br/>
 
-- **Allo-Count:** performs a stringent data cleaning and a directional comparison of the samples' amino acid sequences.
+- **ALLO-COUNT:** performs a stringent data cleaning and a directional comparison of the samples' amino acid sequences.
 
 From two variant-annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default). The curated VCF file is then queried for the amino acid information to assess the amino acid mismatches.
 
@@ -18,15 +18,24 @@ This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete q
 
 <br/>
 
-- **Allo-Affinity:** reconstructs peptides around the amino acid changes then return the affinity mHAgs candidates towards HLA molecules thanks to [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)
+- **ALLO-AFFINITY:** reconstructs peptides around the amino acid changes then return the affinity mHAgs candidates towards HLA molecules thanks to [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)
 
 Allo-Affinity generates a set of candidate minor histocompatibility antigens around each previously assessed directional amino acid mismatches using sliding window. The user defines the length of the potentially HLA-embedded peptides, usually 9-mers for HLA class I and 15-mers for HLA class II molecules. The affinity values are computed using [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), respectively.
 
 This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested mismatch direction, and related information stored in the **AMS-table**. Please note that the 2-field HLA typing has to be provided by the user.
 
+<br/>
+<br/>
 
-**Multi-processing**
-As we foresee an utilisation of the AlloPipe tool through cohorts and not only for pairs in isolation from each other, it is possible to run both modules from files containing informations of more than one pair.
+**THE ALLOPIPE TOOL CAN BE RUN AS SIMPLE- AND MULTI-PROCESSING**
+	
+- **SIMPLE-PROCESSING**
+To compute AMS et af-AMF just for one pair, mostly if you do at at small scale
+ 
+- **MULTI-PROCESSING**  
+It is possible to run both modules from one unique file containing information of more than one pair, i.e. from merged vcf containing information of a batch of samples that represent a cohort.
+
+Command lines are given for each processing mode.
 
 ---
 
@@ -46,7 +55,7 @@ As we foresee an utilisation of the AlloPipe tool through cohorts and not only f
 	2. [Launch Allo-Affinity](#aams_run)
 		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
 		2. [Exploring the af-AMS table](#aams_mismatches)
-
+  3. [Tutorial](#tuto)
 ---
 
 ## Before getting started <a name="before"></a>
@@ -125,9 +134,8 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 		cd src/
-		python ams_pipeline.py -f -n test_run -p test_pair %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+		python ams_pipeline.py -f -n test_run -p test_pair %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf .%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%rd%%
 
- If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
 
 ### Getting your ALlogenomic Mismatch Score (AMS) <a name="ams_results"></a>
 
@@ -236,6 +244,7 @@ It contains the mismatches information from the AMS run along with information p
 
 You can now get started with your files, check the [documentation](#docs/documentation.pdf) if you want more control over the filters that we implemented.  
 
+## Tutorial <a name="tuto"></a>
 
 We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate and tutorial/donor_to_annotate *(those files correspond to human chr6)*.\
 To test your VEP installation, run the following command at the root of the AlloPipe directory :  
