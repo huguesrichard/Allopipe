@@ -68,7 +68,7 @@ AlloPipe specifically requires
 >    - We **don't recommend to download any plugin**
 >      
 > We then recommend to **add VEP to your PATH** by adding the following line to your ~/.profile or ~/.bash_profile:\
-> 	`export PATH=##path/to/vep##:${PATH}`\
+> 	`export PATH=%%path/to/vep%%:${PATH}`\
 >*If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH.*
 >
 >For complete insights on VEP, see [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
