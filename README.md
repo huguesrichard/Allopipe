@@ -4,9 +4,9 @@ The AlloPipe tool is a computational workflow imputing directional amino acid mi
 
 --- 
 ## In a nutshell
-**THE ALLOPIPE TOOL IS DIVIDED INTO TWO DIFFERENT MODULES:**
-
 <br/>
+
+**THE ALLOPIPE TOOL IS DIVIDED INTO TWO DIFFERENT MODULES:**
 
 - **ALLO-COUNT:** performs a stringent data cleaning and a directional comparison of the samples' amino acid sequences.
 
