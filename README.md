@@ -29,7 +29,7 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 
 **THE ALLOPIPE TOOL CAN BE RUN AS SIMPLE- AND MULTI-PROCESSING**
 	
-- **SIMPLE-PROCESSING**
+- **SIMPLE-PROCESSING**\
 To compute AMS et af-AMF just for one pair, mostly if you do at at small scale
  
 - **MULTI-PROCESSING**  
@@ -136,8 +136,29 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
+**SIMPLE-PROCESSING**
+
 		cd src/
-		python ams_pipeline.py -f -n test_run -p test_pair %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf .%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%rd%%
+		python ams_pipeline.py -f -n %%NAME-TEST%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
+
+Where :
+%%NAME-RUN%% = name of the run
+%%NAME-OF-THE-PAIR% = name of the pair
+%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the donor's annotated VCF 
+%%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the recipient's annotated VCF 
+%%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach 
+
+>Direction of the mismatch
+(see Appendix1: calculation method of AlloPipe)
+
+**MULTI-PROCESSING**
+
+python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
+
+Where :
+%%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf 
+%%PATH-TO-THE-PAIR-LIST%%.csv 
+%%DIRECTION OF THE MISMATCH%%
 
 
 ### Getting your ALlogenomic Mismatch Score (AMS) <a name="ams_results"></a>
