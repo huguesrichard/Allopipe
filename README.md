@@ -24,6 +24,10 @@ Allo-Affinity generates a set of candidate minor histocompatibility antigens aro
 
 This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested mismatch direction, and related information stored in the **AMS-table**. Please note that the 2-field HLA typing has to be provided by the user.
 
+
+**Multi-processing**
+As we foresee an utilisation of the AlloPipe tool through cohorts and not only for pairs in isolation from each other, it is possible to run both modules from files containing informations of more than one pair.
+
 ---
 
 ## Table of contents
