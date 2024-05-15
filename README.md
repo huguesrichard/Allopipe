@@ -155,6 +155,9 @@ Where :\
 %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the recipient's annotated VCF \
 %%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach \
 
+We provide a complete helper function
+		python ams_pipeline.py --help
+
 >Direction of the mismatch
 >XX
 >XX
@@ -168,17 +171,26 @@ Where :\
 #### Multiple pairs <a name="multi_ams"></a>
 
 		cd src/
-		python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
+		python multiprocess_ams.py -n %%NAME-RUN%% %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
 
 Where :\
+%%NAME-RUN%% = \
 %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf = \
 %%PATH-TO-THE-PAIR-LIST%%.csv = \
 %%DIRECTION OF THE MISMATCH%% = \
 
+We provide a complete helper function
+		python multiprocess_ams.py --help
+
+
+>Normalisation
+>XX
+>XX
+>(see Appendix2: Normalisation)
 
 ### Exploring the AMS table <a name="ams_table"></a>
 
-After the run is complete, have look at the **output/runs/%%TEST-NAME%%/** directory that was created.  
+After the run is complete, have look at the **output/runs/-n %%NAME-RUN%%/** directory that was created.  
 The directory is structured as followed :  
 1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a csv file.  
 2. the **plots/** subdirectory
