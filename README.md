@@ -52,12 +52,13 @@ Command lines are given for each processing mode.
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
-		1. [Simple pair modus](#simple_ams)
-		2. [Multiple pairs modus](#multi_ams)
+		1. [Simple pair](#simple_ams)
+		2. [Multiple pairs](#multi_ams)
 		3. [Exploring the AMS table](#ams_table)
 	2. [Launch Allo-Affinity](#aams_run)
-		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
-		2. [Exploring the af-AMS table](#aams_mismatches)
+		1. [Simple pair](#simple_aams)
+		2. [Multiple pairs](#multi_aams)
+		2. [Exploring the af-AMS table](#aams_table)
 
 <br/>
      
@@ -140,7 +141,7 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 
-#### Simple-processing <a name="simple_ams"></a>
+#### Simple pair<a name="simple_ams"></a>
 
 		cd src/
 		python ams_pipeline.py -f -n %%NAME-RUN%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
@@ -164,7 +165,7 @@ Where :\
 
 
 
-#### Multi-processing <a name="multi_ams"></a>
+#### Multiple pairs <a name="multi_ams"></a>
 
 		cd src/
 		python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
@@ -232,6 +233,11 @@ In this table, you can find the following information :
 
 
 ### Launch Allo-Affinity <a name="aams_run"></a>
+
+#### Simple pair <a name="simple_aams"></a>
+
+
+#### Multiple pairs <a name="multi_aams"></a>
 
 Once the AMS run is complete, provided you have the class I HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
 To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal :  
