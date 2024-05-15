@@ -140,7 +140,7 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 
-#### Simple-processing <a name="simple_ams"></a>
+### Simple-processing <a name="simple_ams"></a>
 
 		cd src/
 		python ams_pipeline.py -f -n %%NAME-RUN%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
