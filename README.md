@@ -27,14 +27,14 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 <br/>
 <br/>
 
-**EACH MODULE CAN BE RUN AS SIMPLE- OR MULTI-PROCESSING**
+**EACH MODULE CAN BE RUN AS 'SIMPLE PAIR' OR 'MULTIPLE PAIRS' MODUS**
 	
-- **SIMPLE-PROCESSING**\
-Run as simple-processing if you aim to compute AMS and/or af-AMF for one pair at a time. \
+- **SIMPLE PAIR**\
+Run as 'simple pair modus' if you aim to compute AMS and/or af-AMF for one pair at a time. \
 You need to provide the variant annotated VCF file of the donor and the variant annotated VCF file of the recipient (one file per individual).
  
-- **MULTI-PROCESSING**  
-Run as multi-processing if you aim to compute AMS and/or af-AMF for one pair at a time.\
+- **MULTIPLE PAIRS (parallel processing)**  
+Run as 'multiple pairs modus' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
 In that case, you need to provide one unique file containing information of the donor and the recipient of the pairs - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
 
 Command lines are given for each processing mode.
@@ -52,8 +52,8 @@ Command lines are given for each processing mode.
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
-		1. [Simple-processing](#simple_ams)
-		2. [Multi-processing](#multi_ams)
+		1. [Simple pair modus](#simple_ams)
+		2. [Multiple pairs modus](#multi_ams)
 		3. [Exploring the AMS table](#ams_table)
 	2. [Launch Allo-Affinity](#aams_run)
 		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
