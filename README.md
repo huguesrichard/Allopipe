@@ -27,13 +27,15 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 <br/>
 <br/>
 
-**THE ALLOPIPE TOOL CAN BE RUN AS SIMPLE- AND MULTI-PROCESSING**
+**EACH MODULE CAN BE RUN AS SIMPLE- OR MULTI-PROCESSING**
 	
 - **SIMPLE-PROCESSING**\
-To compute AMS et af-AMF just for one pair, mostly if you do at at small scale
+Run as simple-processing if you aim to compute AMS and/or af-AMF for one pair at a time. \
+You need to provide the variant annotated VCF file of the donor and the variant annotated VCF file of the recipient (one file per individual).
  
 - **MULTI-PROCESSING**  
-It is possible to run both modules from one unique file containing information of more than one pair, i.e. from merged vcf containing information of a batch of samples that represent a cohort.
+Run as multi-processing if you aim to compute AMS and/or af-AMF for one pair at a time.\
+In that case, you need to provide one unique file containing information of the donor and the recipient of the pairs - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
 
 Command lines are given for each processing mode.
 
@@ -50,8 +52,9 @@ Command lines are given for each processing mode.
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
-		1. [Getting your Allogenomic Mismatch Score (AMS)](#ams_results)
-		2. [Exploring the AMS table](#ams_mismatches)
+		1. [Simple-processing](#simple_ams)
+		2. [Multi-processing](#multi_ams)
+		3. [Exploring the AMS table](#ams_table)
 	2. [Launch Allo-Affinity](#aams_run)
 		1. [Getting your affinity-AMS (af-AMS)](#aams_results)
 		2. [Exploring the af-AMS table](#aams_mismatches)
@@ -136,7 +139,8 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
-**SIMPLE-PROCESSING**
+
+#### Simple-processing <a name="simple_ams"></a>
 
 		cd src/
 		python ams_pipeline.py -f -n %%NAME-RUN%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
@@ -160,7 +164,7 @@ Where :\
 
 
 
-**MULTI-PROCESSING**
+### Multi-processing <a name="multi_ams"></a>
 
 		cd src/
 		python multiprocess_ams.py %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
@@ -171,7 +175,7 @@ Where :\
 %%DIRECTION OF THE MISMATCH%% = \
 
 
-### Getting your ALlogenomic Mismatch Score (AMS) <a name="ams_results"></a>
+### Exploring the AMS table <a name="ams_table"></a>
 
 After the run is complete, have look at the **output/runs/%%TEST-NAME%%/** directory that was created.  
 The directory is structured as followed :  
