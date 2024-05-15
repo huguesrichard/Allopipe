@@ -31,8 +31,9 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime):
     save_ams = pd.DataFrame([[args.pair,
                               args.donor.split('/')[-1].split('.')[0],
                               args.recipient.split('/')[-1].split('.')[0],
+                              args.orientation,
                               mismatch]],
-                            columns=["Pair", "Donor", "Recipient", "AMS"])
+                            columns=["Pair", "Donor", "Recipient", "Orientation", "AMS"])
     # change
     ams_exp_path = os.path.join(
         run_ams,
