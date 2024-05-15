@@ -27,14 +27,14 @@ This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative
 <br/>
 <br/>
 
-**EACH MODULE CAN BE RUN AS 'SIMPLE PAIR' OR 'MULTIPLE PAIRS' MODUS**
+**EACH MODULE CAN BE RUN AS 'SINGLE PAIR' OR 'MULTIPLE PAIRS' MODE**
 	
-- **SIMPLE PAIR**\
-Run as 'simple pair modus' if you aim to compute AMS and/or af-AMF for one pair at a time. \
+- **SINGLE PAIR**\
+Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
 You need to provide the variant annotated VCF file of the donor and the variant annotated VCF file of the recipient (one file per individual).
  
-- **MULTIPLE PAIRS (parallel processing)**  
-Run as 'multiple pairs modus' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
+- **MULTIPLE PAIRS (with parallel processing)**  
+Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
 In that case, you need to provide one unique file containing information of the donor and the recipient of the pairs - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
 
 Command lines are given for each processing mode.
@@ -52,11 +52,11 @@ Command lines are given for each processing mode.
 
 2. [Run the AlloPipe workflow](#run)
 	1. [Launch Allo-Count](#ams_run)
-		1. [Simple pair](#simple_ams)
+		1. [Single pair](#single_ams)
 		2. [Multiple pairs](#multi_ams)
 		3. [Exploring the AMS table](#ams_table)
 	2. [Launch Allo-Affinity](#aams_run)
-		1. [Simple pair](#simple_aams)
+		1. [Single pair](#single_aams)
 		2. [Multiple pairs](#multi_aams)
 		2. [Exploring the af-AMS table](#aams_table)
 
@@ -141,19 +141,19 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 
-#### Simple pair<a name="simple_ams"></a>
+#### Single pair<a name="simple_ams"></a>
 
 		cd src/
-		python ams_pipeline.py -f -n %%NAME-RUN%% -p %%NAME-OF-THE-PAIR%% %%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf %%DIRECTION OF THE MISMATCH%%
+		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
 
 <br/>
 
 Where :\
-%%NAME-RUN%% = name of the run\
-%%NAME-OF-THE-PAIR% = name of the pair\
-%%PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the donor's annotated VCF \
-%%PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf = path to the recipient's annotated VCF \
-%%DIRECTION OF THE MISMATCH%% = 'rd' or 'dr', depending on the direction of the mismach \
+<NAME-RUN> is the name of the run\
+<NAME-OF-THE-PAIR> is the name of the pair\
+<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf is the path to the donor's annotated VCF \
+<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf is the path to the recipient's annotated VCF \
+<DIRECTION OF THE MISMATCH> = 'rd' or 'dr', depending on the direction of the mismach \
 
 We provide a complete helper function
 		python ams_pipeline.py --help
@@ -171,13 +171,15 @@ We provide a complete helper function
 #### Multiple pairs <a name="multi_ams"></a>
 
 		cd src/
-		python multiprocess_ams.py -n %%NAME-RUN%% %%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf %%PATH-TO-THE-PAIR-LIST%%.csv %%DIRECTION OF THE MISMATCH%%
+		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
 
 Where :\
-%%NAME-RUN%% = \
-%%PATH-TO-THE-MERGED-ANNOTATED-FILE%%.vcf = \
-%%PATH-TO-THE-PAIR-LIST%%.csv = \
-%%DIRECTION OF THE MISMATCH%% = \
+<NAME-RUN> is the nqme of the run
+<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf is the path to the
+<PATH-TO-THE-PAIR-LIST>.csv is the path to the
+<DIRECTION OF THE MISMATCH> is the direction of the mismatch
+
+>Note : It is not possible to run different mismatches within the same command line.
 
 We provide a complete helper function
 		python multiprocess_ams.py --help
@@ -190,26 +192,15 @@ We provide a complete helper function
 
 ### Exploring the AMS table <a name="ams_table"></a>
 
-After the run is complete, have look at the **output/runs/-n %%NAME-RUN%%/** directory that was created.  
+After the run is complete, have look at the **output/runs/<NAME-RUN>/** directory that was created.  
 The directory is structured as followed :  
 1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a csv file.  
 2. the **plots/** subdirectory
 3. the **run_tables** subdirectory contains all the tables created during the run. 
 
-
-  
-We also annotated the tutorial file with VEP for the donor and recipient, `donor.vcf.gz` and `recipient.vcf.gz` respectively.
-
-Run the following command to estimate the AMS for this pair :  
-
-	python ams_pipeline.py -f -n allopipe_run -p test_pair ../tutorial/donor.vcf.gz ../tutorial/recipient.vcf.gz rd
-
-If you have the same AMS for both runs (it should be 49), it means your VEP annotation worked as expected !  
-
-### Exploring the AMS table <a name="ams_mismatches"></a>
-
 In the **run_tables/** directory, you can find the mismatches table that will give you direct information on the mismatched positions.  
 In this table, you can find the following information :  
+
 1. **VCF information**  
 	1. **CHROM (str)**: Chromosome of the variant
 	2. **POS (int)**: Position on the chromosome
@@ -220,7 +211,7 @@ In this table, you can find the following information :
 	7. **FORMAT_{x, y} (list)**: Format of the sample column post AlloPipe processing
 	8. **Sample_{x, y} (str)**: Sample information regarding the position. Note that the column name is the one provided in the original VCF
         - In the case of transplantation, Sample_x is the donor and Sample_y is the recipient
-        - In the case of oncogenetics, Sample_x is the tumor and Sample_y is the constitutional DNA
+ 
 
 2. **Sample information**
 	1. **GT_{x, y} (str)**: Predicted genotype of the sample
@@ -277,7 +268,6 @@ You will find 3 new subdirectories in the **test_run/** directory :
 2.	the **netMHCpan_out/** subdirectory contains all tables generated during the netMHCpan step.
 3.	the **aams_run_tables/** subdirectory contains all the other tables created during the run
 
->![tree_aams_run](tutorial/tree_aams_run.png)
 
 The AAMS value obtained with VEP v107 and netMHCpan4.1 is 34.
 
@@ -315,3 +305,14 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
  If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
+
+
+ 
+  
+We also annotated the tutorial file with VEP for the donor and recipient, `donor.vcf.gz` and `recipient.vcf.gz` respectively.
+
+Run the following command to estimate the AMS for this pair :  
+
+	python ams_pipeline.py -f -n allopipe_run -p test_pair ../tutorial/donor.vcf.gz ../tutorial/recipient.vcf.gz rd
+
+If you have the same AMS for both runs (it should be 49), it means your VEP annotation worked as expected !  
