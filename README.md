@@ -123,7 +123,12 @@ AlloPipe input files must be variant-annotated files.\
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  \
 	
-		vep --cache --assembly GRCh38 --offline --af_gnomade -i %%PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE%%.vcf -o %%PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE%%.vcf --vcf 
+		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --vcf 
+
+Where:\
+'''<GRChXX>''' is the version of the genome used to align the sequences.\
+'''<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf''' is the path to your file to annotate.\
+'''<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>''' is the path to the directory qnd the name of the ouput annotated file.\
 
 This command line works for individual VCF as well as multi-VCF. 
 Run this command for every file you want to input in AlloPipe: for individual VCF you will need to run the command twice (once for the donor's VCF and once for the recipient's VCF)
