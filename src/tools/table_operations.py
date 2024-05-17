@@ -782,42 +782,10 @@ def process_geno_hla(hla_dataframe):
     geno_hla_dict = {}
     for key in hla_dict.keys():
         pair = key.split("-")[0]
-        if "R2137-D0-N1" not in key and "R2137-R0-N1" not in key:
-            if pair not in geno_hla_dict.keys():
-                geno_hla_dict[pair] = hla_dict[key][0]
+        if pair not in geno_hla_dict.keys():
+            geno_hla_dict[pair] = hla_dict[key][0]
     geno_hla = list(geno_hla_dict.items())
     geno_hla = sorted(geno_hla,key=lambda x:int(''.join(filter(str.isdigit,x[0]))))
     geno_hla = [tup[1] for i,tup in enumerate(geno_hla)]
     return geno_hla
 
-
-# files_netmhc = [file for file in glob.glob("../../output/runs/VIP2/run_tables/netMHCpan_out/*.csv")]
-# files_pep = [file for file in glob.glob("../../output/runs/VIP2/run_tables/*pep_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.pkl")]
-# files_ams = [file for file in glob.glob("../../output/runs/VIP2/run_tables/*bed_merged_df_20_400_5_gq_20_0.8.tsv")]
-
-# print(files_ams)
-# ELR_thr = 2
-# files_pep = sorted(files_pep,key=lambda x: int(''.join(filter(str.isdigit, str(Path(x).name).split("_")[0]))))
-# files_ams = sorted(files_ams,key=lambda x: int(''.join(filter(str.isdigit, str(Path(x).name).split("_")[0]))))
-
-# print(files_pep)
-# print(files_ams)
-
-# for i in range(len(files_ams)):
-#     print(files_pep[i],files_ams[i])
-#     for netmhc in files_netmhc:
-#         if str(Path(netmhc).stem).split("-")[0] == str(Path(files_pep[i]).name).split("_")[0]:
-#             print(netmhc)
-#             netmhc_df,pep_df = clean_pep_df(netmhc,files_pep[i])
-#             merge_netmhc(netmhc_df,pep_df,files_ams[i],ELR_thr,pair)
-
-
-# file = "Twist_GIAB_hg38.bed"
-# genome = "chrom_sizes.txt"
-# for i in range(200,8200,200):
-#     os.system("bedtools slop -i {} -g {} -b {} > {}_{}.bed".format(file,genome,i,file.split(".")[0],i))
-
-# for file in files:
-#     sorted_file = "{}_sorted.bed".format(file.split(".")[0])
-#     os.system("sort -V -k1,1 -k2,2n {} > {}".format(file,sorted_file))
-#     os.system("bedtools merge -i {} > {}_merged.bed".format(sorted_file,file.split(".")[0]))
