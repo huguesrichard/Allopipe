@@ -142,10 +142,10 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 ## Run the AlloPipe workflow <a name="run"></a>
 
 <br/>
-**What does Allo-Count perform ?**
+
+**What does Allo-Count perform?**
 
 From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).
-
 The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
 
 <br/>
