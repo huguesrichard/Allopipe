@@ -311,7 +311,7 @@ Where:\
 	```<TEST-RUN>``` is the name of the run\
 	```<TEST-PAIR>``` is the name of the pair \
  	```<LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED>``` is the length of peptided to be imputed \
-	```HLA-TYPING``` is the HLA typing e.g. HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
+	```<HLA-TYPING>``` is the HLA typing e.g. HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 
 
 #### Multiple pairs <a name="multi_aams"></a>
@@ -366,3 +366,21 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
  If your AMS returns 49, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
+
+ Finally, to get your af-AMS and related table, run:
+ 
+ cd src/
+	gzip -d <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz
+ 	gzip -d <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz
+  	gzip -d <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz
+	python aams_pipeline.py -M <PATH-TO-MISMATCH-TABLE>.tsv \
+ 	-T <PATH-TO-TRANSCRIPT-TABLE>.tsv\
+  	-E <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz \
+   	-P <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz \
+	-R <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz \
+	-n <TEST-RUN> -p <TEST-PAIR> -l <LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED> --el_rank <THRESHOLD-FOR-EL> \
+	 -a <HLA-TYPING> 
+
+Ir your af-AMS returns 34, you are all set !
+
+You can now enjoy AlloPipe. We will be happy of any feedback !
