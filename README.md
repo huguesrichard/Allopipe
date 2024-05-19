@@ -144,8 +144,6 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
-<br/>
-
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
@@ -190,9 +188,6 @@ Note that a complete helper function is provided
 		python ams_pipeline.py --help
   
 
-
-
-
 <br/>
 
 
@@ -205,10 +200,10 @@ It is possible to launch Allo-Count for each pair of
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
 
 Where :\
-<NAME-RUN> is the name of the run
-<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf is the path to the annotated merged VCF file
-<PATH-TO-THE-PAIR-LIST>.csv is the path to the list pairing the sample (template provided in the tutorial)
-<DIRECTION OF THE MISMATCH> is the direction of the mismatch as previously described
+```<NAME-RUN>``` is the name of the run
+```<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf``` is the path to the annotated merged VCF file
+```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)
+```<DIRECTION OF THE MISMATCH>``` is the direction of the mismatch as previously described
 
 >Note : It is not possible to run different mismatches within the same command line.
 
