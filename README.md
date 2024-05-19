@@ -198,25 +198,33 @@ Note that a complete helper function is provided
 
 #### Multiple pairs <a name="multi_ams"></a>
 
+It is possible to launch Allo-Count for each pair of 
+
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
 
 Where :\
-<NAME-RUN> is the nqme of the run
-<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf is the path to the
-<PATH-TO-THE-PAIR-LIST>.csv is the path to the
-<DIRECTION OF THE MISMATCH> is the direction of the mismatch
+<NAME-RUN> is the name of the run
+<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf is the path to the annotated merged VCF file
+<PATH-TO-THE-PAIR-LIST>.csv is the path to the list pairing the sample (template provided in the tutorial)
+<DIRECTION OF THE MISMATCH> is the direction of the mismatch as previously described
 
 >Note : It is not possible to run different mismatches within the same command line.
 
 We provide a complete helper function
+
 		python multiprocess_ams.py --help
 
 
->Normalisation
->XX
->XX
->(see Appendix2: Normalisation)
+<br/>
+
+> **Normalisation**
+> 
+> To avoid artefacts related to the quality of the sequencing that might lead to AMS lower or higher than expected, we provide to the user the ref/commun ratio.
+> (See appendix 2: normalisation)
+
+<br/>
+
 
 ### Exploring the AMS table <a name="ams_table"></a>
 
@@ -267,9 +275,6 @@ In this table, you can find the following information :
 
 #### Simple pair <a name="simple_aams"></a>
 
-
-#### Multiple pairs <a name="multi_aams"></a>
-
 Once the AMS run is complete, provided you have the class I HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
 To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal :  
 
@@ -285,7 +290,11 @@ To run the AAMS pipeline of AlloPipe on the previous example, go to its root dir
 	-R ../tutorial/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv \
 	-n test_run -p test_pair -l 9 --el_rank 2\
 	 -a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
-```
+
+
+#### Multiple pairs <a name="multi_aams"></a>
+
+To be implemeted
 
 
 ### Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
