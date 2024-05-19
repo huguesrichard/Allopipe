@@ -279,7 +279,7 @@ In this table, you can find the following information :
 #### Simple pair <a name="simple_aams"></a>
 
 Once the AMS run is complete, provided you have the HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
-To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal :  
+To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal:  
 
 	cd src/
 	gzip -d <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz
@@ -293,6 +293,10 @@ To run the AAMS pipeline of AlloPipe on the previous example, go to its root dir
 	-n <TEST-RUN> -p <TEST-PAIR> -l <LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED> --el_rank <THRESHOLD-FOR-EL> \
 	 -a <HLA-TYPING> 
 
+Where:
+	```<PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz``` is
+	```<PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz``` is 
+	```<PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz``` is 
 
   HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 
