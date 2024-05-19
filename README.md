@@ -132,7 +132,7 @@ Run the following command to annotate you VCF file(s) with VEP.\
 Where:\
 ```<GRChXX>``` is the version of the genome used to align the sequences.\
 ```<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
-```<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>``` is the path to the directory qnd the name of the ouput annotated file.\
+```<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>``` is the path to the directory and the name of the ouput annotated file.\
 
 This command line works for individual VCF as well as multi-VCF. 
 Run this command for every file you want to input in AlloPipe: for individual VCF you will need to run the command twice (once for the donor's VCF and once for the recipient's VCF)
@@ -146,6 +146,9 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 <br/>
 
+
+### Launch Allo-Count  <a name="ams_run"></a>
+
 **What does Allo-Count perform?**
 
 From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).
@@ -154,12 +157,10 @@ The curated VCF files are then queried for the amino acid information to assess 
 
 <br/>
 
-### Launch Allo-Count  <a name="ams_run"></a>
-
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
-
 
 #### Single pair<a name="simple_ams"></a>
+
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
 
 		cd src/
 		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
