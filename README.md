@@ -276,6 +276,16 @@ In this table, you can find the following information :
 
 <br/>
 
+**What does Allo-Affinity perform?**
+
+From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructes the set of peptides that are different between the donor and the recipient.
+**The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides present by the donor but absent from the recipient will be reconstructed.
+In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides present by the recipient but absent from the donor will be reconstructed.
+
+Allo-Affinity prepares the files that are required by NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) to finally impute the affinity of those reconstructed peptides towards the HLA peptide groove.
+
+<br/>
+
 #### Simple pair <a name="simple_aams"></a>
 
 Once the AMS run is complete, provided you have the HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
