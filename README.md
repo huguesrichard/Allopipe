@@ -127,9 +127,9 @@ Run the following command to annotate you VCF file(s) with VEP.\
 		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --vcf 
 
 Where:\
-'''<GRChXX>''' is the version of the genome used to align the sequences.\
-'''<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf''' is the path to your file to annotate.\
-'''<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>''' is the path to the directory qnd the name of the ouput annotated file.\
+```<GRChXX>``` is the version of the genome used to align the sequences.\
+```<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
+```<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>``` is the path to the directory qnd the name of the ouput annotated file.\
 
 This command line works for individual VCF as well as multi-VCF. 
 Run this command for every file you want to input in AlloPipe: for individual VCF you will need to run the command twice (once for the donor's VCF and once for the recipient's VCF)
@@ -141,6 +141,10 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
+<br/>
+**What does Allo-Count perform ?**
+From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default). The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd). 
+<br/>
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
@@ -155,18 +159,19 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 <br/>
 
 Where :\
-<NAME-RUN> is the name of the run\
-<NAME-OF-THE-PAIR> is the name of the pair\
-<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf is the path to the donor's annotated VCF \
-<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf is the path to the recipient's annotated VCF \
-<DIRECTION OF THE MISMATCH> = 'rd' or 'dr', depending on the direction of the mismach \
+```<NAME-RUN>``` is the name of the run\
+```<NAME-OF-THE-PAIR>``` is the name of the pair\
+```<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
+```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
+```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismach \
 
-We provide a complete helper function
-		python ams_pipeline.py --help
+Note that a complete helper function is provided
+		```python ams_pipeline.py --help```
 
 >Direction of the mismatch
->XX
->XX
+>The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient) or that are present in the recipient but absent in the donor (recipient-to-donor).
+>Donor-to-recipient count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in solid organ transplantation.
+>Recipient-to-donor count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in allogeneic haematopoietic stem cell transplantation 
 >(see Appendix1: calculation method of AlloPipe)
 
 
