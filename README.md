@@ -270,26 +270,31 @@ In this table, you can find the following information :
 	2. **mismatch (int)**: number of mismatches in the diff field
 	3. **mismatch_type (str)**: type of mismatch (homozygous, heterozygous)
 
+<br/>
 
 ### Launch Allo-Affinity <a name="aams_run"></a>
 
+<br/>
+
 #### Simple pair <a name="simple_aams"></a>
 
-Once the AMS run is complete, provided you have the class I HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
+Once the AMS run is complete, provided you have the HLA typing of your samples, you can run a second set of commands to get a filtration of the peptides contributing to the score, using NetMHCpan.  
 To run the AAMS pipeline of AlloPipe on the previous example, go to its root directory and run the following commands in the terminal :  
 
-```
 	cd src/
-	gzip -d ../tutorial/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa.gz
- 	gzip -d ../tutorial/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa.gz
-  	gzip -d ../tutorial/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv.gz
-	python aams_pipeline.py -M ../output/runs/test_run/run_tables/test_pair_test_run_mismatches_20_400_5_gq_20_0.8_bl_3.tsv \
- 	-T ../output/runs/test_run/run_tables/test_pair_test_run_transcripts_pair_codons_20_400_5_gq_20_0.8_bl_3.tsv\
-  	-E ../tutorial/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa \
-   	-P ../tutorial/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa \
-	-R ../tutorial/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv \
-	-n test_run -p test_pair -l 9 --el_rank 2\
-	 -a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
+	gzip -d <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz
+ 	gzip -d <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz
+  	gzip -d <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz
+	python aams_pipeline.py -M <PATH-TO-MISMATCH-TABLE>.tsv \
+ 	-T <PATH-TO-TRANSCRIPT-TABLE>.tsv\
+  	-E <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz \
+   	-P <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz \
+	-R <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz \
+	-n <TEST-RUN> -p <TEST-PAIR> -l <LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED> --el_rank <THRESHOLD-FOR-EL> \
+	 -a <HLA-TYPING> 
+
+
+  HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 
 
 #### Multiple pairs <a name="multi_aams"></a>
