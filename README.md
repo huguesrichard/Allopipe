@@ -125,7 +125,7 @@ AlloPipe input files must be variant-annotated files.\
 *We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
 Run the following command to annotate you VCF file(s) with VEP.\
-**All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  \
+**All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 	
 		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --vcf 
 
@@ -173,15 +173,21 @@ Where :\
 ```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
 ```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismatch
 
-Note that a complete helper function is provided
 
-		```python ams_pipeline.py --help```
-  
-
+<br/>
 >**Direction of the mismatch**\
 >The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
 >*Donor-to-recipient* count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
 >*Recipient-to-donor* count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
+
+<br/>
+
+Note that a complete helper function is provided
+
+		python ams_pipeline.py --help
+  
+
+
 
 
 <br/>
