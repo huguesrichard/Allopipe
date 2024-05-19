@@ -142,9 +142,12 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 ## Run the AlloPipe workflow <a name="run"></a>
 
 <br/>
-**What does Allo-Count perform ?**\
-From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).\
-The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).\
+**What does Allo-Count perform ?**
+
+From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).
+
+The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
+
 <br/>
 
 ### Launch Allo-Count  <a name="ams_run"></a>
@@ -164,7 +167,7 @@ Where :\
 ```<NAME-OF-THE-PAIR>``` is the name of the pair\
 ```<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
 ```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
-```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismach \
+```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismatch
 
 Note that a complete helper function is provided
 		```python ams_pipeline.py --help```
