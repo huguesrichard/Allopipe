@@ -199,7 +199,7 @@ It is possible to launch Allo-Count for each pair of
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
 
-Where :
+Where:\
 ```<NAME-RUN>``` is the name of the run\
 ```<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf``` is the path to the annotated merged VCF file\
 ```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)\
@@ -274,7 +274,7 @@ In this table, you can find the following information :
 
 **What does Allo-Affinity perform?**
 
-From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructes the set of peptides that are different between the donor and the recipient.
+From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient.
 
 **The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides present by the donor but absent from the recipient will be reconstructed.
 In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides present by the recipient but absent from the donor will be reconstructed.
