@@ -142,8 +142,9 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 ## Run the AlloPipe workflow <a name="run"></a>
 
 <br/>
-**What does Allo-Count perform ?**
-From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default). The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd). 
+**What does Allo-Count perform ?**\
+From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).\
+The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd). 
 <br/>
 
 ### Launch Allo-Count  <a name="ams_run"></a>
@@ -168,11 +169,10 @@ Where :\
 Note that a complete helper function is provided
 		```python ams_pipeline.py --help```
 
->Direction of the mismatch
->The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient) or that are present in the recipient but absent in the donor (recipient-to-donor).
->Donor-to-recipient count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in solid organ transplantation.
->Recipient-to-donor count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in allogeneic haematopoietic stem cell transplantation 
->(see Appendix1: calculation method of AlloPipe)
+>Direction of the mismatch\
+>The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient) or that are present in the recipient but absent in the donor (recipient-to-donor).\
+>Donor-to-recipient count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in solid organ transplantation.\
+>Recipient-to-donor count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in allogeneic haematopoietic stem cell transplantation.\
 
 
 <br/>
