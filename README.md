@@ -175,6 +175,10 @@ Where :\
 
 
 <br/>
+
+> **_VEP annotation: On-line or command line installation_**\
+> VEP annotation can be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.
+> 
 > **Direction of the mismatch**\
 > The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).
 > *Donor-to-recipient* count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.
