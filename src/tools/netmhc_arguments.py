@@ -9,14 +9,15 @@ import re
 from pathlib import Path
 from tools import arguments_handling
 
-def check_if_valid_k(arg):
+def check_if_valid_k(initial_args, arg):
     """
     Returns the peptide size if the value is valid
 
     Parameters:
-            arg (int): positive integer between 8 and 14
+            initial_args (ArgumentParser object): parser object
+            arg (int): positive integer between 8 and 14 (class 1) or not less than 9 (class 2)
     Returns:
-            arg (int): positive integer between 8 and 14
+            arg (int): positive integer between 8 and 14 (class 1) or not less than 9 (class 2)
     """
     try:
         ls_args = arg.split(",")
@@ -26,8 +27,13 @@ def check_if_valid_k(arg):
             arg = int(arg)  
             if arg < 0:
                 raise ValueError(f"{arg} is not a positive integer")
-            if not 8 <= arg <= 14 :
-                raise ValueError(f"A length of peptide of {arg} is not supported by netMHCpan")
+            if initial_args.class_type == 1:
+                if not 8 <= arg <= 14 :
+                    raise ValueError(f"A length of peptide of {arg} is not supported by netMHCpan (should be between 8 and 14)")
+            else:
+                if not arg >= 9 :
+                    raise ValueError(f"A length of peptide of {arg} is not supported by netMHCIIpan (should not be less than 9)")
+
     except ValueError as err:
         raise argparse.ArgumentTypeError(f"{err}")
     return arg
@@ -61,28 +67,43 @@ def check_if_existing_run_name(parser,arg):
         parser.error(f"No such file or directory : {arg}")
     return arg
 
-def check_hla_i_format(parser,arg):
+def check_hla_format(initial_args, parser,arg):
     """
     Returns the list of HLA genes if they are valid
 
     Parameters:
+            initial_args (ArgumentParser object): parser object
             parser (CustomParser Object): parser object
             arg (str): list of HLA genes
     Returns:
             arg (str): list of HLA genes
     """
-    if not arg.isalnum() and not ("," in arg or "*" in arg):
-        parser.error(f"{arg} contains non accepted characters")
+    if initial_args.class_type == 1:
+        if not arg.isalnum() and not ("," in arg or "*" in arg):
+            parser.error(f"{arg} contains non accepted characters")
+    else:
+        if not arg.isalnum() and not ("," in arg or "_" in arg):
+            parser.error(f"{arg} contains non accepted characters")
     try:
         ls_args = arg.split(",")
-        if len(ls_args) != 6:
+        if len(ls_args) > 6:
             parser.error(f"The number of provided HLA class I genes is incorrect")
-        if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2}",key) for key in ls_args):
-            raise ValueError(f"The list {arg} does not comply to the expected format")
+        if initial_args.class_type == 1:
+            if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2}",key) for key in ls_args):
+                raise ValueError(f"The list {arg} does not comply to the expected format")
+        else:
+            if not all(re.match(r"D[P-R][A-B][1-9]\_?\d{2}:\d{2}",key) for key in ls_args):
+                raise ValueError(f"The list {arg} does not comply to the expected format")
     except ValueError as err:
         raise argparse.ArgumentTypeError(f"{err}")
-    if "*" in arg:
-        arg = "".join(arg.split("*"))
+    
+    if initial_args.class_type == 1:        
+        if "*" in arg:
+            arg = "".join(arg.split("*"))
+    else:
+        if "_" in arg:
+            arg = "".join(arg.split(":"))
+
     return arg
 
 def check_if_valid_float(parser,arg):
@@ -130,37 +151,44 @@ def netmhc_arguments():
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument(
-        "-n",
-        "--run_name",
+    parser.add_argument("-n", "--run_name",
         help="name of the ams pipeline ran previously",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_run_name(parser,x))
-    parser.add_argument(
-        "-p",
-        "--pair",
+    parser.add_argument("-p", "--pair",
         help="name of the pair",
         action=arguments_handling.UniqueStore,
         nargs="?",
         default="input_pair",
         const="input_pair",
         type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
+        
+    # netMHCpan class
+    parser.add_argument("-c", "--class_type",
+        help="class type: class 1 (netMHCpan); class 2 (netMHCIIpan)",
+        choices=[1, 2],
+        default=1,
+        type=int,
+        )
+    
+    # intermediate arg parsing to consider classes 1 & 2
+    initial_args, _ = parser.parse_known_args()
+        
     # netMHCpan arg
-    parser.add_argument("-l",
-        "--length",
-        help="peptide length, default is 9, a list of values separated by commas is accepted",
+    parser.add_argument("-l", "--length",
+        help="peptide length, default is 9 (class 1) or 15 (class 2), a list of values separated by commas is accepted",
         nargs="?",
-        default=9,
-        const=9,
-        type=lambda x: check_if_valid_k(x))
+        default=9 if initial_args.class_type == 1 else 15,
+        const=  9 if initial_args.class_type == 1 else 15,
+        type=lambda x: check_if_valid_k(initial_args, x))
     # netMHCpan arg
-    parser.add_argument("-a",
-        "--hla_typing",
+    parser.add_argument("-a", "--hla_typing",
         help="comma separated list of HLA genes",
         required=True,
-        type=lambda x: check_hla_i_format(parser,x)
+        type=lambda x: check_hla_format(initial_args, parser,x)
         )
+    # netMHCpan arg
     parser.add_argument("-e","--el_rank",
         help=r"%%EL-rank filtration, all values above the given value are filtered out",
         default=100,
