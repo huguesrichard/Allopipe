@@ -108,7 +108,7 @@ As we recommend to create a conda environment to ensure a robust installation of
 To download and install the AlloPipe workflow, first clone the repository from git.\
 *(You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic))*
 
-We then recommend to create a conda environment dedicated to the AlloPipe workflow. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in the AlloPipe environment.
+We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in the AlloPipe environment.
 
 The following command lines will perform the above-mentioned steps:
 
@@ -158,7 +158,7 @@ The curated VCF files are then queried for the amino acid information to assess 
 
 #### Single pair<a name="simple_ams"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(don't forget to activate your conda environment)* :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(**don't forget to activate your conda environment!**)* :  
 
 		cd src/
 		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
