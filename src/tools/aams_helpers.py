@@ -79,13 +79,11 @@ def filter_on_refseq(ams_transcripts, refseq_transcripts_path):
 
 def intersect_positions(transcripts_pair, transcripts_df):
     positions = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
-    print(len(transcripts_pair), len(transcripts_df))
     transcripts_pair = pd.merge(
         transcripts_df, transcripts_pair, how="inner", on="Transcript_id"
     )
     positions_refseq = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
     merged_positions = pd.merge(positions, positions_refseq, how="outer")
-    print(len(positions), len(positions_refseq), len(merged_positions))
     return transcripts_pair
 
 def aa_ref(transcripts_pair):
@@ -366,28 +364,29 @@ def build_peptides(aams_run_tables,str_params,args):
     return fasta_path,pep_indiv_path
 
 
-def run_netmhcpan_class_1(fasta_path,netmhc_dir,args):
-    print("Entering netMHCpan handler : running netMHCpan will last a long time")
+
+def run_netmhcpan(fasta_path,netmhc_dir,args):
+    netmhc_print = {
+        1: "netMHCpan",
+        2: "netMHCIIpan"
+    }[args.class_type]
+    print(f"Entering {netmhc_print} handler : running {netmhc_print} will last a long time")
     netmhc_out = os.path.join(netmhc_dir,args.pair + ".out")
     netmhc_run_output = os.path.join(netmhc_dir,args.pair + "_full_run_information.txt")
-    print("class 1")
-    os.system(f"netMHCpan -BA -f {fasta_path} -inptype 0 -l {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
+    length_argname = {
+        1: "-l",
+        2: "-length"
+    }[args.class_type]
+    os.system(f"{netmhc_print} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
     return netmhc_out
-    
-def run_netmhcpan_class_2(fasta_path,netmhc_dir,args):
-    print("Entering netMHCIIpan handler : running netMHCIIpan will last a long time")
-    netmhc_out = os.path.join(netmhc_dir,args.pair + ".out")
-    netmhc_run_output = os.path.join(netmhc_dir,args.pair + "_full_run_information.txt")
-    print("class 2")
-#    os.system(f"netMHCIIpan -BA -f {fasta_path} -inptype 0 -length {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
-    return netmhc_out
+
 
 # get the peptides table ready to merge
 def clean_pep_df(netmhc_table, pep_path,args):
     """
     Returns
     Parameters :
-            netmhc_table (pd.DataFrame): NetMHCpan handled table (check netmhc_t ables_handler.py)
+            netmhc_table (pd.DataFrame): NetMHCpan handled table (check netmhc_tables_handler.py)
             pep_path (str): path to the peptides pickle file 
             args (ArgumentParser object): parser object
     Return: 
@@ -441,11 +440,7 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams
         1: "EL_Rank",
         2: "Rank"
     }
-    print(merged_aams)
-    print(class_type)
-    print(ELR_thr)
-    merged_aams = merged_aams[merged_aams[column_to_filter[class_type] <= ELR_thr]]
-    print(merged_aams)
+    merged_aams = merged_aams[merged_aams[column_to_filter[class_type]] <= ELR_thr]
     mismatch_count = merged_aams["mismatch"].sum()
     aams_df = pd.DataFrame([[pair, mismatch_count]], columns=["pair", "AAMS"])
     aams_dir = os.path.join(aams_path,f"AAMS_{str_params}")
@@ -467,6 +462,4 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams
     merged_aams.to_csv(
         os.path.join(aams_run_tables, f"{pair}_mismatches_aams_EL_{ELR_thr}.tsv"), sep="\t", index=False
     )
-    import sys
-    sys.exit()
     return mismatch_count

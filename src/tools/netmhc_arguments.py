@@ -78,24 +78,24 @@ def check_hla_format(initial_args, parser,arg):
     Returns:
             arg (str): list of HLA genes
     """
-    if initial_args.class_type == 1:
-        if not arg.isalnum() and not ("," in arg or "*" in arg):
-            parser.error(f"{arg} contains non accepted characters")
-    else:
-        if not arg.isalnum() and not ("," in arg or "_" in arg):
-            parser.error(f"{arg} contains non accepted characters")
-    try:
-        ls_args = arg.split(",")
-        if len(ls_args) > 6:
-            parser.error(f"The number of provided HLA class I genes is incorrect")
-        if initial_args.class_type == 1:
-            if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2}",key) for key in ls_args):
-                raise ValueError(f"The list {arg} does not comply to the expected format")
-        else:
-            if not all(re.match(r"D[P-R][A-B][1-9]\_?\d{2}:\d{2}",key) for key in ls_args):
-                raise ValueError(f"The list {arg} does not comply to the expected format")
-    except ValueError as err:
-        raise argparse.ArgumentTypeError(f"{err}")
+#    if initial_args.class_type == 1:
+#        if not arg.isalnum() and not ("," in arg or "*" in arg):
+#            parser.error(f"{arg} contains non accepted characters")
+#    else:
+#        if not arg.isalnum() and not ("," in arg or "_" in arg):
+#            parser.error(f"{arg} contains non accepted characters")
+#    try:
+#        ls_args = arg.split(",")
+#        if len(ls_args) > 6:
+#            parser.error(f"The number of provided HLA class I genes is incorrect")
+#        if initial_args.class_type == 1:
+#            if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2}",key) for key in ls_args):
+#                raise ValueError(f"The list {arg} does not comply to the expected format")
+#        else:
+#            if not all(re.match(r"D[P-R][A-B][1-9]\_?\d{2}:\d{2}",key) for key in ls_args):
+#                raise ValueError(f"The list {arg} does not comply to the expected format")
+#    except ValueError as err:
+#        raise argparse.ArgumentTypeError(f"{err}")
     
     if initial_args.class_type == 1:        
         if "*" in arg:
