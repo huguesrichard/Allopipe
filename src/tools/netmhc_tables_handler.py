@@ -17,11 +17,11 @@ def find_subsets(netmhc_file,args):
     # loop through columns
     for col_i in range(len(column_names)):
         # "HLA" for class 1; "DRB" (e.g.) for class 2
-        hla_letters = args.hla_typing[0:3]
+        hla_letters = [hla[:3] for hla in args.hla_typing.split(",")]
         # check if a HLA column has not yet been encountered, the columns before the first HLA column are not part of the subsets
         if first :
             # check if the column is a HLA column
-            if hla_letters in column_names[col_i]:
+            if any([hla_letter in column_names[col_i] for hla_letter in hla_letters]):
                 # set first to false
                 first = False
                 # add the column name to the sub list
@@ -34,7 +34,7 @@ def find_subsets(netmhc_file,args):
             break
         else:
             # test if HLA in column name
-            if hla_letters in column_names[col_i]:
+            if any([hla_letter in column_names[col_i] for hla_letter in hla_letters]):
                 # append subset to subsets list (beginning of new subset means end of previous one)
                 subsets.append(sub)
                 # reset subset list
@@ -53,7 +53,6 @@ def format_netMHCpan(netmhc_table,subsets,args):
     common_columns.columns = common_columns.iloc[0]
     # drop the first row after the column names switch
     common_columns = common_columns.drop(0)
-    print(common_columns)
     # loop through subsets columns
     for sub in subsets:
         # create dataframe containing associated columns
