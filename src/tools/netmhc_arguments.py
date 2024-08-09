@@ -78,24 +78,26 @@ def check_hla_format(initial_args, parser,arg):
     Returns:
             arg (str): list of HLA genes
     """
-#    if initial_args.class_type == 1:
-#        if not arg.isalnum() and not ("," in arg or "*" in arg):
-#            parser.error(f"{arg} contains non accepted characters")
-#    else:
-#        if not arg.isalnum() and not ("," in arg or "_" in arg):
-#            parser.error(f"{arg} contains non accepted characters")
-#    try:
-#        ls_args = arg.split(",")
-#        if len(ls_args) > 6:
-#            parser.error(f"The number of provided HLA class I genes is incorrect")
-#        if initial_args.class_type == 1:
-#            if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2}",key) for key in ls_args):
-#                raise ValueError(f"The list {arg} does not comply to the expected format")
-#        else:
-#            if not all(re.match(r"D[P-R][A-B][1-9]\_?\d{2}:\d{2}",key) for key in ls_args):
-#                raise ValueError(f"The list {arg} does not comply to the expected format")
-#    except ValueError as err:
-#        raise argparse.ArgumentTypeError(f"{err}")
+    if initial_args.class_type == 1:
+        if not arg.isalnum() and not ("," in arg or "*" in arg):
+            parser.error(f"{arg} contains non accepted characters")
+    else:
+        if not arg.isalnum() and not ("," in arg or "-" in arg or "_" in arg):
+            parser.error(f"{arg} contains non accepted characters")
+    try:
+        ls_args = arg.split(",")
+        if len(ls_args) > 6:
+            parser.error(f"The number of provided HLA genes is incorrect")
+        if initial_args.class_type == 1:
+            if not all(re.match(r"HLA\-[A-C]\*?\d{2}\:\d{2,3}",key) for key in ls_args):
+                raise ValueError(f"The list {arg} does not comply to the expected format")
+        else:
+            if not all(re.match(r"DRB[1345]\_\d{4,5}.?" #DRB
+                                r"|"
+                                r"HLA-D[PQ]A1\d{4}-D[PQ]B1\d{4,5}",key) for key in ls_args): # DP/DQ (A+B)
+                raise ValueError(f"The list {arg} does not comply to the expected format")
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"{err}")
     
     if initial_args.class_type == 1:        
         if "*" in arg:
@@ -126,27 +128,27 @@ def netmhc_arguments():
         usage="python %(prog)s [options]",
         description="Compute the AAMS for a pair of individuals"
         )
-    parser.add_argument("-M","--merged",
+    parser.add_argument("-M", "--merged",
         help="path of the pair merged file",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-T","--transcripts",
+    parser.add_argument("-T", "--transcripts",
         help="path of the pair transcripts file",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-E","--ensembl_transcripts",
+    parser.add_argument("-E", "--ensembl_transcripts",
         help="path of the ensembl transcripts file",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-P","--peptides",
+    parser.add_argument("-P", "--peptides",
         help="path of the ensembl peptides file",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-R","--refseq",
+    parser.add_argument("-R", "--refseq",
         help="path of the ensembl refseq transcripts file",
         action=arguments_handling.UniqueStore,
         required=True,
@@ -189,7 +191,7 @@ def netmhc_arguments():
         type=lambda x: check_hla_format(initial_args, parser,x)
         )
     # netMHCpan arg
-    parser.add_argument("-e","--el_rank",
+    parser.add_argument("-e", "--el_rank",
         help=r"%%EL-rank filtration, all values above the given value are filtered out",
         default=100,
         type=lambda x: check_if_valid_float(parser,x)
