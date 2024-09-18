@@ -227,7 +227,7 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
             "_", expand=True
         )
     df_indiv = df_indiv[~df_indiv["GT"].str.contains(r"\.")]
-    # some positions are annotated 0 or 1 and AD field looks like it should be 0/0 and 1/1
+    # some positions are annotated 0 or 1 and GT field looks like it should be 0/0 and 1/1
     df_indiv["GT"] = df_indiv["GT"].replace("0", "0/0")
     df_indiv["GT"] = df_indiv["GT"].replace("1", "1/1")
     df_indiv = df_indiv.dropna(subset=["GT"])
@@ -237,7 +237,7 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     # giab v1.3 #
     # #############
     df_indiv = df_indiv[df_indiv["GQ"].astype(float) > min_gq]
-    # filter REF calls with higher length than 3, value should be selected in cmd line instead of written manually here
+    # filter REF calls
     ###############
     # legacy v1.2 #
     ###############
@@ -265,7 +265,7 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     ###############
     subset["AD"] = subset["AD"].astype(int)
     subset = subset[subset["AD"] >= min_ad]
-    # filter ALT longer than threshold (here 3), should also be selected in cmd line
+    # filter ALT
     subset["ALT_length"] = np.where(
         subset["GT"] == 0,
         0,
@@ -292,7 +292,6 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     subset = pd.merge(subset, sub, how="outer", on=["CHROM", "POS"])
     df_indiv = pd.merge(df_indiv, sub, how="outer", on=["CHROM", "POS"])
     df_indiv = df_indiv.dropna(subset=["DP"])
-    print("reads counts complete")
     return df_indiv, subset
 
 
@@ -315,12 +314,11 @@ def filter_on_depth(df_indiv, subset, min_dp, max_dp):
     ###############
     df_indiv = df_indiv[df_indiv["DP"].between(min_dp, max_dp)]
     subset = subset[subset["DP"].between(min_dp, max_dp)]
-    print("filtering on depth complete")
     return df_indiv, subset
 
 def convert(df_indiv, subset, homozygosity_threshold):
     """
-    Returns the dataframe of the individual, after filtration replacing the GT codes of the heterozygous positions that were above the threshold (symmetric)
+    Returns the dataframe of the individual, after filtration replacing the GT codes of the heterozygous positions that were above the threshold (symmetric) => converting ambiguous heterozygous positions
                     Parameters :
                                     df_indiv (pd.DataFrame): dataframe of the individual
                                     subset (pd.DataFrame): subset associated to the dataframe
@@ -345,29 +343,22 @@ def convert(df_indiv, subset, homozygosity_threshold):
     )
     # compute allelic ratio
     subset["ratio"] = subset["AD"].astype(int) / subset["DP"]
-    # keep only rows where the ratio is higher than the threshold
-    subset = subset[subset["ratio"] >= 1 - homozygosity_threshold]
-    # change the TYPE column of the rows with ratio < threshold to homozygous
+    # keep only rows where the ratio is higher than (1 - the threshold)
+    subset = subset[subset["ratio"] >= 1 - homozygosity_threshold]    
+    # change the TYPE column of the rows with ratio >= threshold to homozygous
     subset.loc[
         ~(subset[["CHROM", "POS"]].duplicated(keep=False))
-        & (subset["ratio"].between(0.8, 1, inclusive="left")),
+        & (subset["ratio"].between(homozygosity_threshold, 1, inclusive="left")),
         "TYPE",
     ] = "homozygous"
     subset.loc[
         (subset["ratio"] == 1) & (subset["TYPE"] == "heterozygous"), "TYPE"
     ] = "homozygous"
     type_subset = subset.groupby(["CHROM", "POS"], as_index=False)["TYPE"].first()
-    # WIP
-    if len(type_subset) == len(df_indiv):
-        df_indiv = pd.merge(df_indiv, type_subset, on=["CHROM", "POS"], how="outer")
-        df_indiv = df_indiv.drop("TYPE_x", axis=1)
-        df_indiv = df_indiv.rename({"TYPE_y": "TYPE"}, axis=1)
-    else:
-        print("different length")
-        print(len(type_subset), len(df_indiv))
-    # this might be better
-    # df_indiv = pd.merge(df_indiv,type_subset,how="outer",on=["CHROM","POS"])
-    print("converting ambiguous heterozygous positions complete")
+    # include above changes in individual df
+    df_indiv = pd.merge(df_indiv, type_subset, on=["CHROM", "POS"], how="outer")
+    df_indiv = df_indiv.drop("TYPE_x", axis=1)
+    df_indiv = df_indiv.rename({"TYPE_y": "TYPE"}, axis=1)
     return df_indiv
 
 
@@ -476,17 +467,20 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, format
         vep_conseq_infos = parsing_functions.worst_consequences_parser(
             consequences_path
         )
+        # same chr format for merge
+        vep_conseq_infos["CHROM"] = vep_conseq_infos["CHROM"].str.replace("chr", "")
+        vep_conseq_infos["POS"] = vep_conseq_infos["POS"].astype(int)
         df_indiv = pd.merge(
             df_indiv, vep_conseq_infos, how="inner", on=["CHROM", "POS"]
         )
         df_indiv["aa_vcf"] = df_indiv["aa_REF"] + "/" + df_indiv["aa_ALT"]
         df_indiv[["aa_REF", "aa_ALT"]] = df_indiv[["aa_REF_vep", "aa_ALT_vep"]]
-        print("Worst consequences")
+        print("Running with XXX consequences")
     else:
         # remove above vep_infos_parser ?
         # parse all consequences VEP information and add to dataframe
         # df_indiv = parsing_functions.vep_infos_parser(df_indiv,aa_vep_index)
-        print("All consequences")
+        print("Running with all consequences")
     # update dataframe with aa ref and aa alt from VEP info
     df_indiv = get_aa_indiv(df_indiv)
     # decide on multiple gnomad
@@ -514,11 +508,9 @@ def merge_dfs(df_donor, df_recipient, orientation):
                                     opposite (str): opposite to the reference
     """
     if orientation == "dr":
-        merge_type = "left"
         side = "x"
         opposite = "y"
     else:
-        merge_type = "right"
         side = "y"
         opposite = "x"
     # merge dataframe from 2 indivs on chosen columns, keeps rows in common
@@ -526,7 +518,7 @@ def merge_dfs(df_donor, df_recipient, orientation):
         pd.merge(
             df_donor,
             df_recipient,
-            how=merge_type,
+            how="inner",
             on=["CHROM", "POS", "REF", "ALT", "aa_REF", "aa_ALT"],
         ),
         side,
