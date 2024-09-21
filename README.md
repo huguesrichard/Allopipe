@@ -80,26 +80,26 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
 
-2. Some specific
+2. [Specific version of some tools](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) we advise to store in a dedicated conda environment 
    
 3. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v110
 > **_VEP annotation: On-line or command line installation_**\
-> VEP annotation can be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.
+> VEP annotation can be done using the online tool or by downloading the command line tool.
 > 
 >  - To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).
 >
 > 
 >  - To install the command line tool, follow the installation tutorial available [here](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download).\
 >		During the installation, you will be asked if you want to download **cache** files, **FASTA** files and **plugins**.
->    - We **recommend to download the cache file** for the assembly of your VCF files to be able to run VEP offline.\
-	Use the VEP cache version which corresponds to your Ensembl VEP installation and genome reference !
->    - We **recommend to download the FASTA file** for the assembly of your VCF files to be able to run VEP offline.\
-	Use the FASTA version which corresponds to your Ensembl VEP installation and genome reference !
+>    - We **recommend to download the cache files** for the assembly of your VCF files to be able to run VEP offline.\
+	Download the VEP cache files which correspond to your Ensembl VEP installation and genome reference!
+>    - We **recommend to download the FASTA files** for the assembly of your VCF files to be able to run VEP offline.\
+	Download the FASTA files which correspond to your Ensembl VEP installation and genome reference!
 >    - We **don't recommend to download any plugin**
 >      
 > We then recommend to **add VEP to your PATH** by adding the following line to your ```~/.profile``` or ```~/.bash_profile```:
 > 
-> 	```export PATH=%%path/to/vep%%:${PATH}```
+> 	```export PATH=%%PATH/TO/VEP%%:${PATH}```
 > 
 >*If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH.*
 >
@@ -107,7 +107,7 @@ AlloPipe specifically requires
 
 <br/>
 
-3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tool.\
+3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tools.\
 *Note: you need an academic affiliation (ensured by an email address) to download NetMHCpan softwares from the DTU Health Tech website.*
 <br/>
 
@@ -166,7 +166,7 @@ The curated VCF files are then queried for the amino acid information to assess 
 <br/>
 
 
-#### Single pair<a name="simple_ams"></a>
+#### Single pair <a name="simple_ams"></a>
 
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(**don't forget to activate your conda environment!**)* :  
 
