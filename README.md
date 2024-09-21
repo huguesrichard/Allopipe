@@ -1,6 +1,6 @@
 # AlloPipe
 
-The AlloPipe tool is a computational workflow imputing directional amino acid mismatches then related minor histocompatibility antigens candidate from human genomic datasets.
+The AlloPipe tool is a computational workflow which imputes (i) directional amino acid mismatches between two genomic samples and (ii) their related minor histocompatibility antigens from human genomic datasets.
 
 
 --- 
@@ -9,15 +9,15 @@ The AlloPipe tool is a computational workflow imputing directional amino acid mi
 
 **THE ALLOPIPE TOOL IS DIVIDED INTO TWO DIFFERENT MODULES:**
 
-- **ALLO-COUNT:** performs a stringent data cleaning and a directional comparison of the samples' amino acid sequences.
+- **ALLO-COUNT:** reformats the relevant data from VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the samples amino acid sequences.
 
-From two variant-annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default). The curated VCF file is then queried for the amino acid information to assess the amino acid mismatches.
-
+From variant-annotated .VCF file(s), variants are first stringently filtered considering a set of quality metrics (see under). The curated VCF file(s) is(are) then queried for the amino acid information to assess the amino acid mismatches.
 **Samples' comparison is directional** and counts either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or the other way around (*recipient-to-donor*: present by the recipient but absent in the donor.
 
-This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested direction, and related information stored in the **AMS-table**.
+This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested direction, and related information stored in the **mismatch-table**.
 
 <br/>
+
 
 - **ALLO-AFFINITY:** reconstructs peptides around the amino acid changes then return the affinity mHAgs candidates towards HLA molecules thanks to [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)
 
