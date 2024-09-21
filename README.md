@@ -18,9 +18,17 @@ within a pair of annotated human genomic datasets.
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
 
-Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences. Allo-Count returns: <br/>
+Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional** comparison of the sample amino acid sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
 - **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
+  
+<br/>  
+
+> **Direction of the mismatch**
+> 
+> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
+> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
 
 <br/>
 
@@ -159,10 +167,21 @@ Run this command for every file you want to input in AlloPipe.
 
 **What does Allo-Count perform?**
 
-From variant annotated .VCF file(s), variants are first reformated and filtered considering a set of quality metrics.
+From variant annotated .VCF file(s), variants are first reformated then filtered considering a set of quality metrics (defaults values):
+- 
+- 
 
-The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** amino acid mismatches between samples.\
+The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** amino acid mismatches between samples.
 
+<br/>
+
+> **Direction of the mismatch**
+> 
+> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
+> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
+
+<br/>
  counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
 
 <br/>
@@ -185,17 +204,7 @@ Where :\
 ```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismatch
 
 
-<br/>
-
-> **Direction of the mismatch**
-> 
-> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
-> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
-
-<br/>
-
-Note that a complete helper function is provided
+A complete helper function is provided
 
 		python ams_pipeline.py --help
   
@@ -217,7 +226,7 @@ Where:\
 ```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)\
 ```<DIRECTION OF THE MISMATCH>``` is the direction of the mismatch as previously described
 
->Note : It is not possible to run different mismatches within the same command line.
+*It is not possible to run different mismatches within the same command line.*
 
 We provide a complete helper function
 
@@ -229,7 +238,7 @@ We provide a complete helper function
 > **Normalisation**
 > 
 > To avoid artefacts related to the quality of the sequencing that might lead to AMS lower or higher than expected, we provide to the user the ref/commun ratio.
-> (See appendix 2: normalisation)
+> 
 
 <br/>
 
