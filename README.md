@@ -3,16 +3,18 @@
 The AlloPipe tool is a computational workflow which imputes<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and their related<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens**  [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)<br/>
-from annotated human genomic datasets.
+within a pair of annotated human genomic datasets.
 
-*Be careful with the terms of use of NetMHCpan if you are not an academic*
-
+*Be careful with the terms of use of NetMHCpan*
+<br/>
 
 --- 
+<br/>
+
 # In a nutshell
 <br/>
 
-**The AlloPipe tool is divided into two modules**
+**The AlloPipe tool is divided into two modules: Allo-Count and Allo-Affinity**
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
 
@@ -28,20 +30,20 @@ Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), perf
 Allo-Affinity reconstructs peptides of requested length around the amino acid changes, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
-<br/>
-The 2-field HLA typing has to be provided by the user. 
+
+*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*
 
 
 <br/>
 <br/>
 
-**EACH MODULE CAN BE RUN AS 'SINGLE PAIR' OR 'MULTIPLE PAIRS' MODE**
+**Two modes are available for each modules: Multiple pairs or single pair**
 	
-- **SINGLE PAIR**\
+- **Single pair**\
 Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
 You need to provide the variant annotated VCF file of the donor and the variant annotated VCF file of the recipient (one file per individual).
  
-- **MULTIPLE PAIRS (with parallel processing)**  
+- **Multiple pairs (with parallel processing)**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
 In that case, you need to provide one unique file containing information of the donor and the recipient of the pairs - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
 
