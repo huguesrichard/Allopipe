@@ -80,10 +80,10 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
 
-2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we provide the [list of specific versions of some tools](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) you will have to store in a conda environment.
+2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) needed to run AlloPipe in a dedicated conda environment.
   
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
-*Note: make sure you use NetMHCpan in accordance with their user licence.* 
+*Make sure you use NetMHCpan in accordance with their user licence.* 
    
 As AlloPipe takes VEP-annotated .VCF files as input, you will also need a [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) prior the use of AlloPipe.
 AlloPipe has been developed and tested with .VCF files annotated with v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.
@@ -114,13 +114,12 @@ AlloPipe has been developed and tested with .VCF files annotated with v104, v110
 
 <br/>
 
-As we recommend to create a conda environment to ensure a robust installation of AlloPipe,
 ### AlloPipe installation <a name="install"></a>
 
 To download and install the AlloPipe workflow, first clone the repository from git.\
-*(You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic))*
+*You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
 
-We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in the AlloPipe environment.
+We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in this AlloPipe environment.
 
 The following command lines will perform the above-mentioned steps:
 
@@ -133,24 +132,23 @@ The following command lines will perform the above-mentioned steps:
 
 ### VEP annotation <a name="vep"></a>
 
-AlloPipe input files must be variant-annotated files.\
-*We tailored the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
+AlloPipe input file(s) must be VEP-annotated .VCF files.\
+*We designed and tested the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 	
-		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --vcf 
+		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
 
 Where:\
 ```<GRChXX>``` is the version of the genome used to align the sequences.\
 ```<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
 ```<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>``` is the path to the directory and the name of the ouput annotated file.\
 
-This command line works for individual VCF as well as multi-VCF. 
-Run this command for every file you want to input in AlloPipe: for individual VCF you will need to run the command twice (once for the donor's VCF and once for the recipient's VCF)
+This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
+Run this command for every file you want to input in AlloPipe.
 
-
-**Once the VEP annotation of your file(s) is complete, you are now ready to launch your first AlloPipe run !**
+**Once the VEP annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
 
 ---
 
@@ -161,9 +159,11 @@ Run this command for every file you want to input in AlloPipe: for individual VC
 
 **What does Allo-Count perform?**
 
-From variant annotated VCF files, variants are first filtered considering a set of quality metrics then constrained to high-confidence calling regions provided in a BED file (GIAB by default).
+From variant annotated .VCF file(s), variants are first reformated and filtered considering a set of quality metrics.
 
-The curated VCF files are then queried for the amino acid information to assess the amino acid mismatches. Sample comparison is directional and counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
+The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** amino acid mismatches between samples.\
+
+ counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
 
 <br/>
 
