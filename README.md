@@ -1,6 +1,9 @@
 # AlloPipe
 
-The AlloPipe tool is a computational workflow which imputes (i) directional amino acid mismatches between two genomic samples and (ii) their related minor histocompatibility antigens from human genomic datasets.
+The AlloPipe tool is a computational workflow which imputes 
+	(i) directional amino acid mismatches between two genomic samples and 
+ 	(ii) their related minor histocompatibility antigens 
+from human genomic datasets.
 
 
 --- 
