@@ -2,28 +2,35 @@
 
 The AlloPipe tool is a computational workflow which imputes<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and their related<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens** <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens**  [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)<br/>
 from annotated human genomic datasets.
+
+*Be careful with the terms of use of NetMHCpan if you are not an academic*
 
 
 --- 
 # In a nutshell
 <br/>
 
-The AlloPipe tool is divided into two modules
+**The AlloPipe tool is divided into two modules**
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
-Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences. <br/>
-Allo-Count returns a **quantitative** output called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the directional amino acid mismatches, and a **qualitative** output stored in the **mismatch-table**.
+
+Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences. Allo-Count returns: <br/>
+- **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
+- **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
 
 <br/>
 
 
-- **ALLO-AFFINITY:** reconstructs peptides around the amino acid changes then return the affinity mHAgs candidates towards HLA molecules thanks to [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)
+&nbsp;&nbsp;&nbsp;&nbsp; **(ii) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity generates a set of candidate minor histocompatibility antigens around each previously assessed directional amino acid mismatches using sliding window. The user defines the length of the potentially HLA-embedded peptides, usually 9-mers for HLA class I and 15-mers for HLA class II molecules. The affinity values are computed using [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), respectively.
+Allo-Affinity reconstructs peptides of requested length around the amino acid changes, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
+- **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
+- **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
+<br/>
+The 2-field HLA typing has to be provided by the user. 
 
-This step returns the **affinity-AMS (af-AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested mismatch direction, and related information stored in the **AMS-table**. Please note that the 2-field HLA typing has to be provided by the user.
 
 <br/>
 <br/>
@@ -272,6 +279,8 @@ In this table, you can find the following information :
 ### Launch Allo-Affinity <a name="aams_run"></a>
 
 <br/>
+
+Allo-Affinity generates a set of candidate minor histocompatibility antigens around each previously assessed directional amino acid mismatches using sliding window. The user defines the length of the potentially HLA-embedded peptides, usually 9-mers for HLA class I and 15-mers for HLA class II molecules. The affinity values are computed using [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), respectively.
 
 **What does Allo-Affinity perform?**
 
