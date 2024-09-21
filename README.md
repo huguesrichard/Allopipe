@@ -1,8 +1,8 @@
 # AlloPipe
 
 The AlloPipe tool is a computational workflow which imputes<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(i) directional amino acid mismatches and<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) related minor histocompatibility antigens<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and their related<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens** <br/>
 from annotated human genomic datasets.
 
 
@@ -12,7 +12,11 @@ from annotated human genomic datasets.
 
 The AlloPipe tool is divided into two modules
 
-- **ALLO-COUNT: reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences.**
+&nbsp;&nbsp;&nbsp;&nbsp;(i) **Allo-Count returns the directional amino acid mismatches**<br/>
+Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences.
+ **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches between two samples.**
+
+- .**
 
 This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested direction, and related information stored in the **mismatch-table**.
 
