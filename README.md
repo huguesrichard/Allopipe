@@ -45,14 +45,14 @@ You need to provide one VEP-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique VEP-annotated .VCF file containing the information of all individuals you want to  - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
+You need to provide one unique VEP-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
 
 ---
 
 ## Table of contents
 
 1. [Before getting started](#before)
-	1. [Requirements checking](#requirements)
+	1. [Requirements](#requirements)
 	2. [AlloPipe installation](#install)
 	3. [VEP annotation](#vep)
     
@@ -75,12 +75,14 @@ You need to provide one unique VEP-annotated .VCF file containing the informatio
 
 ## Before getting started <a name="before"></a>
 
-### Requirements checking <a name="requirements"></a>
+### Requirements<a name="requirements"></a>
 
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
+
+2. Some specific
    
-2. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v110
+3. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v110
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.
 > 
