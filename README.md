@@ -1,21 +1,18 @@
 # AlloPipe
 
-The AlloPipe tool is a computational workflow which imputes
-	(i) directional amino acid mismatches between two genomic samples and
- 	(ii) their related minor histocompatibility antigens 
-from human genomic datasets.
+The AlloPipe tool is a computational workflow which imputes<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(i) directional amino acid mismatches and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) related minor histocompatibility antigens<br/>
+from annotated human genomic datasets.
 
 
 --- 
-## In a nutshell
+# In a nutshell
 <br/>
 
-**THE ALLOPIPE TOOL IS DIVIDED INTO TWO DIFFERENT MODULES:**
+The AlloPipe tool is divided into two modules
 
-- **ALLO-COUNT:** reformats the relevant data from VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the samples amino acid sequences.
-
-From variant-annotated .VCF file(s), variants are first stringently filtered considering a set of quality metrics (see under). The curated VCF file(s) is(are) then queried for the amino acid information to assess the amino acid mismatches.
-**Samples' comparison is directional** and counts either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or the other way around (*recipient-to-donor*: present by the recipient but absent in the donor.
+- **ALLO-COUNT: reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the directional comparison of the sample amino acid sequences.**
 
 This step returns the **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable measuring the amino acid mismatches in the requested direction, and related information stored in the **mismatch-table**.
 
@@ -76,7 +73,7 @@ Command lines are given for each processing mode.
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
    
-2. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v103
+2. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v110
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool (if the VCF are smaller than 50 MB) or by downloading the command line tool.
 > 
