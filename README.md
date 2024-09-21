@@ -80,9 +80,13 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 AlloPipe specifically requires
 1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
 
-2. [Specific version of some tools](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) we advise to store in a dedicated conda environment 
+2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we provide the [list of specific versions of some tools](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) you will have to store in a conda environment.
+  
+3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
+*Note: make sure you use NetMHCpan in accordance with their user licence.* 
    
-3. [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) >=v110
+As AlloPipe takes VEP-annotated .VCF files as input, you will also need a [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) prior the use of AlloPipe.
+AlloPipe has been developed and tested with .VCF files annotated with v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
 > 
@@ -107,12 +111,10 @@ AlloPipe specifically requires
 
 <br/>
 
-3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as a command line tools.\
-*Note: you need an academic affiliation (ensured by an email address) to download NetMHCpan softwares from the DTU Health Tech website.*
+
 <br/>
 
-As we recommend to create a conda environment to ensure a robust installation of AlloPipe, [conda](https://docs.anaconda.com/free/working-with-conda/) should be installed in the suitable version for your operating system and python version.
-
+As we recommend to create a conda environment to ensure a robust installation of AlloPipe,
 ### AlloPipe installation <a name="install"></a>
 
 To download and install the AlloPipe workflow, first clone the repository from git.\
