@@ -14,7 +14,7 @@ within a pair of annotated human genomic datasets.
 # In a nutshell
 <br/>
 
-**The AlloPipe tool is divided into two modules: Allo-Count and Allo-Affinity**
+**The AlloPipe tool is divided into two modules: (i) Allo-Count and (ii) Allo-Affinity**
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
 
@@ -37,17 +37,15 @@ Allo-Affinity reconstructs peptides of requested length around the amino acid ch
 <br/>
 <br/>
 
-**Two modes are available for each modules: Multiple pairs or single pair**
+**There are two modes of operation for each module: (i) single pair or (ii) multiple pairs**
 	
 - **Single pair**\
 Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
-You need to provide the variant annotated VCF file of the donor and the variant annotated VCF file of the recipient (one file per individual).
+You need to provide one VEP-annotated .VCF file per individual.
  
-- **Multiple pairs (with parallel processing)**  
+- **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-In that case, you need to provide one unique file containing information of the donor and the recipient of the pairs - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
-
-Command lines are given for each processing mode.
+You need to provide one unique VEP-annotated .VCF file containing the information of all individuals you want to  - i.e. a  variant annotated merged VCF - and a list of the pairs you want to compute from this VCF.
 
 ---
 
