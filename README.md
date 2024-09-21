@@ -93,7 +93,31 @@ AlloPipe specifically requires
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
 *Make sure you use NetMHCpan in accordance with their user licence.* 
    
-As AlloPipe takes VEP-annotated .VCF files as input, you will also need a [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) prior the use of AlloPipe.
+<br/>
+
+### AlloPipe installation <a name="install"></a>
+
+To download and install the AlloPipe workflow, first clone the repository from git.\
+*You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
+
+We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in this AlloPipe environment.
+
+The following command lines will perform the above-mentioned steps:
+
+		git clone https://github.com/huguesrichard/Allopipe.git
+		cd Allopipe
+ 		conda create --name Allopipe python=3.9
+  		conda activate Allopipe
+		python -m pip install -r requirements.txt
+
+<br/>
+
+### VEP annotation <a name="vep"></a>
+
+**AlloPipe input file(s) must be VEP-annotated .VCF files.**
+*Other annotation tools could theoritically be used after code adjustments.*
+
+You will then also need a [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) prior the use of AlloPipe.
 AlloPipe has been developed and tested with .VCF files annotated with v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
@@ -116,32 +140,6 @@ AlloPipe has been developed and tested with .VCF files annotated with v104, v110
 >*If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH.*
 >
 >For complete insights on VEP, see [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
-
-<br/>
-
-
-<br/>
-
-### AlloPipe installation <a name="install"></a>
-
-To download and install the AlloPipe workflow, first clone the repository from git.\
-*You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
-
-We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in this AlloPipe environment.
-
-The following command lines will perform the above-mentioned steps:
-
-		git clone https://github.com/huguesrichard/Allopipe.git
-		cd Allopipe
- 		conda create --name Allopipe python=3.9
-  		conda activate Allopipe
-		python -m pip install -r requirements.txt
-
-
-### VEP annotation <a name="vep"></a>
-
-AlloPipe input file(s) must be VEP-annotated .VCF files.\
-*We designed and tested the AlloPipe code based on the VEP annotation architecture, but any other annotation tool could be used after code adjustments.*
 
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
