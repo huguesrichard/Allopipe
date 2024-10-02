@@ -398,7 +398,7 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 	-M ../output/runs/test_run/run_tables/test_pair_test_run_mismatches_20_400_5_gq_20_0.8_bl_3.tsv \
 	-T ../output/runs/test_run/run_tables/test_pair_test_run_transcripts_pair_codons_20_400_5_gq_20_0.8_bl_3.tsv \
 	-E ../tutorial/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa \
-	-P ../tutorial/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa\
+	-P ../tutorial/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa \
 	-R ../tutorial/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv \
 	-n test_run -p test_pair \
 	-l 9 --el_rank 2 \
