@@ -128,6 +128,19 @@ def check_threshold_value(parser, arg):
     if not 0 < threshold < 1:
         parser.error(f"{threshold} not between 0 and 1")
     return threshold
+    
+    
+def check_workers_count(parser,arg):
+    cpu_count = os.cpu_count()
+    if cpu_count is None:
+        raise ValueError("Failed to get CPU count!")
+    try:
+       workers = int(arg)
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"{err}")
+    if not 1 <= workers <= cpu_count:
+        parser.error(f"{workers} is not in available number of cores (1-{cpu_count})")
+    return workers
 
 
 def arguments(from_filePair : bool = False):
@@ -211,7 +224,8 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default=0.01,
         const=0.01,
-        type=lambda x: check_threshold_value(parser,x))
+        type=lambda x: check_threshold_value(parser,x)
+    )
     parser.add_argument(
         "--min_gq",
         help="genotype quality, the higher the more reliable the predicted genotype",
@@ -284,6 +298,13 @@ def arguments(from_filePair : bool = False):
         action=UniqueStore,
         required="-wc" in sys.argv,
         type=lambda x: check_file(parser, x, True),
+    )
+    parser.add_argument(
+        "-w",
+        "--workers",
+        help="number of workers (cores) for multiprocessing",
+        default=os.cpu_count() // 2,
+        type=lambda x: check_workers_count(parser, x)
     )
     args = parser.parse_args()
     if args.min_dp > args.max_dp:
