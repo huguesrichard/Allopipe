@@ -34,28 +34,26 @@ def main():
         run_tables, args.donor, args, args.wc_donor, formatted_datetime
     )
     # output : filtered donor file
-    df_donor.to_csv(
+    df_donor_file = (
         f"{run_tables}/{args.pair}_{args.run_name}_"
         f"D0_{args.donor.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
-        f"bl_{args.base_length}{formatted_datetime}.tsv",
-        sep="\t",
-        index=False,
+        f"bl_{args.base_length}{formatted_datetime}.tsv"
     )
+    df_donor.to_csv(df_donor_file, sep="\t", index=False)
     # same for recipient
     df_recipient, vep_recipient, vep_indices_recipient = ams_helpers.prepare_indiv_df(
         run_tables, args.recipient, args, args.wc_recipient, formatted_datetime
     )
-    df_recipient.to_csv(
+    df_recipient_file = (
         f"{run_tables}/{args.pair}_{args.run_name}_"
         f"R0_{args.recipient.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
-        f"bl_{args.base_length}{formatted_datetime}.tsv",
-        sep="\t",
-        index=False,
+        f"bl_{args.base_length}{formatted_datetime}.tsv"
     )
+    df_recipient.to_csv(df_recipient_file, sep="\t", index=False)
     # merge dataframes based on the orientation of the comparison
     merged_df, side, opposite = ams_helpers.merge_dfs(
         df_donor, df_recipient, args.orientation
@@ -68,14 +66,13 @@ def main():
         # estimate if a mismatch is heterozygous or homozygous
         merged_df = ams_helpers.mismatch_type(merged_df)
         # output : merged df with mismatch counts
-        merged_df.to_csv(
+        mismatches_file = (
             f"{run_tables}/{args.pair}_"
             f"{args.run_name}_mismatches_{args.min_dp}_"
             f"{args.max_dp}_{args.min_ad}_gq_{args.min_gq}_"
-            f"{args.homozygosity_thr}_bl_{args.base_length}{formatted_datetime}.tsv",
-            sep="\t",
-            index=False,
+            f"{args.homozygosity_thr}_bl_{args.base_length}{formatted_datetime}.tsv"
         )
+        merged_df.to_csv(mismatches_file, sep="\t", index=False)
 
         transcripts_donor = table_operations.build_transcripts_table_indiv(
             vep_donor, merged_df, vep_indices_donor, "donor"
@@ -86,19 +83,22 @@ def main():
         merged_transcripts = table_operations.build_transcripts_table(
             transcripts_donor, transcripts_recipient, merged_df
         )
-        merged_transcripts.to_csv(
+        transcripts_file = (
             os.path.join(
                 run_tables,
                 f"{args.pair}_{args.run_name}_transcripts_pair_codons_"
                 f"{args.min_dp}_{args.max_dp}_{args.min_ad}_gq_"
                 f"{args.min_gq}_{args.homozygosity_thr}_bl_"
                 f"{args.base_length}{formatted_datetime}.tsv",
-            ),
-            sep="\t",
-            index=False,
+            )
         )
+        merged_transcripts.to_csv(transcripts_file, sep="\t", index=False)
+    else:
+        raise ValueError("No mismatch found. No output table will be generated.")
     # create small df with pair and AMS
-    ams_exp_path = table_operations.save_mismatch(run_ams, args, mismatch, formatted_datetime)
+    ams_exp_path = table_operations.save_mismatch(
+        run_ams, args, mismatch, formatted_datetime, df_donor_file, df_recipient_file, mismatches_file
+    )
     print(mismatch)
     
     # score normalization (multiprocess_ams only)
