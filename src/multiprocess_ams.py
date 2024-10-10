@@ -94,7 +94,7 @@ def main():
     start = time.time()
     # multiprocessing
     COUNT = 0
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
         # use all commands in list on the function
         results = executor.map(launch_multivcf_extract, commands_multivcf)
         for res in results:
@@ -128,7 +128,7 @@ def main():
     start = time.time()
     # multiprocessing
     COUNT = 0
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
         # use all commands in list on the function
         results = executor.map(launch_ams_pipeline, commands)
         for res in results:

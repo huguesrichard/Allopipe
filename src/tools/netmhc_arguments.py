@@ -116,6 +116,7 @@ def check_if_valid_float(parser,arg):
     if not 0 < thresh <= 100:
         parser.error(f"{threshold} not between 0 and 100%")
     return thresh
+    
 
 def netmhc_arguments():
     """
@@ -165,6 +166,10 @@ def netmhc_arguments():
         default="input_pair",
         const="input_pair",
         type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
+    parser.add_argument("-w", "--workers",
+        help="number of workers (cores) for multiprocessing",
+        default=os.cpu_count() // 2,
+        type=lambda x: arguments_handling.check_workers_count(parser, x))
         
     # netMHCpan class
     parser.add_argument("-c", "--class_type",
