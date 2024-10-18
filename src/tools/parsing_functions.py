@@ -390,7 +390,7 @@ def read_pep_fa(file):
                 if "protein_coding" in line:
                     prot_coding = True
                     regex = re.compile(
-                        r">(.+)\..+GRCh38:(.*:\d+:\d+:\-*\d+).+gene:(.+)\..+transcript:(.+)\.\d+ gene"
+                        r">(.+)\..+GRCh3[7-8]:(.*:\d+:\d+:\-*\d+).+gene:(.+)\..+transcript:(.+)\.\d+ gene"
                     )
                     if first:
                         pep_id, coords, gene, transcript = regex.search(line).groups()

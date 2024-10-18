@@ -79,13 +79,11 @@ def filter_on_refseq(ams_transcripts, refseq_transcripts_path):
 
 def intersect_positions(transcripts_pair, transcripts_df):
     positions = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
-    print(len(transcripts_pair), len(transcripts_df))
     transcripts_pair = pd.merge(
         transcripts_df, transcripts_pair, how="inner", on="Transcript_id"
     )
     positions_refseq = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
     merged_positions = pd.merge(positions, positions_refseq, how="outer")
-    print(len(positions), len(positions_refseq), len(merged_positions))
     return transcripts_pair
 
 def aa_ref(transcripts_pair):
@@ -364,25 +362,40 @@ def build_peptides(aams_run_tables,str_params,args):
     return fasta_path,pep_indiv_path
 
 
-def run_netmhcpan_class_1(fasta_path,netmhc_dir,args):
-    print("Entering netMHCpan handler : running netMHCpan will last a long time")
-    netmhc_out = os.path.join(netmhc_dir,args.pair+".out")
-    netmhc_run_output = os.path.join(netmhc_dir,args.pair+"_full_run_information.txt")
-    os.system(f"netMHCpan -BA -f {fasta_path} -inptype 0 -l {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
+
+def run_netmhcpan(fasta_path,netmhc_dir,args):
+    netmhc_print = {
+        1: "netMHCpan",
+        2: "netMHCIIpan"
+    }[args.class_type]
+    print(f"Entering {netmhc_print} handler : running {netmhc_print} will last a long time")
+    netmhc_out = os.path.join(netmhc_dir,args.pair + ".out")
+    netmhc_run_output = os.path.join(netmhc_dir,args.pair + "_full_run_information.txt")
+    length_argname = {
+        1: "-l",
+        2: "-length"
+    }[args.class_type]
+    os.system(f"{netmhc_print} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
     return netmhc_out
 
+
 # get the peptides table ready to merge
-def clean_pep_df(netmhc_table, pep_path):
+def clean_pep_df(netmhc_table, pep_path,args):
     """
     Returns
     Parameters :
             netmhc_table (pd.DataFrame): NetMHCpan handled table (check netmhc_tables_handler.py)
             pep_path (str): path to the peptides pickle file 
+            args (ArgumentParser object): parser object
     Return: 
     """
 
     # remove unwanted columns
-    netmhc_table = netmhc_table.drop(["Pos", "core", "icore", "Ave"], axis=1)
+    columns_to_drop = {
+        1: ["Pos", "core", "icore", "Ave"],
+        2: ["Pos", "Core", "Ave"]
+    }
+    netmhc_table = netmhc_table.drop(columns_to_drop.get(args.class_type, []), axis=1)
     # rename columns to match defined nomenclature
     netmhc_table = netmhc_table.rename({"ID": "Gene_id", "Peptide": "hla_peptides"}, axis=1)
     # read peptides indiv file
@@ -394,7 +407,7 @@ def clean_pep_df(netmhc_table, pep_path):
     return (netmhc_table, pep_df)
 
 
-def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams_run_tables,str_params):
+def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams_run_tables,str_params,class_type):
     # merge both pep and netmhc dataframes
     merged = pd.merge(netmhc_df, pep_df, how="inner", on=["Gene_id", "hla_peptides"])
     # group by peptide
@@ -421,9 +434,12 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams
         ams_df[["CHROM", "POS"]] = ams_df[["CHROM", "POS"]].astype(int)
     merged_aams = pd.merge(ams_df, merged, how="inner", on=["CHROM", "POS"])
     merged_aams = merged_aams.drop_duplicates("hla_peptides")
-    merged_aams = merged_aams[merged_aams["EL_Rank"] <= ELR_thr]
+    column_to_filter = {
+        1: "EL_Rank",
+        2: "Rank"
+    }
+    merged_aams = merged_aams[merged_aams[column_to_filter[class_type]] <= ELR_thr]
     mismatch_count = merged_aams["mismatch"].sum()
-    orientation = "rd"
     aams_df = pd.DataFrame([[pair, mismatch_count]], columns=["pair", "AAMS"])
     aams_dir = os.path.join(aams_path,f"AAMS_{str_params}")
     Path(aams_dir).mkdir(parents=True, exist_ok=True)

@@ -1,13 +1,17 @@
 # coding:utf-8
 """
-Script to launch multiple ams pipeline processes
+Script to launch multiple aams pipeline processes
+The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
+command line help : python3 multiprocess_aams.py [-h]
 """
 import os
+import sys
 import glob
 import concurrent.futures
 import time
 import re
 from tools import parsing_functions, table_operations
+from tools import netmhc_arguments
 from pathlib import Path
 
 
@@ -27,69 +31,62 @@ def launch_aams_pipeline(command_line):
     return f"Done estimating AAMS for the couple {donor} {recipient}"
 
 
+def main():
+    """
+    Script to launch multiple aams pipeline processes
+    The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
+    command line help : python3 multiprocess_aams.py [-h]
+    """
+    args = netmhc_arguments.netmhc_arguments()
 
-### HSC genoidentical with gnomad ###
-# get list of mismatches
-MISMATCHES = [
-    file
-    for file in glob.glob("../output/runs/gnomad_run/run_tables/*.tsv")
-    if "mismatches" in file
-]
+    # get list of mismatches
+    MISMATCHES = [
+        file
+        for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+        if "_mismatches_" in file
+    ]
 
-# get list of transcripts
-TRANSCRIPTS = [
-    file
-    for file in glob.glob("../output/runs/gnomad_run/run_tables/*.tsv")
-    if "transcripts" in file
-]
+    # get list of transcripts
+    TRANSCRIPTS = [
+        file
+        for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+        if "_transcripts_" in file
+    ]
 
-# sort lists
-MISMATCHES = sorted(MISMATCHES,
-    key=lambda x: int(''.join(filter(str.isdigit, str(Path(x).name).split("_")[0]))))
-TRANSCRIPTS = sorted(TRANSCRIPTS, 
-    key=lambda x: int(''.join(filter(str.isdigit, str(Path(x).name).split("_")[0]))))
+    # sort lists
+    MISMATCHES.sort()
+    TRANSCRIPTS.sort()
 
-print(len(TRANSCRIPTS))
-print(len(MISMATCHES))
+    print(len(TRANSCRIPTS))
+    print(len(MISMATCHES))
 
-# parameters
-ENSEMBL_TR = "../output/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa"
-ENSEMBL_PEP = "../output/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa"
-REFSEQ_TR = "../output/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv"
-RUN_NAME = "gnomad_run"
-PEP_LENGTH = 9
-EL_RANK = 2
-HLA_FILE = ("../output/indiv_vcf/joint_genotyping/"
-    "hard-filtered/geno-full-typages-HLA.xlsx")
-SHEET = "Typage HLA final 16-03-22"
-CLASS_I = parsing_functions.read_hla_file(HLA_FILE, SHEET)[0]
-GENO_CLASS_I = table_operations.process_geno_hla(CLASS_I)
-print(len(GENO_CLASS_I))
-# build a list of all commands
+    # build a list of all commands
+    commands = [
+        f"python3 aams_pipeline.py -M {MISMATCH}"
+        f" -T {args.transcripts} -E {args.ensembl_transcripts} -P {args.peptides}"
+        f" -R {args.refseq} -n {args.run_name} -l {args.length}"
+        f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"
+        f" -a {args.hla_typing}"
+        for (MISMATCH, TRANSCRIPT) in zip(MISMATCHES,TRANSCRIPTS)
+    ]
 
-### HSC genoidentical normal consequences ###
-commands = [
-    f"python3 aams_pipeline.py -M {MISMATCH}"
-    f" -T {TRANSCRIPT} -E {ENSEMBL_TR} -P {ENSEMBL_PEP}"
-    f" -R {REFSEQ_TR} -n {RUN_NAME} -l {PEP_LENGTH}"
-    f" --el_rank {EL_RANK} -p {Path(MISMATCH).name.split('_')[0]}"
-    f" -a {HLA_PAIR}"
-    for (MISMATCH, TRANSCRIPT, HLA_PAIR) in zip(MISMATCHES,TRANSCRIPTS,GENO_CLASS_I)
-]
+    print("commands : ",len(commands))
+    print(commands)
 
-print("commands : ",len(commands))
-# print(commands)
-# start mesuring time
-start = time.time()
-# multiprocessing
-COUNT = 0
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    # use all commands in list on the function
-    results = executor.map(launch_aams_pipeline, commands)
-    for res in results:
-        COUNT += 1
-        print(COUNT)
-        print(res)
-# stop time count
-end = time.time()
-print(end - start)
+    # start mesuring time
+    start = time.time()
+    # multiprocessing
+    COUNT = 0
+    with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
+        # use all commands in list on the function
+        results = executor.map(launch_aams_pipeline, commands)
+        for res in results:
+            COUNT += 1
+            print(COUNT)
+            print(res)
+    # stop time count
+    end = time.time()
+    print(end - start)
+
+if __name__ == "__main__":
+    main()

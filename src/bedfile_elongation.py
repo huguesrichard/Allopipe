@@ -53,7 +53,7 @@ def bedfile_genes(hla_file, mhags_file):
     hla["Chromosome"] = "chr" + hla["Chromosome"].astype(int).astype(str)
     hla[["start", "end"]] = hla["Position"].str.split("-", expand=True)
     hla["Group"] = "HLA"
-    # 	kir = kir[["Chromosome","Position"]].copy()
+    #     kir = kir[["Chromosome","Position"]].copy()
     kir = pd.DataFrame(
         [["chr19", "54700000-54900000", "KIR"]],
         columns=["Chromosome", "Position", "Group"],
@@ -83,7 +83,7 @@ def bedfile_genes(hla_file, mhags_file):
     )
 
 
-# 	return()
+#     return()
 
 
 #########################################################################

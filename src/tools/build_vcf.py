@@ -54,7 +54,7 @@ def write_vcf(headers, names, infos, path):
     print(ls_names)
     indiv_columns = [i for i, e in enumerate(ls_names) if "-" in e or "_" in e or "B0" in e]
     print(indiv_columns)
-    sys.exit()
+#    sys.exit()
     # loop over individuals
     for i in indiv_columns:
         file_name = path + "/{}.vcf.gz".format(ls_names[i])

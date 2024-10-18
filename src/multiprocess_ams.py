@@ -1,12 +1,14 @@
 # coding:utf-8
 """
-Script to launch multiple ams pipeline processes
+Script to launch multiple AMS pipeline processes
+The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
+command line help : python3 multiprocess_ams.py [-h]
 """
 import os
-import glob
 import concurrent.futures
 import time
-import re
+import sys
+from tools import arguments_handling, multivcf_extract, table_operations
 
 # one argument function to be used by ProcessPoolExecutor.map multiprocessing function
 def launch_ams_pipeline(command_line):
@@ -22,85 +24,121 @@ def launch_ams_pipeline(command_line):
     # get donor and recipient names
     donor, recipient = command_line.split(" ")[2:4]
     return f"Done comparing the couple {donor} {recipient}"
+    
+def launch_multivcf_extract(command_line):
+    """
+    Returns a message saying the couple was successfully extracted, after having executed the command line
+    Parameters :
+                    command_line (str): command line of the multivcf extraction
+    Returns :
+                    (str): message saying the vcf were successfully extracted
+    """
+    # execute command line
+    os.system(command_line)
+    # get donor and recipient names
+    donor, recipient = command_line.split(" ")[-2:]
+    return f"Done extracting the couple {donor} {recipient}"    
 
 
-### HSC genoidentical with gnomad ###
-donors = [
-    file
-    for file in glob.glob("../output/indiv_vcf/joint_genotyping/hard-filtered/**/*.vcf")
-    if "D0-" in file and "bed" in file and "gnomad" in file
-]
+def read_pairs_info(donors_recipients_table, couples):
+    """
+    Reads a list of donors and recipients from a table
+    Parameters:
+                    donors_recipients_table (str): path of table with path of all donors and recipients files
+                    couples (list): empty list
+    Returns:
+                    couples (list): list of couples of donors and recipients
+    """
+    with open(donors_recipients_table, "r") as f:
+        donors, recipients = [], []
+        # skips header
+        next(f)
+        for line in f:
+            donor = line.split(",")[0]
+            donors.append(donor)
+            recipient = line.split(",")[1].rstrip(os.linesep)
+            recipients.append(recipient)
+            couples.append((donor,recipient))
+    return couples
 
-recipients = [
-    file
-    for file in glob.glob("../output/indiv_vcf/joint_genotyping/hard-filtered/**/*.vcf")
-    if "R0-" in file and "bed" in file and "gnomad" in file
-]
 
-
-print("donors : ",len(donors))
-print("recipients : ",len(recipients))
-couples = [
-    (f1, f2)
-    for f1 in donors
-    for f2 in recipients
-    if re.compile(r"R\d+|/P\d+").search(f1).group(0)
-    == re.compile(r"R\d+|/P\d+").search(f2).group(0)
-]
-print("couples : ",len(couples))
-# parameters
-MIN_DP = 20
-MAX_DP_CSH = 400
-MAX_DP_KID = 500
-MIN_AD = 5
-HOM_THR = 0.8
-GENO_QUAL = 20
-ORIENT_KID = "dr"
-ORIENT_CSH = "rd"
-WORST_DONOR = "../output/GQPDOMB-VEP.txt"
-WORST_RECIPIENT = "../output/GQPDOMB-VEP.txt"
-RUN_NAME = "gnomad_run"
-BASE_LENGTH = 3
-# build a list of all commands
-
-### HSC genoidentical normal consequences ###
-commands = [
-    f"python3 ams_pipeline.py {donor}"
-    f" {recipient} {ORIENT_CSH} --min_dp {MIN_DP}"
-    f" --max_dp {MAX_DP_CSH} --min_ad {MIN_AD}"
-    f" -t {HOM_THR} --min_gq {GENO_QUAL} -l {BASE_LENGTH}"
-    f" -f -n {RUN_NAME} -p {'/'.join(donor.split('/')[0:-1]).rsplit('/', maxsplit=1)[-1]}"
+def main():
+    """
+    Script to launch multiple AMS pipeline processes
+    The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
+    command line help : python3 multiprocess_ams.py [-h]
+    """
+    args = arguments_handling.arguments(sys.argv[1])
+    if args.full:
+        full = " --full"
+    else:
+        full = ""
+    couples = []
+    read_pairs_info(args.file_pairs, couples)
+    
+    # extract donor and recipient columns from multi VCF
+    path_couples = []
+    path_out_couples = multivcf_extract.create_dependencies()
+    commands_multivcf = [
+    f"python3 tools/multivcf_extract.py {args.multi_vcf} {donor} {recipient}"
     for (donor, recipient) in couples
-]
+    ]
+    
+    for (donor, recipient) in couples:
+        path_donor = path_out_couples + "/{}.vcf.gz".format(donor)
+        path_recipient = path_out_couples + "/{}.vcf.gz".format(recipient)
+        path_couples.append((path_donor, path_recipient))
+    print(commands_multivcf)
+    
+    # start mesuring time
+    start = time.time()
+    # multiprocessing
+    COUNT = 0
+    with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
+        # use all commands in list on the function
+        results = executor.map(launch_multivcf_extract, commands_multivcf)
+        for res in results:
+            print(res)
+            COUNT += 1
+            print(COUNT)
+            print(res)
+    # stop time count
+    end = time.time()
+    print("Elapsed time:", end - start, "seconds")
+    
+    # leading zeros for pairs ID : 01 instead of 1 (nb > 10), 001 instead of 1 (nb > 100)
+    leading_zeros_number = len(str(len(path_couples)))
+    commands = [
+    f"python3 ams_pipeline.py {path_donor} {path_recipient} {args.orientation} "
+    f"--min_dp {args.min_dp} --max_dp {args.max_dp} --min_ad {args.min_ad} "
+    f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
+    f"--min_gq {args.min_gq} --base_length {args.base_length} "
+    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d}"
+    f"{full} --norm_score"
+#   Doesn't take into account -wc
+#    f"-wc --wc_donor {args.wc_donor} --wc_recipient {args.wc_recipient}"
+    for pair_number, (path_donor, path_recipient) in enumerate(path_couples, 1)
+    ]
+    
+    print("couples : ",len(couples))
+    print("commands: ",len(commands))
+    print(commands)
+    
+    # start mesuring time
+    start = time.time()
+    # multiprocessing
+    COUNT = 0
+    with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
+        # use all commands in list on the function
+        results = executor.map(launch_ams_pipeline, commands)
+        for res in results:
+            print(res)
+            COUNT += 1
+            print(COUNT)
+            print(res)
+    # stop time count
+    end = time.time()
+    print("Elapsed time:", end - start, "seconds")
 
-### KIDNEY normal consequences ###
-# commands = [f"python3 ams_pipeline.py {donor}"
-# f" {recipient} --min_dp {MIN_DP} --max_dp {MAX_DP_KID}"
-# f" --min_ad {MIN_AD} -t {HOM_THR} --min_gq {GENO_QUAL} {ORIENT_KID}"
-# f" -f -n {RUN_NAME} -p {'/'.join(donor.split('/')[0:-1]).rsplit('/', maxsplit=1)[-1]}"
-# for (donor,recipient) in couples]
-
-
-### KIDNEY --most-severe VEP ###
-# commands = [f"python3 comparison_old.py {donor}"
-# f" {recipient} {MIN_DP} {MAX_DP_KID}"
-# f" {MIN_AD} {HOM_THR} {GENO_QUAL} {ORIENT_KID}"
-# f" -f -n {RUN_NAME} -p {'/'.join(donor.split('/')[0:-1]).rsplit('/', maxsplit=1)[-1]}"
-# f" -wc -wcd {WORST_DONOR} -wcr {WORST_RECIPIENT}" for (donor,recipient) in couples]
-
-print("commands : ",len(commands))
-print(commands)
-# start mesuring time
-start = time.time()
-# multiprocessing
-COUNT = 0
-with concurrent.futures.ProcessPoolExecutor() as executor:
-    # use all commands in list on the function
-    results = executor.map(launch_ams_pipeline, commands)
-    for res in results:
-        COUNT += 1
-        print(COUNT)
-        print(res)
-# stop time count
-end = time.time()
-print(end - start)
+if __name__ == "__main__":
+    main()
