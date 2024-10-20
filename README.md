@@ -1,22 +1,21 @@
 # AlloPipe
 
 The AlloPipe tool is a computational workflow which imputes<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and their related<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens**  [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) their related **minor histocompatibility antigens** candidates <br/>
 within a pair of annotated human genomic datasets.
 
-*Be careful with the terms of use of NetMHCpan*
+<br/>
+The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind.
+
 <br/>
 
---- 
-<br/>
-
-# In a nutshell
+## In a nutshell
 <br/>
 
 **The AlloPipe tool is divided into two modules: (i) Allo-Count and (ii) Allo-Affinity**
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches within a two genomic datasets**<br/>
 
 Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional** comparison of the sample amino acid sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
@@ -40,6 +39,7 @@ Allo-Affinity reconstructs peptides of requested length around the amino acid ch
 - **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
 
 *4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*
+*Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)*
 
 
 <br/>
