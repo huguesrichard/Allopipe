@@ -2,50 +2,52 @@
 
 The AlloPipe tool is a computational workflow which imputes<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) their related **minor histocompatibility antigens** candidates <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) the related **minor histocompatibility antigens** candidates <br/>
 within a pair of annotated human genomic datasets.
 
 <br/>
 The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind.
 
 <br/>
-
-## In a nutshell
 <br/>
 
-**The AlloPipe tool is divided into two modules: (i) Allo-Count and (ii) Allo-Affinity**
+## In a nutshell
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches within a two genomic datasets**<br/>
+**The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
 
-Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional** comparison of the sample amino acid sequences. Allo-Count returns: <br/>
+<br/>
+
+&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
+
+Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
 - **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
   
 <br/>  
 
-> **Direction of the mismatch**
+> **Directional comparison**
 > 
-> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
-> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
+> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
+> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 
 <br/>
 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(ii) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity reconstructs peptides of requested length around the amino acid changes, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
 
-*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*
+*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
 *Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)*
 
 
 <br/>
 <br/>
 
-**There are two modes of operation for each module: (i) single pair or (ii) multiple pairs**
+**There are two modes of operation for each module: as single pair or as multiple pairs**
 	
 - **Single pair**\
 Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
