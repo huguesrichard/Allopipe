@@ -20,7 +20,7 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(1) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
 
-Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
+Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
 - **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
   
@@ -52,11 +52,11 @@ Allo-Affinity **reconstructs peptides** of requested length around the polymorph
 	
 - **Single pair**\
 Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
-You need to provide one VEP-annotated .VCF file per individual.
+You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique VEP-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
 
 ---
 
@@ -118,7 +118,7 @@ The following command lines will perform the steps 1-2-3:
 
 ### VEP annotation <a name="vep"></a>
 
-**AlloPipe input file(s) must be VEP-annotated .VCF file(s)**\
+**AlloPipe input file(s) must be variant-annotated .VCF file(s)**\
 *AlloPipe has been developed and tested with .VCF files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
 
 > **_VEP annotation: On-line or command line installation_**\
@@ -156,7 +156,7 @@ Where:\
 This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
-**Once the VEP annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
+**Once the variant annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
 
 ---
 
@@ -192,7 +192,7 @@ The curated dataframes are then queried to assess the **directional polymorphism
 
 #### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
+Once the variant annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
 
 		cd src/
