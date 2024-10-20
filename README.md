@@ -7,10 +7,9 @@ within a pair of annotated human genomic datasets.
 
 <br/>
 The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind.
-
-AlloPipe is also available as a web application: [https://www.allogenomics.com](https://www.allogenomics.com/)
-
 <br/>
+AlloPipe is also available as a web application: https://www.allogenomics.com
+
 <br/>
 
 ## In a nutshell
@@ -134,7 +133,7 @@ The following command lines will perform the steps 1-2-3:
 	Download the VEP cache files which correspond to your Ensembl VEP installation and genome reference!
 >    - We **recommend to download the FASTA files** for the assembly of your VCF files to be able to run VEP offline.\
 	Download the FASTA files which correspond to your Ensembl VEP installation and genome reference!
->    - We **don't recommend to download any plugin**
+>    - We **do not recommend to download any plugin**
 >      
 > We then recommend to **add VEP to your PATH** by adding the following line to your ```~/.profile``` or ```~/.bash_profile```:
 > 
@@ -168,11 +167,17 @@ Run this command for every file you want to input in AlloPipe.
 
 **What does Allo-Count perform?**
 
-From variant annotated .VCF file(s), variants are first reformated then filtered considering a set of quality metrics (defaults values):
-- a
-- 
+From variant annotated .VCF file(s), data are first reformated to obtain one dataframe per individual.\
+Those dataframe are then filtered considering a set of quality metrics (defaults values):
+- minimal depth per position (20x)
+- maxiaml depth per position (400x)
+- minimal allelic depth (5x)
+- homozygosity threshold (0.8)
+- GnomADe allele frequency threshold (0.01)
+- genotype quality threshold (20)
+- maximal indels length (3)
 
-The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** polymorphisms between samples.
+The curated dataframes are then queried to assess the **directional polymorphisms** between samples.
 
 <br/>
 
@@ -181,10 +186,7 @@ The curated .VCF file(s) is(are) then queried for the amino acid information to 
 > The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
 > **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
 > **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
-
-<br/>
- counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
-
+> 
 <br/>
 
 
@@ -202,7 +204,7 @@ Where :\
 ```<NAME-OF-THE-PAIR>``` is the name of the pair\
 ```<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
 ```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
-```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismatch
+```<DIRECTION OF THE MISMATCH>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
 
 
 A complete helper function is provided
