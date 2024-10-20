@@ -8,6 +8,8 @@ within a pair of annotated human genomic datasets.
 <br/>
 The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind.
 
+AlloPipe is also available as a web application: [https://www.allogenomics.com](https://www.allogenomics.com/)
+
 <br/>
 <br/>
 
@@ -117,8 +119,8 @@ The following command lines will perform the steps 1-2-3:
 
 ### VEP annotation <a name="vep"></a>
 
-**AlloPipe input file(s) must be VEP-annotated .VCF file(s)**
-*AlloPipe has been developed and tested with .VCF files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.
+**AlloPipe input file(s) must be VEP-annotated .VCF file(s)**\
+*AlloPipe has been developed and tested with .VCF files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
 
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
@@ -167,18 +169,18 @@ Run this command for every file you want to input in AlloPipe.
 **What does Allo-Count perform?**
 
 From variant annotated .VCF file(s), variants are first reformated then filtered considering a set of quality metrics (defaults values):
-- 
+- a
 - 
 
-The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** amino acid mismatches between samples.
+The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** polymorphisms between samples.
 
 <br/>
 
-> **Direction of the mismatch**
+> **Directional comparison**
 > 
-> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
-> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
+> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
+> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 
 <br/>
  counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
