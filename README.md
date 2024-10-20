@@ -190,14 +190,14 @@ The curated dataframes are then queried to assess the **directional polymorphism
 <br/>
 
 
-#### Single pair <a name="simple_ams"></a>
+#### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(**don't forget to activate your conda environment!**)* :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
+*Do not forget to activate your conda environment!* 
 
 		cd src/
 		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
 
-<br/>
 
 Where :\
 ```<NAME-RUN>``` is the name of the run\
@@ -206,7 +206,7 @@ Where :\
 ```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
 ```<DIRECTION OF THE MISMATCH>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
 
-
+<br/>
 A complete helper function is provided
 
 		python ams_pipeline.py --help
@@ -216,9 +216,10 @@ A complete helper function is provided
 
 
 
-#### Multiple pairs <a name="multi_ams"></a>
+#### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to launch Allo-Count for each pair of 
+It is possible to launch Allo-Count from an annotated .VCF merged file containing the genomic data of interest.\
+In that case, you need to upload a [.csv list](template) specifying the donor/recipient pairs.
 
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
@@ -229,7 +230,7 @@ Where:\
 ```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)\
 ```<DIRECTION OF THE MISMATCH>``` is the direction of the mismatch as previously described
 
-*It is not possible to run different mismatches within the same command line.*
+*Only one directional comparison is accepted within the same command line.*
 
 We provide a complete helper function
 
