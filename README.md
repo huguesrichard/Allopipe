@@ -17,7 +17,7 @@ The product is provided free of charge, and, therefore, on an "as is" basis, wit
 
 <br/>
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
+&nbsp;&nbsp;&nbsp;&nbsp; **(1) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
 
 Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
@@ -34,7 +34,7 @@ Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), perf
 <br/>
 
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(ii) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
 Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
@@ -59,7 +59,7 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 
 ---
 
-## Table of contents
+# Table of contents
 
 1. [Before getting started](#before)
 	1. [Requirements](#requirements)
@@ -88,9 +88,9 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 ### Requirements<a name="requirements"></a>
 
 AlloPipe specifically requires
-1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
+1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
 
-2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) needed to run AlloPipe in a dedicated conda environment.
+2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in an dedicated environment.
   
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
 *Make sure you use NetMHCpan in accordance with their user licence.* 
@@ -99,12 +99,13 @@ AlloPipe specifically requires
 
 ### AlloPipe installation <a name="install"></a>
 
-To download and install the AlloPipe workflow, first clone the repository from git.\
+1) Clone the repository from git\
 *You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
 
-We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in this AlloPipe environment.
-
-The following command lines will perform the above-mentioned steps:
+2) Create a conda environment dedicated to the AlloPipe workflow
+3) Install the AlloPipe requirements within the conda environment
+   
+The following command lines will perform the steps 1-2-3:
 
 		git clone https://github.com/huguesrichard/Allopipe.git
 		cd Allopipe
