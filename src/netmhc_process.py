@@ -26,7 +26,6 @@ def get_commands_list(directory, hla_class_df):
     hla_dict = {
         key: hla_dict[key][0]
         for key in hla_dict
-        if "R2137-D0-N1" not in key and "R2137-R0-N1" not in key
     }
     # get all peptides files designed for netMHCpan
     fa_files = [

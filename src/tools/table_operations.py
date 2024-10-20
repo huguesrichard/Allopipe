@@ -382,15 +382,6 @@ def merge_clin_ams(
     ams_clin.to_csv(os.path.join(run_path, "csh_clinical_ams.csv"), index=False)
 
 
-# directory = "../../output/indiv_vcf/joint_genotyping/hard-filtered/"
-# min_DP = "20"
-# max_DP = "400"
-# min_AD = "5"
-# homozygosity_threshold = "0.8"
-# orientation = "rd"
-# merge_clin_ams("../../output/general_tables/csh_2021_12_9_relevant_clinical_data.tsv",directory,min_DP,max_DP,min_AD,homozygosity_threshold,orientation)
-
-
 ################################################################################
 #################### Shuffle AMS experiment table creation #####################
 ################################################################################
