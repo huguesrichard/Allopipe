@@ -156,7 +156,7 @@ Where:\
 This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
-**Once the variant annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
+**Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
 
 ---
 
@@ -167,7 +167,7 @@ Run this command for every file you want to input in AlloPipe.
 
 **What does Allo-Count perform?**
 
-From variant annotated .VCF file(s), data are first reformated to obtain one dataframe per individual.\
+From variant-annotated .VCF file(s), data are first reformated to obtain one dataframe per individual.\
 Those dataframe are then filtered considering a set of quality metrics (defaults values):
 - minimal depth per position (20x)
 - maxiaml depth per position (400x)
@@ -192,7 +192,7 @@ The curated dataframes are then queried to assess the **directional polymorphism
 
 #### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
-Once the variant annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
+Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
 
 		cd src/
