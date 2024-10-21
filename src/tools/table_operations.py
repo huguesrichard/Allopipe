@@ -17,7 +17,7 @@ import sklearn.linear_model as lm
 ################################################################################
 
 
-def save_mismatch(run_ams, args, mismatch, formatted_datetime):
+def save_mismatch(run_ams, args, mismatch, formatted_datetime, df_donor_file, df_recipient_file, mismatches_file):
     """
     Returns the path of the saved file containing the AMS value and related pair
                     Parameters :
@@ -32,8 +32,13 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime):
                               args.donor.split('/')[-1].split('.')[0],
                               args.recipient.split('/')[-1].split('.')[0],
                               args.orientation,
-                              mismatch]],
-                            columns=["Pair", "Donor", "Recipient", "Orientation", "AMS"])
+                              mismatch,
+                              df_donor_file,
+                              df_recipient_file,
+                              mismatches_file]],
+                            columns=["pair", "donor", "recipient", "orientation", "ams",
+                                     "donor_table", "recipient_table", "mismatches_table"])
+    
     # change
     ams_exp_path = os.path.join(
         run_ams,
@@ -332,28 +337,30 @@ def get_ref_ratio(
             donor, sep="\t", dtype={"CHROM": str}
         ), pd.read_csv(recipient, sep="\t", dtype={"CHROM": str})
         common_ref, total_ref, ref_ratio = get_ref_ratio_pair(donor_df, recipient_df)
+        # Add new columns to pickle
         ams_pair_df = pd.read_pickle(ams_pair)
-        ams_pair_df[["common_ref", "total_ref", "ref_ratio"]] = [
-            common_ref,
-            total_ref,
-            ref_ratio,
-        ]
+        ams_index = ams_pair_df.columns.get_loc("ams")
+        ams_pair_df.insert(ams_index + 1, "common_ref", common_ref)
+        ams_pair_df.insert(ams_index + 2, "total_ref", total_ref)
+        ams_pair_df.insert(ams_index + 3, "ref_ratio", ref_ratio)
         infos.append(ams_pair_df)
     ams_df = pd.concat(infos).reset_index(drop=True)
     return (ams_df, ams_exp_path)
 
 
-#
+
 def add_norm(ams_df, ams_exp_path):
-    x, y = ams_df["ref_ratio"].values.reshape(-1, 1), ams_df["AMS"].values.reshape(
+    x, y = ams_df["ref_ratio"].values.reshape(-1, 1), ams_df["ams"].values.reshape(
         -1, 1
     )
     reg = lm.LinearRegression().fit(x, y)
     ref_ratio_mean = ams_df["ref_ratio"].mean()
-    ams_df["AMS_norm"] = (
-        float(reg.coef_) * (ref_ratio_mean - ams_df["ref_ratio"]) + ams_df["AMS"]
+    ams_df["ams_norm"] = (
+        float(reg.coef_) * (ref_ratio_mean - ams_df["ref_ratio"]) + ams_df["ams"]
     )
-    ams_df = ams_df.rename({"AMS": "AMS_giab"}, axis=1)
+    # reorder "ams_norm" col after "ref_ratio" col
+    ams_df.insert(ams_df.columns.get_loc("ref_ratio") + 1, "ams_norm", ams_df.pop("ams_norm"))
+    ams_df = ams_df.rename({"ams": "ams_giab"}, axis=1)
     ams_df.to_csv(os.path.join(ams_exp_path, "AMS_df.tsv"), sep="\t", index=False)
 
 
