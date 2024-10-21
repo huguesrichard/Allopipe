@@ -177,26 +177,6 @@ def estimate_ams(path_out_mockbed, merged_ams, flank_bed, genome_file):
     return (df, ams)
 
 
-# merged_ams_to_mockbed("../../output/indiv_vcf/joint_genotyping/hard-filtered/R603/bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv")
-# path_mockbed = intersect_mockbed("../../output/indiv_vcf/joint_genotyping/hard-filtered/R603/ams_mockbed.bed","../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/flank_5000/filtered_0.25_giab_without_noisy_regions_5000_merged.bed","ams_merged_mockbed.bed")
-# df,ams = estimate_ams(path_mockbed,"../../output/indiv_vcf/joint_genotyping/hard-filtered/R603/bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv","../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/flank_5000/filtered_0.25_giab_without_noisy_regions_5000_merged.bed")
-# print(ams)
-
-
-# flank_bedfiles = [file for file in glob.glob("../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/**/*") if "filtered" in file]
-# ls_merged_ams = glob.glob("../../output/indiv_vcf/joint_genotyping/hard-filtered/**/bed_merged_df_20_400_5_0.8_20_TRANSCRIPTS_GENES_STOPLOST.tsv")
-
-# for merged in ls_merged_ams:
-#     lst_ams_df = []
-#     for flank in flank_bedfiles:
-#         path_mockbed = merged_ams_to_mockbed(merged)
-#         path_out_mockbed = intersect_mockbed(path_mockbed,flank,"ams_merged_mockbed.bed")
-#         df,ams = estimate_ams(path_out_mockbed,merged,flank,"../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/chrom_sizes.txt")
-#         print(ams)
-#         lst_ams_df.append(df)
-#     pair_flanks_df = pd.concat(lst_ams_df)
-#     pair_flanks_df.to_csv(os.path.join(Path(path_mockbed).parent,"flanks_with_cov_dataframe.csv"),index=False)
-
 #################################################################
 ######################## bedtools flanks ########################
 #################################################################
@@ -226,11 +206,6 @@ def sloping_regions(bedfile, genome_file, slop_size):
         )
     )
     return merged_bed
-
-
-# def ams_concentration(merged_bedfile,merged_ams):
-#     bed = pd.read_csv(merged_bedfile,sep="\t",names=["CHROM","start","end"])
-#     ams = pd.read_csv(merged_ams,sep="\t")
 
 
 def filter_bedfile_intervals(bedfile, threshold):
@@ -352,17 +327,6 @@ def estimate_cov(bedfile_with_goi, ams_mockbed, merged_ams, mock_name, genome_si
             "genome_cov",
         ],
     )
-
-
-# bedfiles = [file for file in glob.glob("../../output/indiv_vcf/joint_genotyping/hard-filtered/bedfiles/Twist/*") if "goi" in file]
-# mocks = [file for file in glob.glob("../../output/runs/AMS_twist_giab/run_tables/*") if "mockbed" in file and "pairs" not in file]
-# mergeds = [file for file in glob.glob("../../output/runs/AMS_twist_giab/run_tables/*") if "merged" in file and "pairs" not in file]
-# sorted_mocks = sorted(mocks,key=lambda x:int(x.split("/")[-1].split("_")[0].split("R")[1]))
-# sorted_merged = sorted(mergeds,key=lambda x:int(x.split("/")[-1].split("_")[0].split("R")[1]))
-# lst = []
-# for bed in bedfiles:
-#     for i in range(len(sorted_mocks)):
-#         lst.append(estimate_cov(bed,sorted_mocks[i],sorted_merged[i],Path(sorted_mocks[i]).name.split(".")[0]+"_f.bed",3.3*10**9))
 
 
 def main():

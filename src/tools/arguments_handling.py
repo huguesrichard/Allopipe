@@ -112,7 +112,7 @@ def handle_type_error(arg):
     return arg
 
 
-def check_threshold_value(parser, arg):
+def check_threshold_value(parser, arg, arg_name):
     """
     Returns the homozygosity threshold value after checking if it is a float between 0 and 1
 
@@ -125,9 +125,30 @@ def check_threshold_value(parser, arg):
         threshold = float(arg)
     except ValueError as err:
         raise argparse.ArgumentTypeError(f"{err}")
-    if not 0 < threshold < 1:
-        parser.error(f"{threshold} not between 0 and 1")
+    if arg_name == "gnomad_af":
+        condition = 0 <= threshold < 1
+        error_message = f"{threshold} not between 0 and 1 (0 included)"
+    elif arg_name == "homozygosity_thr":
+        condition = 0 < threshold < 1
+        error_message = f"{threshold} not between 0 and 1 (0 excluded)"
+    else:
+        parser.error(f"Unknown argument: {arg}")
+    if not condition:
+            parser.error(error_message)
     return threshold
+    
+    
+def check_workers_count(parser,arg):
+    cpu_count = os.cpu_count()
+    if cpu_count is None:
+        raise ValueError("Failed to get CPU count!")
+    try:
+       workers = int(arg)
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"{err}")
+    if not 1 <= workers <= cpu_count:
+        parser.error(f"{workers} is not in available number of cores (1-{cpu_count})")
+    return workers
 
 
 def arguments(from_filePair : bool = False):
@@ -204,14 +225,15 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default=0.8,
         const=0.8,
-        type=lambda x: check_threshold_value(parser, x),
+        type=lambda x: check_threshold_value(parser, x, "homozygosity_thr"),
     )
     parser.add_argument("--gnomad_af",
         help="SNPs with AF in combined population below this value will be filtered",
         nargs="?",
         default=0.01,
         const=0.01,
-        type=lambda x: check_threshold_value(parser,x))
+        type=lambda x: check_threshold_value(parser,x, "gnomad_af")
+    )
     parser.add_argument(
         "--min_gq",
         help="genotype quality, the higher the more reliable the predicted genotype",
@@ -284,6 +306,13 @@ def arguments(from_filePair : bool = False):
         action=UniqueStore,
         required="-wc" in sys.argv,
         type=lambda x: check_file(parser, x, True),
+    )
+    parser.add_argument(
+        "-w",
+        "--workers",
+        help="number of workers (cores) for multiprocessing",
+        default=os.cpu_count() // 2,
+        type=lambda x: check_workers_count(parser, x)
     )
     args = parser.parse_args()
     if args.min_dp > args.max_dp:

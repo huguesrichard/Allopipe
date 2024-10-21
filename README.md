@@ -1,63 +1,66 @@
 # AlloPipe
 
 The AlloPipe tool is a computational workflow which imputes<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and their related<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) **minor histocompatibility antigens**  [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) the related **minor histocompatibility antigens** candidates <br/>
 within a pair of annotated human genomic datasets.
 
-*Be careful with the terms of use of NetMHCpan*
+<br/>
+The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind.
+<br/>
+AlloPipe is also available as a web application: https://www.allogenomics.com
+
 <br/>
 
---- 
+## In a nutshell
+
+**The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
+
 <br/>
 
-# In a nutshell
-<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(1) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
 
-**The AlloPipe tool is divided into two modules: (i) Allo-Count and (ii) Allo-Affinity**
-
-&nbsp;&nbsp;&nbsp;&nbsp; **(i) Allo-Count imputes the directional amino acid mismatches**<br/>
-
-Allo-Count reformats the relevant data from the VEP-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional** comparison of the sample amino acid sequences. Allo-Count returns: <br/>
+Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
 - **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
   
 <br/>  
 
-> **Direction of the mismatch**
+> **Directional comparison**
 > 
-> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
-> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
+> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
+> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 
 <br/>
 
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(ii) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity reconstructs peptides of requested length around the amino acid changes, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
 
-*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*
+*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
+*Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)*
 
 
 <br/>
 <br/>
 
-**There are two modes of operation for each module: (i) single pair or (ii) multiple pairs**
+**There are two modes of operation for each module: as single pair or as multiple pairs**
 	
 - **Single pair**\
 Run as 'single pair mode' if you aim to compute AMS and/or af-AMF for one pair at a time. \
-You need to provide one VEP-annotated .VCF file per individual.
+You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique VEP-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
 
 ---
 
-## Table of contents
+# Table of contents
 
 1. [Before getting started](#before)
 	1. [Requirements](#requirements)
@@ -86,9 +89,9 @@ You need to provide one unique VEP-annotated .VCF file containing the genotype o
 ### Requirements<a name="requirements"></a>
 
 AlloPipe specifically requires
-1. [Python](https://www.python.org/downloads/) >=3.6 (developed on 3.9)
+1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
 
-2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) needed to run AlloPipe in a dedicated conda environment.
+2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in an dedicated environment.
   
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
 *Make sure you use NetMHCpan in accordance with their user licence.* 
@@ -97,12 +100,13 @@ AlloPipe specifically requires
 
 ### AlloPipe installation <a name="install"></a>
 
-To download and install the AlloPipe workflow, first clone the repository from git.\
+1) Clone the repository from git\
 *You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
 
-We then recommend to **create a conda environment dedicated to the AlloPipe workflow**. The dependencies specified in the requirements.txt are needed for AlloPipe to run and should be installed in this AlloPipe environment.
-
-The following command lines will perform the above-mentioned steps:
+2) Create a conda environment dedicated to the AlloPipe workflow
+3) Install the AlloPipe requirements within the conda environment
+   
+The following command lines will perform the steps 1-2-3:
 
 		git clone https://github.com/huguesrichard/Allopipe.git
 		cd Allopipe
@@ -114,11 +118,9 @@ The following command lines will perform the above-mentioned steps:
 
 ### VEP annotation <a name="vep"></a>
 
-**AlloPipe input file(s) must be VEP-annotated .VCF files.**
-*Other annotation tools could theoritically be used after code adjustments.*
+**AlloPipe input file(s) must be variant-annotated .VCF file(s)**\
+*AlloPipe has been developed and tested with .VCF files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
 
-You will then also need a [VEP annotation tool](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download) prior the use of AlloPipe.
-AlloPipe has been developed and tested with .VCF files annotated with v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
 > 
@@ -131,7 +133,7 @@ AlloPipe has been developed and tested with .VCF files annotated with v104, v110
 	Download the VEP cache files which correspond to your Ensembl VEP installation and genome reference!
 >    - We **recommend to download the FASTA files** for the assembly of your VCF files to be able to run VEP offline.\
 	Download the FASTA files which correspond to your Ensembl VEP installation and genome reference!
->    - We **don't recommend to download any plugin**
+>    - We **do not recommend to download any plugin**
 >      
 > We then recommend to **add VEP to your PATH** by adding the following line to your ```~/.profile``` or ```~/.bash_profile```:
 > 
@@ -154,7 +156,7 @@ Where:\
 This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
-**Once the VEP annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
+**Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
 
 ---
 
@@ -165,43 +167,46 @@ Run this command for every file you want to input in AlloPipe.
 
 **What does Allo-Count perform?**
 
-From variant annotated .VCF file(s), variants are first reformated then filtered considering a set of quality metrics (defaults values):
-- 
-- 
+From variant-annotated .VCF file(s), data are first reformated to obtain one dataframe per individual.\
+Those dataframe are then filtered considering a set of quality metrics (defaults values):
+- minimal depth per position (20x)
+- maxiaml depth per position (400x)
+- minimal allelic depth (5x)
+- homozygosity threshold (0.8)
+- GnomADe allele frequency threshold (0.01)
+- genotype quality threshold (20)
+- maximal indels length (3)
 
-The curated .VCF file(s) is(are) then queried for the amino acid information to assess the **directional** amino acid mismatches between samples.
+The curated dataframes are then queried to assess the **directional polymorphisms** between samples.
 
 <br/>
 
-> **Direction of the mismatch**
+> **Directional comparison**
 > 
-> The sample comparison is directional and accounts for either the amino acids that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** count is designed to study polymorphisms that the recipient’s immune system recognises as ‘non-self’, as in **solid organ transplantation**.\
-> **_Recipient-to-donor_** count is designed toward detecting polymorphisms that the donor’s immune system recognises as ‘non-self’ once engrafted in the recipient, as in **allogeneic haematopoietic stem cell transplantation**.
-
-<br/>
- counts either the amino acids that are present in the donor but absent in the recipient (donor-to-recipient, dr) or the other way around (recipient-to-donor: present in the recipient but absent in the donor, rd).
-
+> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
+> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
+> 
 <br/>
 
 
-#### Single pair <a name="simple_ams"></a>
+#### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal *(**don't forget to activate your conda environment!**)* :  
+Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
+*Do not forget to activate your conda environment!* 
 
 		cd src/
 		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
 
-<br/>
 
 Where :\
 ```<NAME-RUN>``` is the name of the run\
 ```<NAME-OF-THE-PAIR>``` is the name of the pair\
 ```<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
 ```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
-```<DIRECTION OF THE MISMATCH>``` = 'rd' or 'dr', depending on the direction of the mismatch
+```<DIRECTION OF THE MISMATCH>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
 
-
+<br/>
 A complete helper function is provided
 
 		python ams_pipeline.py --help
@@ -211,9 +216,10 @@ A complete helper function is provided
 
 
 
-#### Multiple pairs <a name="multi_ams"></a>
+#### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to launch Allo-Count for each pair of 
+It is possible to launch Allo-Count from an annotated .VCF merged file containing the genomic data of interest.\
+In that case, you need to upload a [.csv list](template) specifying the donor/recipient pairs.
 
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
@@ -224,7 +230,7 @@ Where:\
 ```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)\
 ```<DIRECTION OF THE MISMATCH>``` is the direction of the mismatch as previously described
 
-*It is not possible to run different mismatches within the same command line.*
+*Only one directional comparison is accepted within the same command line.*
 
 We provide a complete helper function
 

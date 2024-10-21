@@ -347,8 +347,6 @@ def build_peptides(aams_run_tables,str_params,args):
     transcripts_pair = add_pep_seq(transcripts_pair, peptides_ensembl)
     transcripts_pair.to_csv(os.path.join(aams_run_tables,f"{args.pair}_{args.run_name}_full.tsv"), sep="\t", index=False)
     transcripts_reduced = get_peptides_ref(transcripts_pair, args.length)
-    # orientation = "rd"
-    # print(transcripts_reduced)
     pep_indiv_path = os.path.join(aams_run_tables, f"{args.pair}_{args.run_name}_pep_df_{str_params}.pkl")
     transcripts_reduced.to_pickle(
         pep_indiv_path

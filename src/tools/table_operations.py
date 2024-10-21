@@ -38,6 +38,7 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime, df_donor_file, df
                               mismatches_file]],
                             columns=["pair", "donor", "recipient", "orientation", "ams",
                                      "donor_table", "recipient_table", "mismatches_table"])
+    
     # change
     ams_exp_path = os.path.join(
         run_ams,
@@ -386,15 +387,6 @@ def merge_clin_ams(
     clinical = pd.read_csv(clinical_df_path, sep="\t")
     ams_clin = pd.merge(ams, clinical, how="inner", on="pair")
     ams_clin.to_csv(os.path.join(run_path, "csh_clinical_ams.csv"), index=False)
-
-
-# directory = "../../output/indiv_vcf/joint_genotyping/hard-filtered/"
-# min_DP = "20"
-# max_DP = "400"
-# min_AD = "5"
-# homozygosity_threshold = "0.8"
-# orientation = "rd"
-# merge_clin_ams("../../output/general_tables/csh_2021_12_9_relevant_clinical_data.tsv",directory,min_DP,max_DP,min_AD,homozygosity_threshold,orientation)
 
 
 ################################################################################
