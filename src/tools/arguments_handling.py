@@ -284,12 +284,6 @@ def arguments(from_filePair : bool = False):
         action="store_true",
     )
     parser.add_argument(
-        "-f",
-        "--full",
-        help="toggle save of more tables showing a subset of removed positions",
-        action="store_true",
-    )
-    parser.add_argument(
         "-wcd",
         "--wc_donor",
         help="donor file of the worst consequences per position predicted by Variant Effect Predictor",
