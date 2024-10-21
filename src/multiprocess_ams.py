@@ -69,10 +69,6 @@ def main():
     command line help : python3 multiprocess_ams.py [-h]
     """
     args = arguments_handling.arguments(sys.argv[1])
-    if args.full:
-        full = " --full"
-    else:
-        full = ""
     couples = []
     read_pairs_info(args.file_pairs, couples)
     
@@ -114,7 +110,7 @@ def main():
     f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
     f"--min_gq {args.min_gq} --base_length {args.base_length} "
     f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d}"
-    f"{full} --norm_score"
+    f"--norm_score"
 #   Doesn't take into account -wc
 #    f"-wc --wc_donor {args.wc_donor} --wc_recipient {args.wc_recipient}"
     for pair_number, (path_donor, path_recipient) in enumerate(path_couples, 1)
