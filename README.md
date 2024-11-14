@@ -199,7 +199,7 @@ Once the variant-annotation is complete, go to the root of the AlloPipe director
 *Do not forget to activate your conda environment!* 
 
 		cd src/
-		python ams_pipeline.py -f -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
+		python ams_pipeline.py -n <NAME-RUN> -p <NAME-OF-THE-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
 
 
 Where :\
