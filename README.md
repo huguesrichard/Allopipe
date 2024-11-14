@@ -390,7 +390,7 @@ To test your VEP installation, run the following command at the root of the Allo
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
 
 	cd src/
-	python ams_pipeline.py -f -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+	python ams_pipeline.py -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
  If your AMS returns 44, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
 
