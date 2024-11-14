@@ -88,16 +88,13 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 
 ### Requirements<a name="requirements"></a>
 
-AlloPipe specifically requires
+AlloPipe installation specifically requires
 1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
 
 2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in an dedicated environment.
   
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
 *Make sure you use NetMHCpan in accordance with their user licence.*
-
-4. Two genomic datasets to be compared, formatted as variant-annotated .VCF.\
-*The AlloPipe tool has been developed on VEP-annotated .VCF v4.2. See [VEP annotation](#vep) for complete instructions.*
    
 <br/>
 
@@ -122,7 +119,7 @@ The following command lines will perform the steps 1-2-3:
 ### VEP annotation <a name="vep"></a>
 
 **AlloPipe input file(s) must be variant-annotated .VCF file(s)**\
-*AlloPipe has been developed and tested with .VCF files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
+*AlloPipe has been developed and tested with .VCF v4.2 files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
 
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
