@@ -96,8 +96,8 @@ AlloPipe specifically requires
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
 *Make sure you use NetMHCpan in accordance with their user licence.*
 
-4. Two genomic datasets to be compared formatted as variant-annotated .VCF.\
-*The AlloPipe tool has been developed on VEP-annotated .VCFv4.2. See [VEP annotation](#vep) for complete instructions.*
+4. Two genomic datasets to be compared, formatted as variant-annotated .VCF.\
+*The AlloPipe tool has been developed on VEP-annotated .VCF v4.2. See [VEP annotation](#vep) for complete instructions.*
    
 <br/>
 
