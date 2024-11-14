@@ -109,7 +109,7 @@ def main():
     f"--min_dp {args.min_dp} --max_dp {args.max_dp} --min_ad {args.min_ad} "
     f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
     f"--min_gq {args.min_gq} --base_length {args.base_length} "
-    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d}"
+    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d} "
     f"--norm_score"
 #   Doesn't take into account -wc
 #    f"-wc --wc_donor {args.wc_donor} --wc_recipient {args.wc_recipient}"
