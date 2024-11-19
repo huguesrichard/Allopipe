@@ -58,7 +58,7 @@ You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [.csv list](template) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [example.csv](./data/example.csv) of the pairs you want to process.
 
 ---
 
@@ -218,7 +218,7 @@ A complete helper function is provided
 #### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
 It is possible to launch Allo-Count from an annotated .VCF merged file containing the genomic data of interest.\
-In that case, you need to upload a [.csv list](template) specifying the donor/recipient pairs.
+In that case, you need to upload a [example.csv](./data/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
