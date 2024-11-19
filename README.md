@@ -295,16 +295,22 @@ In this table, you can find the following information :
 
 **What does Allo-Affinity perform?**
 
-From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient for a given length defined by the user - usually 9-mers for HLA class I and 15-mers for HLA class II molecules - using the principle of the sliding window.
+From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, **Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient** for a given length defined by the user using the principle of the sliding window.
 
 **The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides exhibiting a polymorphism present by the donor but absent from the recipient will be reconstructed.\
 In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides exhibiting a polymorphism present by the recipient but absent from the donor will be reconstructed.
 
-Allo-Affinity prepares the files that are required by 
+In the mean of assessing the peptides potentially trigerring the alloreactivity, the latter need to be embedded in HLA class I and/or class II molecules, therefore being of 9-AA long (9-mers) or 15-AA long (15-mers), even though any length is tolerated by Allo-Affinity.
+Allo-Affinity eventually prepares the .fasta files containing the peptides and the appended files that are required to run by
  - [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/)
- - [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) to finally impute the affinity of those reconstructed peptides towards the HLA peptide grooves.
+ - [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) 
  - tbu
 
+
+> To run NetMHCpan, you will need <REFERENCE-GENOME.cdna.all.VEP-VERSION>.fa.gz and <REFERENCE-GENOME.pep.VEP-VERSION>.fa.gz that you can find [here](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/), plus <REFERENCE-GENOME.VEP-VERSION.refseq>.tsv.gz [here](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/)
+> **BEWARE ! The number of the release has to match your VEP version**
+
+Each of these tool imputes the affinity of the reconstructed peptides towards the HLA peptide grooves, therefore output **potential minor histocompatibility antigens (mHAgs)**
 **Please note that the HLA typing has to be known before running the command line**, as the AlloPipe tool does not impute the HLA typing from genomic data.
 
 <br/>
