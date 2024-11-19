@@ -15,6 +15,8 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 ## In a nutshell
 
 **The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
+<br/>
+![AP-BP](https://github.com/user-attachments/assets/1a6d6b36-0ba2-4030-ad9a-0e4712abb6c2)
 
 <br/>
 
