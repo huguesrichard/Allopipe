@@ -120,7 +120,7 @@ The following command lines will perform the steps 1-2-3:
 
 <br/>
 
-**AlloPipe input file(s) must be variant-annotated .VCF file(s). We highly recommend to perform the variant annotation with the most recent version of VEP using the command line installation.**
+**AlloPipe input file(s) must be variant-annotated .VCF file(s). We highly recommend to perform the variant annotation with the most recent version of VEP using the command line installation and all the arguments specified below.**
 
 >*Any variant annotator could be used at this step, but keep in mind that AlloPipe has been developed with .VCF v4.2 files annotated with VEP command line installation for versions 103, 104, 110 and 111.*
 
@@ -174,13 +174,13 @@ Those dataframe are then filtered considering a set of quality metrics (defaults
 - genotype quality threshold (20)
 - maximal indels length (3)
 
-The curated dataframes are then queried to assess the **directional polymorphisms** between samples.
+The curated dataframes are then queried to assess the **directional mismatches** between samples.
 
 <br/>
 
 > **Directional comparison**
 > 
-> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> The sample comparison is **directional** and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
 > **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
 > **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 > 
@@ -248,7 +248,7 @@ We provide a complete helper function
 
 After the run is complete, have look at the **output/runs/<NAME-RUN>/** directory that was created.  
 The directory is structured as followed :  
-1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a csv file.  
+1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a .csv file.  
 2. the **plots/** subdirectory
 3. the **run_tables** subdirectory contains all the tables created during the run. 
 
@@ -292,18 +292,18 @@ In this table, you can find the following information :
 
 ### Launch Allo-Affinity <a name="aams_run"></a>
 
-<br/>
-
-Allo-Affinity generates a set of candidate minor histocompatibility antigens around each previously assessed directional amino acid mismatches using sliding window. The user defines the length of the potentially HLA-embedded peptides, usually 9-mers for HLA class I and 15-mers for HLA class II molecules. The affinity values are computed using [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), respectively.
 
 **What does Allo-Affinity perform?**
 
-From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient.
+From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient for a given length defined by the user - usually 9-mers for HLA class I and 15-mers for HLA class II molecules - using the principle of the sliding window.
 
-**The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides present by the donor but absent from the recipient will be reconstructed.\
-In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides present by the recipient but absent from the donor will be reconstructed.
+**The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides exhibiting a polymorphism present by the donor but absent from the recipient will be reconstructed.\
+In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides exhibiting a polymorphism present by the recipient but absent from the donor will be reconstructed.
 
-Allo-Affinity prepares the files that are required by [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) and [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) to finally impute the affinity of those reconstructed peptides towards the HLA peptide grooves.
+Allo-Affinity prepares the files that are required by 
+ - [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/)
+ - [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) to finally impute the affinity of those reconstructed peptides towards the HLA peptide grooves.
+ - tbu
 
 **Please note that the HLA typing has to be known before running the command line**, as the AlloPipe tool does not impute the HLA typing from genomic data.
 
