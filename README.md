@@ -119,10 +119,12 @@ The following command lines will perform the steps 1-2-3:
 ### VEP-annotated .VCF files <a name="vep"></a>
 
 **AlloPipe input file(s) must be variant-annotated .VCF file(s)**\
-*AlloPipe has been developed and tested with .VCF v4.2 files annotated with VEP v103, v104, v110 and v111. We recommend to use the most recent version of VEP unless it leads to major changes in the architecture of the output .VCF files.*
+*AlloPipe has been developed and tested with .VCF v4.2 files annotated using the VEP command line installation for versions 103, 104, 110 and 111. 
+We recommend to perform the annonation with the command line installation and to use the most recent version of VEP.*
 
 > **_VEP annotation: On-line or command line installation_**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
+> We recommend and provide all information to launch the annotation with the command lines.
 > 
 >  - To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).
 >
