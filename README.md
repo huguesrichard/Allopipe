@@ -252,7 +252,7 @@ After the run is complete, have look at the **output/runs/<NAME-RUN>/** director
 The directory is structured as followed :  
 1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a .csv file.  
 2. the **plots/** subdirectory
-3. the **run_tables** subdirectory contains all the tables created during the run. 
+3. the **run_tables/** subdirectory contains all the tables created during the run. 
 
 In the **run_tables/** directory, you can find the mismatches table that will give you direct information on the mismatched positions.  
 In this table, you can find the following information :  
@@ -311,8 +311,8 @@ Allo-Affinity eventually prepares the .fasta files containing the peptides and t
 
 <br/>
 
-> To run NetMHCpan, you will need <REFERENCE-GENOME.cdna.all.VEP-VERSION>.fa.gz and <REFERENCE-GENOME.pep.VEP-VERSION>.fa.gz that you can find [here](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/), plus <REFERENCE-GENOME.VEP-VERSION.refseq>.tsv.gz [here](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/)
-> **BEWARE ! The number of the release has to match your VEP version**
+> To run NetMHCpan, you will need <REFERENCE-GENOME.cdna.all.VEP-VERSION>.fa.gz and <REFERENCE-GENOME.pep.VEP-VERSION>.fa.gz that you can find [here](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/), plus <REFERENCE-GENOME.VEP-VERSION.refseq>.tsv.gz [here](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/) \
+> **BEWARE ! The number of the release has to match your VEP version** \
 > We provide the latest versions of those files [here](./data/Ensembl)
 
 <br/>
