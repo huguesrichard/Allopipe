@@ -147,12 +147,12 @@ To install the VEP command line tool, follow the installation tutorial available
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 	
-		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf -o <PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
+		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
 
 Where:\
 ```<GRChXX>``` is the version of the genome used to align the sequences.\
-```<PATH-TO-FILE-TO-ANNOTATE/FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
-```<PATH-TO-ANNOTATED-FILE/ANNOTATED-FILE>``` is the path to the directory and the name of the ouput annotated file.\
+```<FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
+```<ANNOTATED-FILE>.vcf``` is the path to the directory and the name of the ouput annotated file.\
 
 This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
@@ -197,15 +197,15 @@ Once the variant-annotation is complete, go to the root of the AlloPipe director
 *Do not forget to activate your conda environment!* 
 
 		cd src/
-		python ams_pipeline.py -n <NAME-RUN> -p <NAME-PAIR> <PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf <DIRECTION OF THE MISMATCH>
+		python ams_pipeline.py -n <NAME-RUN> -p <NAME-PAIR> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION>
 
 
 Where :\
 ```<NAME-RUN>``` is the name of the run\
 ```<NAME-PAIR>``` is the name of the pair\
-```<PATH-TO-DONOR-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
-```<PATH-TO-RECIPIENT-ANNOTATED-FILE/ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
-```<DIRECTION OF THE MISMATCH>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
+```<DONOR-ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
+```<RECIPIENT-ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
+```<MISMATCH-DIRECTION>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
 
 <br/>
 A complete helper function is provided
@@ -223,13 +223,13 @@ It is possible to launch Allo-Count from an annotated .VCF merged file containin
 In that case, you need to upload a [example.csv](./data/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
-		python multiprocess_ams.py -n <NAME-RUN> <PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf <PATH-TO-THE-PAIR-LIST>.csv <DIRECTION OF THE MISMATCH>
+		python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION>
 
 Where:\
 ```<NAME-RUN>``` is the name of the run\
-```<PATH-TO-THE-MERGED-ANNOTATED-FILE>.vcf``` is the path to the annotated merged VCF file\
-```<PATH-TO-THE-PAIR-LIST>.csv``` is the path to the list pairing the sample (template provided in the tutorial)\
-```<DIRECTION OF THE MISMATCH>``` is the direction of the mismatch as previously described
+```<JOINT-ANNOTATED-FILE>.vcf``` is the path to the annotated joint .VCF file\
+```<PAIR-LIST>.csv``` is the path to the list pairing the samples [example.csv](./data/example.csv)\
+```<MISMATCH-DIRECTION>``` is the direction of the mismatch as previously described
 
 *Only one directional comparison is accepted within the same command line.*
 
@@ -339,30 +339,36 @@ Once the AMS run is complete, go back to the AlloPipe root directory and run thi
 
 
 		cd src
-		gzip -d <PATH-TO-REFERENCE-GENOME>.cdna.all.fa.gz
-		gzip -d <PATH-TO-REFERENCE-GENOME>.pep.fa.gz
-		gzip -d <PATH-TO-REFERENCE-GENOME>.refseq.tsv.gz
+		gzip -d <REFERENCE-GENOME>.cdna.all.fa.gz
+		gzip -d <REFERENCE-GENOME>.pep.fa.gz
+		gzip -d <REFERENCE-GENOME>.refseq.tsv.gz
 		python aams_pipeline.py 
-		-M <PATH-TO-MISMATCH-TABLE>.tsv 
-		-T <PATH-TO-TRANSCRIPT-TABLE>.tsv
-		-E <PATH-TO-REFERENCE-GENOME>.cdna.all.fa
-		-P <PATH-TO-REFERENCE-GENOME>.pep.fa
-		-R <PATH-TO-REFERENCE-GENOME>.refseq.tsv
-		-n <TEST-RUN> -p <TEST-PAIR> -l <PEP-LENGTH> --el_rank <THRESHOLD-FOR-EL> 
+		-M <MISMATCH-TABLE>.tsv 
+		-T <TRANSCRIPT-TABLE>.tsv
+		-E <REFERENCE-GENOME>.cdna.all.fa
+		-P <REFERENCE-GENOME>.pep.fa
+		-R <REFERENCE-GENOME>.refseq.tsv
+		-n <TEST-RUN> -p <TEST-PAIR> -l <PEP-LENGTH> --el_rank <EL-THR> 
 		-a <HLA-TYPING> 
 
 Where:\
-	```<PATH-TO-REFERENCE-GENOME>.cdna.all.fa.gz``` is the path to the gzip .cdna.fasta file\
-	```<PATH-TO-REFERENCE-GENOME>.pep.fa.gz``` is the path to the gzip .pep.fa file\
-	```<PATH-TO-REFERENCE-GENOME>.refseq.tsv.gz``` is the path to the gzip .refseq.tsv file\
+	```<REFERENCE-GENOME>.cdna.all.fa.gz``` is the path to the gzip .cdna.fasta file\
+	```<REFERENCE-GENOME>.pep.fa.gz``` is the path to the gzip .pep.fa file\
+	```<REFERENCE-GENOME>.refseq.tsv.gz``` is the path to the gzip .refseq.tsv file\
  These three first lines should be run only the first time you launch Allo-Affinity
-	```<PATH-TO-MISMATCH-TABLE>.tsv``` is the path to the mismatch table generated by Allo-Count\
-	```<PATH-TO-TRANSCRIPT-TABLE>.tsv``` is the path to the transcript table generated by Allo-Count\
+	```<MISMATCH-TABLE>.tsv``` is the path to the mismatch table generated by Allo-Count\
+	```<TRANSCRIPT-TABLE>.tsv``` is the path to the transcript table generated by Allo-Count\
 	```<NAME-RUN>``` is the name of the run. **It has to be consistent with the ```<NAME-RUN>``` used in the Allo-Count part** \
 	```<NAME-PAIR>``` is the name of the pair \
  	```<PEP-LENGTH>``` is the length of peptided to be imputed \
+   	```<EL-THR>``` is the elution threshold \
 	```<HLA-TYPING>``` is the HLA typing e.g. ```HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01```
 
+ 
+<br/>
+
+> Peptide length
+> Elution threshold
 
 #### Multiple pairs <a name="multi_aams"></a>
 
