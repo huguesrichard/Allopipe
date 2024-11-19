@@ -124,6 +124,8 @@ The following command lines will perform the steps 1-2-3:
 
 **AlloPipe input file(s) must be variant-annotated .VCF file(s). We highly recommend to perform the variant annotation with the most recent version of VEP using the command line installation and all the arguments specified below.**
 
+<br/>
+
 >*Any variant annotator could be used at this step, but keep in mind that AlloPipe has been developed with .VCF v4.2 files annotated with VEP command line installation for versions 103, 104, 110 and 111.*
 
 <br/>
@@ -138,7 +140,7 @@ To install the VEP command line tool, follow the installation tutorial available
       
  We then recommend to **add VEP to your PATH** by adding the following line to your ```~/.profile``` or ```~/.bash_profile```:
 
-	```export PATH=%%PATH/TO/VEP%%:${PATH}```
+		export PATH=%%PATH/TO/VEP%%:${PATH}
 
 <br/>
 
@@ -328,17 +330,17 @@ Each of these tool imputes the affinity of the reconstructed peptides towards th
 Once the AMS run is complete, go back to the AlloPipe root directory and run this second set of commands:  
 
 
-	cd src/
-	gzip -d <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz
- 	gzip -d <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz
-  	gzip -d <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz
-	python aams_pipeline.py -M <PATH-TO-MISMATCH-TABLE>.tsv \
- 	-T <PATH-TO-TRANSCRIPT-TABLE>.tsv\
-  	-E <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz \
-   	-P <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz \
-	-R <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz \
-	-n <TEST-RUN> -p <TEST-PAIR> -l <LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED> --el_rank <THRESHOLD-FOR-EL> \
-	 -a <HLA-TYPING> 
+	```cd src
+	```gzip -d <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz
+ 	```gzip -d <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa.gz
+  	```gzip -d <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv.gz
+	```python aams_pipeline.py -M <PATH-TO-MISMATCH-TABLE>.tsv 
+ 	```-T <PATH-TO-TRANSCRIPT-TABLE>.tsv
+  	```-E <PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa
+   	```-P <PATH-TO-GENOME-REFERENCE.pep.VEP-VERSION>.fa
+	```-R <PATH-TO-GENOME-REFERENCE.VEP-VERSION.refseq>.tsv
+	```-n <TEST-RUN> -p <TEST-PAIR> -l <LENGTH-OF-PEPTIDES-TO-BE-RECONSTRUCTED> --el_rank <THRESHOLD-FOR-EL> 
+	```-a <HLA-TYPING> 
 
 Where:\
 	```<PATH-TO-GENOME-REFERENCE.cdna.all.VEP-VERSION>.fa.gz``` is the path to\
