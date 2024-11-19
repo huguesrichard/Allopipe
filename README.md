@@ -65,7 +65,7 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 1. [Before getting started](#before)
 	1. [Requirements](#requirements)
 	2. [AlloPipe installation](#install)
-	3. [VEP annotation](#vep)
+	3. [Variant annotation](#vep)
     
 <br/>
 
@@ -116,18 +116,16 @@ The following command lines will perform the steps 1-2-3:
 
 <br/>
 
-### VEP-annotated .VCF files <a name="vep"></a>
+### Variant annotation <a name="vep"></a>
 
 **AlloPipe input file(s) must be variant-annotated .VCF file(s)**\
-*AlloPipe has been developed and tested with .VCF v4.2 files annotated using the VEP command line installation for versions 103, 104, 110 and 111. 
-We recommend to perform the annonation with the command line installation and to use the most recent version of VEP.*
+Even if any variant annotator could be used at this step, we developed AlloPipe with .VCF v4.2 files annotated using the VEP command line installation for versions 103, 104, 110 and 111.*
+We therefore recommend to perform the annotation with the most recent version of VEP using the command line installation.
 
-> **_VEP annotation: On-line or command line installation_**\
+
+> **VEP annotation: command line installation**\
 > VEP annotation can be done using the online tool or by downloading the command line tool.
-> We recommend and provide all information to launch the annotation with the command lines.
-> 
->  - To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).
->
+> We recommend and provide all information to launch the annotation with the command line installation.
 > 
 >  - To install the command line tool, follow the installation tutorial available [here](https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html#download).\
 >		During the installation, you will be asked if you want to download **cache** files, **FASTA** files and **plugins**.
@@ -144,6 +142,9 @@ We recommend to perform the annonation with the command line installation and to
 >*If you are on Windows, you can follow this [tutorial](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) to add VEP to your PATH.*
 >
 >For complete insights on VEP, see [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)
+
+
+>  - To use the web interface, follow this [link](https://www.ensembl.org/Tools/VEP).
 
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
