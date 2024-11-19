@@ -307,8 +307,12 @@ Allo-Affinity eventually prepares the .fasta files containing the peptides and t
  - tbu
 
 
+<br/>
+
 > To run NetMHCpan, you will need <REFERENCE-GENOME.cdna.all.VEP-VERSION>.fa.gz and <REFERENCE-GENOME.pep.VEP-VERSION>.fa.gz that you can find [here](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/), plus <REFERENCE-GENOME.VEP-VERSION.refseq>.tsv.gz [here](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/)
 > **BEWARE ! The number of the release has to match your VEP version**
+
+<br/>
 
 Each of these tool imputes the affinity of the reconstructed peptides towards the HLA peptide grooves, therefore output **potential minor histocompatibility antigens (mHAgs)**
 **Please note that the HLA typing has to be known before running the command line**, as the AlloPipe tool does not impute the HLA typing from genomic data.
