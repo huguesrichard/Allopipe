@@ -412,8 +412,8 @@ You can now get started with your files, check the [documentation](#docs/documen
 We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate.vcf and tutorial/recipient_to_annotate.vcf *(those files correspond to human chr6)*.\
 To test your VEP installation, run the following command at the root of the AlloPipe directory :  
 	
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --vcf
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --vcf 
+		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --coding_only --pick_allele --use_given_ref  --vcf
+		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --coding_only --pick_allele --use_given_ref  --vcf 
 
 
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
