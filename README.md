@@ -424,6 +424,8 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
  If your AMS returns 44, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
  With the same set of data, you should retrieve 67 for SOT settings (dr)
 
+ *tbi: rd imputation = 51 / dr imputation = 79*
+
  Finally, to get your af-AMS and related table, run:
  
   	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa.gz
