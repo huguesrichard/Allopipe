@@ -319,8 +319,8 @@ Allo-Affinity eventually prepares the .fasta files containing the peptides and t
 > To run NetMHCpan, you will need the following files:\
 > **BEWARE! The number of the release has to match your VEP version!**\
 > Do not forget to select the reference genome used to perfom the alignment.
-> - <REFERENCE-GENOME>.cdna.all.fa.gz [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/)
-> - <REFERENCE-GENOME>.pep.fa.gz [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/)
+> - <REFERENCE-GENOME>.cdna.all.fa.gz [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna)
+> - <REFERENCE-GENOME>.pep.fa.gz [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/pep](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/pep)
 > - <REFERENCE-GENOME>.refseq.tsv.gz [https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/) \
 > 
 >*Replace XXX by your VEP version in the previous links*
