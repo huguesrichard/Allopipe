@@ -410,17 +410,18 @@ You can now get started with your files, check the [documentation](#docs/documen
 ## Tutorial <a name="tuto"></a>
 
 We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate.vcf and tutorial/recipient_to_annotate.vcf *(those files correspond to human chr6)*.\
+<br/>
 To test your VEP installation (v111 in this tutorial), run the following command:  
 	
 		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf
 		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
 
-
+<br/>
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
 
 	cd src/
 	python ams_pipeline.py -n test_run -p test_pair ../tutorial/donor_annotated_vep111.vcf ../tutorial/recipient_annotated_vep111.vcf rd no-imputation
-
+<br/>
 If AMS returns 45, you're all set!
 Other commands should return the following results
 
@@ -429,7 +430,7 @@ Other commands should return the following results
 |  HSCT = rd   |       52      |      45       | 
 |  SOT = dr    |       79      |      67       | 
 
-
+<br/>
  Finally, to get your af-AMS and related table, run:
  
   	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.fa.gz
@@ -446,6 +447,6 @@ Other commands should return the following results
 	-l 9 --el_rank 2 \
 	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 
-Ir your af-AMS returns 33, you are all set !
+Ir your af-AMS returns 31, you are all set !
 
 You can now enjoy AlloPipe. We will be happy of any feedback !
