@@ -280,7 +280,7 @@ def arguments(from_filePair : bool = False):
     parser.add_argument(
         "-ns",
         "--norm_score",
-        help="toggle score normalization (recommended for multiprocess_ams only)",
+        help=argparse.SUPPRESS,
         action="store_true",
     )
     parser.add_argument(
