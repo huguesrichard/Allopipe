@@ -190,6 +190,17 @@ The curated dataframes are then queried to assess the **directional mismatches**
 > 
 <br/>
 
+**Imputation mode**
+You have to choose if you want to impute as ref/ref the variants missing in one of the table.
+If you are using individual VCF files as input, you most probably want to impute missing data as homozygous for the reference (ref/ref, or O/O)
+If you are using joint VCF, running no-imputation will explicitely rull out 
+
+> **Imputation mode**
+> The sample comparison is **directional** and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
+> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
+> 
+<br/>
 
 #### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
