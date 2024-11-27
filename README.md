@@ -410,18 +410,19 @@ You can now get started with your files, check the [documentation](#docs/documen
 ## Tutorial <a name="tuto"></a>
 
 We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotate.vcf and tutorial/recipient_to_annotate.vcf *(those files correspond to human chr6)*.\
-To test your VEP installation, run the following command at the root of the AlloPipe directory :  
+To test your VEP installation (v111 in this tutorial), run the following command:  
 	
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_VEP.vcf --coding_only --pick_allele --use_given_ref  --vcf
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_VEP.vcf --coding_only --pick_allele --use_given_ref  --vcf 
+		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf
+		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
 
 
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
 
 	cd src/
-	python ams_pipeline.py -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
+	python ams_pipeline.py -n test_run -p test_pair ../tutorial/donor_annotated_vep111.vcf ../tutorial/recipient_annotated_vep111.vcf rd no-imputation
 
-With a VEP annotation v111, the tutorial files should return the following results:
+If AMS returns 45, you're all set!
+Other commands should return the following results
 
 |  Orientation |   Imputation  | No imputation |
 | ------------ | ------------- | ------------- |
@@ -431,16 +432,16 @@ With a VEP annotation v111, the tutorial files should return the following resul
 
  Finally, to get your af-AMS and related table, run:
  
-  	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa.gz
- 	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa.gz
-	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv.gz
+  	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.fa.gz
+ 	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.fa.gz
+	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.111.refseq.tsv.gz
 	
 	python aams_pipeline.py \
 	-M ../output/runs/test_run/run_tables/test_pair_test_run_mismatches_20_400_5_gq_20_0.8_bl_3.tsv \
 	-T ../output/runs/test_run/run_tables/test_pair_test_run_transcripts_pair_codons_20_400_5_gq_20_0.8_bl_3.tsv \
-	-E ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.103.fa \
-	-P ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.103.fa \
-	-R ../data/Ensembl/Homo_sapiens.GRCh38.103.refseq.tsv \
+	-E ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.fa \
+	-P ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.fa \
+	-R ../data/Ensembl/Homo_sapiens.GRCh38.111.refseq.tsv \
 	-n test_run -p test_pair \
 	-l 9 --el_rank 2 \
 	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
