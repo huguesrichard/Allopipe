@@ -421,10 +421,13 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 	cd src/
 	python ams_pipeline.py -n test_run -p test_pair ../tutorial/donor_annotated_VEP.vcf ../tutorial/recipient_annotated_VEP.vcf rd
 
- If your AMS returns 44, congrats ! You successfully generated your first Allogenomic Mismatch Score (AMS) and related tables !
- With the same set of data, you should retrieve 67 for SOT settings (dr)
+With a VEP annotation v111, the tutorial files should return the following results:
 
- *tbi: rd imputation = 51 / dr imputation = 79*
+|  Orientation |   Imputation  | No imputation |
+| ------------ | ------------- | ------------- |
+|  HSCT = rd   |       52      |      45       | 
+|  SOT = dr    |       79      |      67       | 
+
 
  Finally, to get your af-AMS and related table, run:
  
