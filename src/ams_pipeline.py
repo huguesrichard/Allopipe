@@ -56,7 +56,7 @@ def main():
     df_recipient.to_csv(df_recipient_file, sep="\t", index=False)
     # merge dataframes based on the orientation of the comparison
     merged_df, side, opposite = ams_helpers.merge_dfs(
-        df_donor, df_recipient, args.orientation
+        df_donor, df_recipient, args.orientation, args.imputation
     )
     # remove REF/REF vs NaN positions
     merged_df = ams_helpers.keep_alt(merged_df, side, opposite)

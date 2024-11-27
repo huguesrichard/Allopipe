@@ -195,6 +195,11 @@ def arguments(from_filePair : bool = False):
         choices=["dr", "rd"],
     )
     parser.add_argument(
+        "imputation",
+        help="choose the imputation mode",
+        choices=["imputation", "no-imputation"],
+    )
+    parser.add_argument(
         "--min_dp",
         help="minimal accepted depth per position",
         nargs="?",
