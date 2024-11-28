@@ -243,8 +243,8 @@ def arguments(from_filePair : bool = False):
         "--min_gq",
         help="genotype quality, the higher the more reliable the predicted genotype",
         nargs="?",
-        default=20,
-        const=20,
+        default=0,
+        const=0,
         type=lambda x: handle_type_error(x),
     )
     parser.add_argument(
