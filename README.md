@@ -195,12 +195,6 @@ You have to choose if you want to impute as ref/ref the variants missing in one 
 If you are using individual VCF files as input, you most probably want to impute missing data as homozygous for the reference (ref/ref, or O/O)
 If you are using joint VCF, running no-imputation will explicitely rull out 
 
-> **Imputation mode**
-> The sample comparison is **directional** and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
-> **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
-> **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
-> 
-<br/>
 
 #### Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
@@ -208,7 +202,7 @@ Once the variant-annotation is complete, go to the root of the AlloPipe director
 *Do not forget to activate your conda environment!* 
 
 		cd src/
-		python ams_pipeline.py -n <NAME-RUN> -p <NAME-PAIR> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION>
+		python ams_pipeline.py -n <NAME-RUN> -p <NAME-PAIR> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION> <IMPUTATION-MODE>
 
 
 Where :\
@@ -217,6 +211,7 @@ Where :\
 ```<DONOR-ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
 ```<RECIPIENT-ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
 ```<MISMATCH-DIRECTION>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
+```<IMPUTATION-MODE>``` is the imputation mode
 
 <br/>
 A complete helper function is provided
@@ -234,13 +229,14 @@ It is possible to launch Allo-Count from an annotated .VCF merged file containin
 In that case, you need to upload a [example.csv](./data/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
-		python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION>
+		python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
 
 Where:\
 ```<NAME-RUN>``` is the name of the run\
 ```<JOINT-ANNOTATED-FILE>.vcf``` is the path to the annotated joint .VCF file\
 ```<PAIR-LIST>.csv``` is the path to the list pairing the samples [example.csv](./data/example.csv)\
 ```<MISMATCH-DIRECTION>``` is the direction of the mismatch as previously described
+```<IMPUTATION-MODE>``` is the imputation mode
 
 *Only one directional comparison is accepted within the same command line.*
 
