@@ -20,7 +20,6 @@
 ##FILTER=<ID=lod_fstar,Description="Variant does not meet likelihood threshold (default threshold is 6.3)">
 ##contig=<ID=chr6,length=170805979>
 ##reference=file:///staging/reference/hs38DH/reference.bin
-##VEP="v103" time="2021-04-13 13:57:26" cache="/home/inge/.vep/homo_sapiens/103_GRCh38" db="homo_sapiens_core_103_38@ensembldb.ensembl.org" ensembl-funcgen=103 ensembl-variation=103 ensembl=103 ensembl-io=103 1000genomes="phase3" COSMIC="92" ClinVar="202008" ESP="V2-SSA137" HGMD-PUBLIC="20194" assembly="GRCh38.p13" dbSNP="154" gencode="GENCODE 37" genebuild="2014-07" gnomAD="r2.1" polyphen="2.2.2" regbuild="1.0" sift="sift5.2.2"
 ##bcftools_annotateVersion=1.13+htslib-1.13+ds
 ##bcftools_annotateCommand=annotate -x INFO donor_renamed.vcf; Date=Wed Oct 26 16:56:03 2022
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	DONOR

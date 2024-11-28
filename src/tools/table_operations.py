@@ -277,14 +277,16 @@ def get_relevant_clin_data(clinical_xls):
     )
 
 
-# get_relevant_clin_data("../../output/general_tables/csh_2021_12_08_geno_clinical_data.tsv")
+# Get ref ratio
 def get_ref_ratio_pair(donor_df, recipient_df):
     merged = pd.merge(donor_df, recipient_df, how="outer", on=["CHROM", "POS"])
-    common_ref = len(
-        merged[(merged["GT_x"] == "0/0") & (merged["GT_y"] == merged["GT_x"])]
-    )
+    common_ref = len(merged[(merged["GT_x"] == "0/0") & (merged["GT_y"] == merged["GT_x"])])
     total_ref = len(merged[(merged["GT_x"] == "0/0") | (merged["GT_y"] == "0/0")])
-    return (common_ref, total_ref, common_ref / total_ref)
+    if total_ref == 0:
+        print("Warning: Normalization cannot be computed - division by 0")
+        return (common_ref, total_ref, None)
+    else:
+        return (common_ref, total_ref, common_ref / total_ref)
 
 
 #
@@ -344,8 +346,12 @@ def get_ref_ratio(
         ams_pair_df.insert(ams_index + 2, "total_ref", total_ref)
         ams_pair_df.insert(ams_index + 3, "ref_ratio", ref_ratio)
         infos.append(ams_pair_df)
-    ams_df = pd.concat(infos).reset_index(drop=True)
-    return (ams_df, ams_exp_path)
+    if ref_ratio is not None:
+        ams_df = pd.concat(infos).reset_index(drop=True)
+        return (ams_df, ams_exp_path, ref_ratio)
+    else:
+        return (None, ams_exp_path, ref_ratio)
+
 
 
 

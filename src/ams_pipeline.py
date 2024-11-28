@@ -56,7 +56,7 @@ def main():
     df_recipient.to_csv(df_recipient_file, sep="\t", index=False)
     # merge dataframes based on the orientation of the comparison
     merged_df, side, opposite = ams_helpers.merge_dfs(
-        df_donor, df_recipient, args.orientation
+        df_donor, df_recipient, args.orientation, args.imputation
     )
     # remove REF/REF vs NaN positions
     merged_df = ams_helpers.keep_alt(merged_df, side, opposite)
@@ -100,15 +100,16 @@ def main():
         run_ams, args, mismatch, formatted_datetime, df_donor_file, df_recipient_file, mismatches_file
     )
     print(mismatch)
-    
+
     # score normalization (multiprocess_ams only)
     if args.norm_score:
-        ams_df, ams_exp_path = table_operations.get_ref_ratio(
+        ams_df, ams_exp_path, ref_ratio = table_operations.get_ref_ratio(
             args.run_name, args.pair, run_path, ams_exp_path, args.donor, args.recipient,
             args.min_dp, args.max_dp, args.min_ad, args.homozygosity_thr, args.min_gq,
             args.orientation, args.base_length
         )
-        table_operations.add_norm(ams_df, ams_exp_path)
+        if ref_ratio is not None:
+            table_operations.add_norm(ams_df, ams_exp_path)
     
     return 0
 

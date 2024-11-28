@@ -474,7 +474,7 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, format
     return df_indiv, vep_table_indiv, vep_indices
 
 
-def merge_dfs(df_donor, df_recipient, orientation):
+def merge_dfs(df_donor, df_recipient, orientation, imputation):
     """
     Returns a merged dataframe based on the given orientation and some helpers
                     Parameters :
@@ -492,12 +492,16 @@ def merge_dfs(df_donor, df_recipient, orientation):
     else:
         side = "y"
         opposite = "x"
-    # merge dataframe from 2 indivs on chosen columns, keeps rows in common
+    # merge dataframe from 2 indivs on chosen columns according to the imputation mode
+    imputation_type = {
+        "imputation": "outer",
+        "no-imputation": "inner"
+    }[imputation]
     return (
         pd.merge(
             df_donor,
             df_recipient,
-            how="inner",
+            how=imputation_type,
             on=["CHROM", "POS", "REF", "ALT", "aa_REF", "aa_ALT"],
         ),
         side,

@@ -195,6 +195,11 @@ def arguments(from_filePair : bool = False):
         choices=["dr", "rd"],
     )
     parser.add_argument(
+        "imputation",
+        help="choose the imputation mode",
+        choices=["imputation", "no-imputation"],
+    )
+    parser.add_argument(
         "--min_dp",
         help="minimal accepted depth per position",
         nargs="?",
@@ -275,7 +280,7 @@ def arguments(from_filePair : bool = False):
     parser.add_argument(
         "-ns",
         "--norm_score",
-        help="toggle score normalization (recommended for multiprocess_ams only)",
+        help=argparse.SUPPRESS,
         action="store_true",
     )
     parser.add_argument(

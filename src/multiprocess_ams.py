@@ -106,11 +106,11 @@ def main():
     leading_zeros_number = len(str(len(path_couples)))
     commands = [
     f"python3 ams_pipeline.py {path_donor} {path_recipient} {args.orientation} "
+    f"{args.imputation} --norm_score "
     f"--min_dp {args.min_dp} --max_dp {args.max_dp} --min_ad {args.min_ad} "
     f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
     f"--min_gq {args.min_gq} --base_length {args.base_length} "
-    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d} "
-    f"--norm_score"
+    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d}"
 #   Doesn't take into account -wc
 #    f"-wc --wc_donor {args.wc_donor} --wc_recipient {args.wc_recipient}"
     for pair_number, (path_donor, path_recipient) in enumerate(path_couples, 1)
