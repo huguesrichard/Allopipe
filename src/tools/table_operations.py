@@ -356,9 +356,7 @@ def get_ref_ratio(
 
 
 def add_norm(ams_df, ams_exp_path):
-    x, y = ams_df["ref_ratio"].values.reshape(-1, 1), ams_df["ams"].values.reshape(
-        -1, 1
-    )
+    x, y = ams_df["ref_ratio"].values.reshape(-1, 1), ams_df["ams"].values.reshape(-1, 1)
     reg = lm.LinearRegression().fit(x, y)
     ref_ratio_mean = ams_df["ref_ratio"].mean()
     ams_df["ams_norm"] = (
@@ -367,6 +365,8 @@ def add_norm(ams_df, ams_exp_path):
     # reorder "ams_norm" col after "ref_ratio" col
     ams_df.insert(ams_df.columns.get_loc("ref_ratio") + 1, "ams_norm", ams_df.pop("ams_norm"))
     ams_df = ams_df.rename({"ams": "ams_giab"}, axis=1)
+    ams_df["ref_ratio"] = round(ams_df["ref_ratio"], 3)
+    ams_df["ams_norm"] = ams_df["ams_norm"].astype(int)
     ams_df.to_csv(os.path.join(ams_exp_path, "AMS_df.tsv"), sep="\t", index=False)
 
 
