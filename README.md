@@ -46,7 +46,7 @@ Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then **returns their affinity towards HLA molecules** using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixPred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares. Allo-Affinity returns: <br/>
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then **returns their affinity towards HLA molecules** using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares. Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)**: a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
 
@@ -105,7 +105,9 @@ AlloPipe installation specifically requires
 2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in an dedicated environment.
   
 3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools.\
-*Make sure you use NetMHCpan in accordance with their user licence.*
+   and/or \
+   [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) \
+*Make sure you use the softwares in accordance with their user licence.*
    
 <br/>
 
@@ -202,10 +204,10 @@ The curated dataframes are then queried to assess the **directional mismatches**
 > 
 <br/>
 
-**Imputation mode**
-You have to choose if you want to impute as ref/ref the variants missing in one of the table.
-If you are using individual VCF files as input, you most probably want to impute missing data as homozygous for the reference (ref/ref, or O/O)
-If you are using joint VCF, running no-imputation will explicitely rull out 
+**How does AlloPipe handle with missing data?**
+We provide the possibility to impute missing variants as ref/ref (0/0), i.e. homozygous for the nucletotide of reference.
+ - If you are using individual .VCF files as input ('single pair mode'), you most probably want to run with the 'imputation mode' as ref/ref variants are omitted in those files.
+ - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will explicitely rull out unsequenced variants.
 
 
 #### Launch Allo-Count for a single pair <a name="simple_ams"></a>
@@ -222,8 +224,8 @@ Where :\
 ```<NAME-PAIR>``` is the name of the pair\
 ```<DONOR-ANNOTATED-FILE>.vcf``` is the path to the donor's annotated VCF \
 ```<RECIPIENT-ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated VCF \
-```<MISMATCH-DIRECTION>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor.
-```<IMPUTATION-MODE>``` is the imputation mode
+```<MISMATCH-DIRECTION>``` = dr, present in the donor but absent in the recipient ; rd, present in the recipient but absent in the donor\
+```<IMPUTATION-MODE>``` is the imputation mode. We recommend to use the 'imputation mode' when running AlloPipe from individual .VCF files.
 
 <br/>
 A complete helper function is provided
@@ -238,7 +240,7 @@ A complete helper function is provided
 #### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
 It is possible to launch Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
-In that case, you need to upload a [example.csv](./data/example.csv) specifying the donor/recipient pairs.
+In that case, you need to upload a [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
 		python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
@@ -246,9 +248,9 @@ In that case, you need to upload a [example.csv](./data/example.csv) specifying 
 Where:\
 ```<NAME-RUN>``` is the name of the run\
 ```<JOINT-ANNOTATED-FILE>.vcf``` is the path to the annotated joint .VCF file\
-```<PAIR-LIST>.csv``` is the path to the list pairing the samples [example.csv](./data/example.csv)\
-```<MISMATCH-DIRECTION>``` is the direction of the mismatch as previously described
-```<IMPUTATION-MODE>``` is the imputation mode
+```<PAIR-LIST>.csv``` is the path to the list pairing the samples [example.csv](./tutorial/example.csv)\
+```<MISMATCH-DIRECTION>``` is the direction of the mismatch as previously described\
+```<IMPUTATION-MODE>``` is the imputation mode. Running with 'no-imputation mode' will explicitely rull out unsequenced variants from the analysis.
 
 *Only one directional comparison is accepted within the same command line.*
 
@@ -261,7 +263,7 @@ We provide a complete helper function
 
 > **Normalisation**
 > 
-> To avoid artefacts related to the quality of the sequencing that might lead to AMS lower or higher than expected, we provide to the user the ref/commun ratio.
+> The information contained in joint .VCF files allows the calculation of the ref/total ratio.
 > 
 
 <br/>
