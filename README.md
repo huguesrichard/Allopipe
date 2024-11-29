@@ -265,7 +265,7 @@ We provide a complete helper function
 <br/>
 
 
-### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the AMS table <a name="ams_table"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the AMS table <a name="ams_table"></a>
 
 After the run is complete, have look at the **output/runs/<NAME-RUN>/** directory that was created.  
 The directory is structured as followed :  
@@ -311,15 +311,11 @@ In this table, you can find the following information :
 
 <br/>
 
-### Launch Allo-Affinity <a name="aams_run"></a>
-
-<br/>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ii)Launch Allo-Affinity <a name="aams_run"></a>
 
 **What does Allo-Affinity perform?**
 
-<br/>
-
-From previously generated files that are the TABLE-MISMATCH and the TRANSCRIPT-TABLE, **Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient** for a given length defined by the user using the principle of the sliding window.
+From previously generated files that are the MISMATCH-TABLE and the TRANSCRIPT-TABLE, **Allo-Affinity reconstructs the set of peptides that are different between the donor and the recipient** for a given length defined by the user using the principle of the sliding window.
 
 **The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides exhibiting a polymorphism present by the donor but absent from the recipient will be reconstructed.\
 In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides exhibiting a polymorphism present by the recipient but absent from the donor will be reconstructed.
@@ -351,7 +347,7 @@ You can use [nfcore-HLAtyping](https://github.com/nf-core/hlatyping) for HLA cla
 
 <br/>
 
-#### Simple pair <a name="single_aams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Simple pair <a name="single_aams"></a>
 
 Once the AMS run is complete, go back to the AlloPipe root directory and run this second set of commands:  
 
@@ -393,7 +389,7 @@ Where:\
 To be implemeted
 
 
-### Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
 
 This second step of AlloPipe uses the AMS information of the first step.  
 You will find 3 new subdirectories in the **test_run/** directory :  
@@ -404,7 +400,7 @@ You will find 3 new subdirectories in the **test_run/** directory :
 
 The AAMS value obtained with VEP v107 and netMHCpan4.1 is 34.
 
-### Exploring the af-AMS table <a name="aams_mismatches"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the af-AMS table <a name="aams_mismatches"></a>
 
 If you want more in-depth information on the mismatches contributing to the AAMS, you will find a mismatches table in the **aams_run_tables/** directory.  
 It contains the mismatches information from the AMS run along with information provided by netMHCpan :
