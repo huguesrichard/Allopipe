@@ -207,11 +207,12 @@ The curated dataframes are then queried to assess the **directional mismatches**
 > 
 <br/>
 
-**How does AlloPipe handle with missing data?**
+**How does AlloPipe handle with missing data?**\
 We provide the possibility to impute missing variants as ref/ref (0/0), i.e. homozygous for the nucletotide of reference.
  - If you are using individual .VCF files as input ('single pair mode'), you most probably want to run with the 'imputation mode' as ref/ref variants are omitted in those files.
  - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will explicitely rull out unsequenced variants.
 
+<br/>
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Launch Allo-Count for a single pair <a name="single_ams"></a>
 
