@@ -114,7 +114,7 @@ AlloPipe installation specifically requires
    
 <br/>
 
-### AlloPipe installation <a name="install"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;(ii) AlloPipe installation <a name="install"></a>
 
 1) Clone the repository from git\
 *You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
@@ -132,7 +132,7 @@ The following command lines will perform the steps 1-2-3:
 
 <br/>
 
-### Preprocess the input data: variant annotation <a name="vep"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;(iii) Preprocess the input data: variant annotation <a name="vep"></a>
 
 <br/>
 
