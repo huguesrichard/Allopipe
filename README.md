@@ -215,7 +215,7 @@ We provide the possibility to impute missing variants as ref/ref (0/0), i.e. hom
  - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will explicitely rull out unsequenced variants.
 
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Launch Allo-Count for a single pair <a name="simple_ams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Launch Allo-Count for a single pair <a name="single_ams"></a>
 
 Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
@@ -353,7 +353,7 @@ You can use [nfcore-HLAtyping](https://github.com/nf-core/hlatyping) for HLA cla
 
 <br/>
 
-#### Simple pair <a name="simple_aams"></a>
+#### Simple pair <a name="single_aams"></a>
 
 Once the AMS run is complete, go back to the AlloPipe root directory and run this second set of commands:  
 
