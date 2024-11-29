@@ -268,17 +268,25 @@ We provide a complete helper function
 <br/>
 
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the AMS table <a name="ams_table"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the Allo-Count output <a name="ams_table"></a>
 
-After the run is complete, have look at the **output/runs/<NAME-RUN>/** directory that was created.  
+After the run is complete, have look at the **output/runs/NAME-RUN/** directory that was created.  
 The directory is structured as followed :  
-1. the **AMS/** directory contains a subdirectory created for these run parameters specifically, the AMS value contained in a .csv file.  
-2. the **plots/** subdirectory
-3. the **run_tables/** subdirectory contains all the tables created during the run. 
+ - the **AMS/** subdirectory contains the AMS value(s)
+ - the **plots/** subdirectory contains visual output
+ - the **run_tables/** subdirectory contains the tables created during the run. 
 
-In the **run_tables/** directory, you can find the mismatches table that will give you direct information on the mismatched positions.  
-In this table, you can find the following information :  
+In the **run_tables/** directory, you can find:\
 
+<br/>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp 1) The D0-TABLE and R0-TABLE\
+The D0/R0 tables retrieve the genotyping information
+
+<br/>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp 2) The MISMATCH-TABLE\
+The MISMATCH-TABLE gives youinformation on the mismatched positions:
 1. **VCF information**  
 	1. **CHROM (str)**: Chromosome of the variant
 	2. **POS (int)**: Position on the chromosome
@@ -312,6 +320,9 @@ In this table, you can find the following information :
 	2. **mismatch (int)**: number of mismatches in the diff field
 	3. **mismatch_type (str)**: type of mismatch (homozygous, heterozygous)
 
+<br/>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp 3) The TRANSCRIPT-TABLE \
 <br/>
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ii)Launch Allo-Affinity <a name="aams_run"></a>
@@ -403,7 +414,7 @@ You will find 3 new subdirectories in the **test_run/** directory :
 
 The AAMS value obtained with VEP v107 and netMHCpan4.1 is 34.
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the af-AMS table <a name="aams_mismatches"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the Allo-Affinity output <a name="aams_mismatches"></a>
 
 If you want more in-depth information on the mismatches contributing to the AAMS, you will find a mismatches table in the **aams_run_tables/** directory.  
 It contains the mismatches information from the AMS run along with information provided by netMHCpan :
