@@ -258,6 +258,8 @@ Where:\
 
 *Only one directional comparison is accepted within the same command line.*
 
+<br/>
+
 We provide a complete helper function
 
 		python multiprocess_ams.py --help
