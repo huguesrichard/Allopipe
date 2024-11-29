@@ -180,7 +180,9 @@ Run this command for every file you want to input in AlloPipe.
 ## Run the AlloPipe workflow <a name="run"></a>
 
 
-### Launch Allo-Count  <a name="ams_run"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Launch Allo-Count  <a name="ams_run"></a>
+
+<br/>
 
 **What does Allo-Count perform?**
 
@@ -212,7 +214,7 @@ We provide the possibility to impute missing variants as ref/ref (0/0), i.e. hom
  - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will explicitely rull out unsequenced variants.
 
 
-#### Launch Allo-Count for a single pair <a name="simple_ams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Launch Allo-Count for a single pair <a name="simple_ams"></a>
 
 Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
@@ -239,7 +241,7 @@ A complete helper function is provided
 
 
 
-#### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
 It is possible to launch Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
 In that case, you need to upload a [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
@@ -263,15 +265,8 @@ We provide a complete helper function
 
 <br/>
 
-> **Normalisation**
-> 
-> The information contained in joint .VCF files allows the calculation of the ref/total ratio.
-> 
 
-<br/>
-
-
-### Exploring the AMS table <a name="ams_table"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the AMS table <a name="ams_table"></a>
 
 After the run is complete, have look at the **output/runs/<NAME-RUN>/** directory that was created.  
 The directory is structured as followed :  
