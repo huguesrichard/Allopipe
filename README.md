@@ -58,7 +58,7 @@ You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a merged .VCF file - and the [example.csv](./data/example.csv) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a joint .VCF file - and the [example.csv](./data/example.csv) of the pairs you want to process.
 
 ---
 
@@ -79,7 +79,7 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 	2. [Launch Allo-Affinity](#aams_run)
 		1. [Single pair](#single_aams)
 		2. [Multiple pairs](#multi_aams)
-		2. [Exploring the af-AMS table](#aams_table)
+		3. [Exploring the af-AMS table](#aams_table)
 
 <br/>
      
@@ -175,7 +175,7 @@ Those dataframe are then filtered considering a set of quality metrics (defaults
 - minimal allelic depth (5x)
 - homozygosity threshold (0.8)
 - GnomADe allele frequency threshold (0.01)
-- genotype quality threshold (20)
+- genotype quality threshold (0)
 - maximal indels length (3)
 
 The curated dataframes are then queried to assess the **directional mismatches** between samples.
@@ -225,7 +225,7 @@ A complete helper function is provided
 
 #### Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to launch Allo-Count from an annotated .VCF merged file containing the genomic data of interest.\
+It is possible to launch Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
 In that case, you need to upload a [example.csv](./data/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
