@@ -279,7 +279,7 @@ The directory is structured as followed :
  - the **plots/** subdirectory contains visual output
  - the **run_tables/** subdirectory contains the tables created during the run. 
 
-In the **run_tables/** directory, you can find:\
+In the **run_tables/** directory, you can find:
 
 <br/>
 
@@ -290,44 +290,44 @@ They can be used to naviguate through this data in a more simple way, by opening
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2) The **MISMATCH-TABLE**\
-The MISMATCH-TABLE gives youinformation on the mismatched positions:\
+The MISMATCH-TABLE gives youinformation on the mismatched positions:
 
 
 1. **VCF information**\  
-CHROM (str): Chromosome of the variant\
-POS (int): Position on the chromosome\
-ID_{x, y} (str): Reference SNP cluster ID for the donor (x) or recipient (y)\
-REF, ALT (str): REF and ALT alleles at the given position\
-QUAL_{x, y} (float): Phred-scaled quality score for the assertion made in ALT\
-FILTER_{x, y} (str): PASS if this position has passed all filters\
-FORMAT_{x, y} (list): Format of the sample column post AlloPipe processing\
-Sample_{x, y} (str): Sample information regarding the position. Note that the column name is the one provided in the original VCF\
+**CHROM (str)**: Chromosome of the variant\
+**POS (int)**: Position on the chromosome\
+**ID_{x, y} (str)**: Reference SNP cluster ID for the donor (x) or recipient (y)\
+**REF, ALT (str)**: REF and ALT alleles at the given position\
+**QUAL_{x, y} (float**: Phred-scaled quality score for the assertion made in ALT\
+**FILTER_{x, y} (str)**: PASS if this position has passed all filters\
+**FORMAT_{x, y} (list)**: Format of the sample column post AlloPipe processing\
+**Sample_{x, y} (str)**: Sample information regarding the position. Note that the column name is the one provided in the original VCF\
         - In the case of transplantation, Sample_x is the donor and Sample_y is the recipient\
  
 
 2. **Sample information**\
-GT_{x, y} (str): Predicted genotype of the sample\
-GQ_{x, y} (float): Score of quality of the predicted genotype\
-AD_{x, y} (str): Allelic depth\
-FT_{x, y} (str): Sample genotype filter indicating if this genotype was “called”\
-phased_{x, y} (str): Predicted genotype containing phased information (if provided in the sample column)\
-DP_{x, y} (int): Sequencing Depth at position\
-TYPE_{x, y} (str): type of genotype (homozygous, heterozygous)\
+**GT_{x, y} (str):** Predicted genotype of the sample\
+**GQ_{x, y} (float):** Score of quality of the predicted genotype\
+**AD_{x, y} (str):** Allelic depth\
+**FT_{x, y} (str):** Sample genotype filter indicating if this genotype was “called”\
+**phased_{x, y} (str):** Predicted genotype containing phased information (if provided in the sample column)\
+**DP_{x, y} (int):** Sequencing Depth at position\
+**TYPE_{x, y} (str):** type of genotype (homozygous, heterozygous)\
 
 
 3. **VEP information**\
-consequences_{x, y} (int): All the columns with a consequence with the number of times it is recorded in transcripts for the variant\
-transcripts_{x, y} (str):Transcripts recorded for the variant\
-genes_{x, y} (str): Genes recorded for the variant\
-aa_REF, aa_ALT (str): Amino-acid for REF and ALT alleles for the variant\
-gnomADe_AF_{x, y} (float): Frequency of existing variant in gnomAD exomes combined population\
-aa_ref_indiv_{x, y}, aa_alt_indiv_{x, y} (str): REF and ALT amino-acids recorded for the sample (x and y)\
-aa_indiv_{x, y} (str): REF and ALT amino-acids combined in one column\
+**consequences_{x, y} (int)**: All the columns with a consequence with the number of times it is recorded in transcripts for the variant\
+**transcripts_{x, y} (str**:Transcripts recorded for the variant\
+**genes_{x, y} (str** Genes recorded for the variant\
+**aa_REF, aa_ALT (str)**: Amino-acid for REF and ALT alleles for the variant\
+**gnomADe_AF_{x, y} (float)**: Frequency of existing variant in gnomAD exomes combined population\
+**aa_ref_indiv_{x, y}, aa_alt_indiv_{x, y} (str)**: REF and ALT amino-acids recorded for the sample (x and y)\
+**aa_indiv_{x, y} (str)**: REF and ALT amino-acids combined in one column\
 
 4. **AlloPipe information**\
-diff (str): difference between the amino-acids of both samples\
-mismatch (int): number of mismatches in the diff field\
-mismatch_type (str): type of mismatch (homozygous, heterozygous)\
+**diff (str)**: difference between the amino-acids of both samples\
+**mismatch (int)**: number of mismatches in the diff field\
+**mismatch_type (str)**: type of mismatch (homozygous, heterozygous)\
 
 <br/>
 
