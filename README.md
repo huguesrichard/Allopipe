@@ -11,6 +11,7 @@ The product is provided free of charge, and, therefore, on an "as is" basis, wit
 AlloPipe is also available as a web application: https://www.allogenomics.com
 
 <br/>
+*We qre currently working hard on the AlloPipe tool and the readme might temporarily outdated. Feel free to get in touch.*
 <br/>
 
 ---
