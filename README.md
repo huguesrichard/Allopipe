@@ -14,6 +14,8 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 
 ## In a nutshell
 
+<br/>
+
 **The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
 <br/>
 ![AP](https://github.com/user-attachments/assets/ce944565-18ff-4e98-98bb-5d522e46cb21)
@@ -23,14 +25,14 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 &nbsp;&nbsp;&nbsp;&nbsp; **(1) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
 
 Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
-- **a quantitative output** called **Allogenomic Mismatch Score (AMS)** which is a discrete quantitative variable numbering the directional amino acid mismatches
-- **a qualitative output** stored in the mismatch table, providing information about the non-synomous SNP contributing to the AMS
+- **a quantitative output** called **Allogenomic Mismatch Score (AMS)**: a discrete quantitative variable numbering the directional amino acid mismatches
+- **a qualitative output** stored in the **mismatch table**: providing information about the non-synomous SNP contributing to the AMS
   
 <br/>  
 
 > **Directional comparison**
 > 
-> The sample comparison is directional: and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
+> The sample comparison is directional and accounts for either polymorphisms that are present in the donor but absent in the recipient (*donor-to-recipient*) or that are present in the recipient but absent in the donor (*recipient-to-donor*).\
 > **_Donor-to-recipient_** accounts for polymorphisms present by the donor but absent by the recipient, i.e. triggerring the recipient's immune system after **solid organ transplantation**.\
 > **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 
@@ -40,11 +42,11 @@ Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), 
 &nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
 Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
-- **a quantitative output** called **affinity-AMS (af-AMS)** which is a discrete quantitative variable numbering the candidates minor histocompatibility antigens
-- **a qualitative output** stored in the af-AMS table, providing information about the peptides contributing to the af-AMS
+- **a quantitative output** called **affinity-AMS (af-AMS)**: a discrete quantitative variable numbering the candidates minor histocompatibility antigens
+- **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
 
 *4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
-*Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/)*
+*Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/) and [MixPred softwares](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1)*
 
 
 <br/>
@@ -58,7 +60,7 @@ You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a joint .VCF file - and the [example.csv](./data/example.csv) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a joint .VCF file - and the [example.csv](./tutorial/example.csv) of the pairs you want to process.
 
 ---
 
@@ -337,6 +339,7 @@ Allo-Affinity eventually prepares the .fasta files containing the peptides and t
 
 Each of these tool imputes the affinity of the reconstructed peptides towards the HLA peptide grooves, therefore output **potential minor histocompatibility antigens (mHAgs)**
 **Please note that the HLA typing has to be known before running the command line**, as the AlloPipe tool does not impute the HLA typing from genomic data.
+You can use [nfcore-HLAtyping](https://github.com/nf-core/hlatyping) for HLA class I
 
 <br/>
 
