@@ -41,12 +41,12 @@ Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), 
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/). Allo-Affinity returns: <br/>
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then returns their affinity towards HLA molecules using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixPred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) sofwares. Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)**: a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
 
 *4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
-*Be careful with the terms of use of [NetMHCpan softwares](https://pubmed.ncbi.nlm.nih.gov/32406916/) and [MixPred softwares](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1)*
+*Be careful with the terms of use of NetMHCpan and MixPred softwares*
 
 
 <br/>
