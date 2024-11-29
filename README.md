@@ -93,11 +93,14 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 <br/>
      
   3. [Tutorial](#tuto)
+
+<br/>
+
 ---
 
 ## Before getting started <a name="before"></a>
 
-### Requirements<a name="requirements"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;(i) Requirements<a name="requirements"></a>
 
 AlloPipe installation specifically requires
 1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
@@ -171,12 +174,12 @@ Run this command for every file you want to input in AlloPipe.
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
 
 <br/>
-<br/>
+
 
 ---
 
 ## Run the AlloPipe workflow <a name="run"></a>
-
+<br/>
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
