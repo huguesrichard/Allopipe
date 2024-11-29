@@ -179,11 +179,9 @@ Run this command for every file you want to input in AlloPipe.
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
-<br/>
-
-
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Launch Allo-Count  <a name="ams_run"></a>
 
+<br/>
 
 **What does Allo-Count perform?**
 
