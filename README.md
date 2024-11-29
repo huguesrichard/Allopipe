@@ -100,7 +100,7 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 
 ## Before getting started <a name="before"></a>
 
-### &nbsp;&nbsp;&nbsp;&nbsp;(i) Requirements<a name="requirements"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) Requirements<a name="requirements"></a>
 
 AlloPipe installation specifically requires
 1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
@@ -114,7 +114,7 @@ AlloPipe installation specifically requires
    
 <br/>
 
-### &nbsp;&nbsp;&nbsp;&nbsp;(ii) AlloPipe installation <a name="install"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ii) AlloPipe installation <a name="install"></a>
 
 1) Clone the repository from git\
 *You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
@@ -132,7 +132,7 @@ The following command lines will perform the steps 1-2-3:
 
 <br/>
 
-### &nbsp;&nbsp;&nbsp;&nbsp;(iii) Preprocess the input data: variant annotation <a name="vep"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(iii) Preprocess the input data: variant annotation <a name="vep"></a>
 
 <br/>
 
@@ -175,11 +175,10 @@ Run this command for every file you want to input in AlloPipe.
 
 <br/>
 
-
 ---
 
 ## Run the AlloPipe workflow <a name="run"></a>
-<br/>
+
 
 ### Launch Allo-Count  <a name="ams_run"></a>
 
