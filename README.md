@@ -11,6 +11,9 @@ The product is provided free of charge, and, therefore, on an "as is" basis, wit
 AlloPipe is also available as a web application: https://www.allogenomics.com
 
 <br/>
+<br/>
+
+---
 
 ## In a nutshell
 
@@ -18,7 +21,9 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 
 **The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
 <br/>
-![AP](https://github.com/user-attachments/assets/ce944565-18ff-4e98-98bb-5d522e46cb21)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ce944565-18ff-4e98-98bb-5d522e46cb21" alt="AlloPipe"/>
+</p>
 
 <br/>
 
@@ -60,7 +65,9 @@ You need to provide one variant-annotated .VCF file per individual.
  
 - **Multiple pairs**  
 Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMF for more than one pair at a time.\
-You need to provide one unique variant-annotated .VCF file containing the genotype of all individuals you want to analyse - i.e. a joint .VCF file - and the [example.csv](./tutorial/example.csv) of the pairs you want to process.
+You need to provide one unique variant-annotated .VCF file containing the genotypes of all individuals you want to analyse - i.e. a joint .VCF file - and the [.csv formatted list](./tutorial/example.csv) of the pairs you want to process.
+
+<br/>
 
 ---
 
@@ -156,10 +163,13 @@ Where:\
 ```<FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
 ```<ANNOTATED-FILE>.vcf``` is the path to the directory and the name of the ouput annotated file.\
 
-This command line works for individual .VCF files or multi-VCF files, whether compressed (.gvcf) or not (.vcf). 
+This command line works for individual .VCF files or  joint .VCF files, whether compressed (.gvcf) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
+
+<br/>
+<br/>
 
 ---
 
