@@ -42,11 +42,11 @@ Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), 
 > **_Recipient-to-donor_** accounts for polymorphisms present by the recipient but absent by the donor, i.e. triggerring the donor's immune system after **allogeneic haematopoietic cell transplantation**.
 
 <br/>
-
+<br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
 
-Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then **returns their affinity towards HLA molecules** using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares. Allo-Affinity returns: <br/>
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then **returns their affinity towards HLA molecules** using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares. Allo-Affinity returns: <br/>
 - **a quantitative output** called **affinity-AMS (af-AMS)**: a discrete quantitative variable numbering the candidates minor histocompatibility antigens
 - **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
 
@@ -179,10 +179,11 @@ Run this command for every file you want to input in AlloPipe.
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
+<br/>
+
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Launch Allo-Count  <a name="ams_run"></a>
 
-<br/>
 
 **What does Allo-Count perform?**
 
