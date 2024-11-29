@@ -51,7 +51,7 @@ Allo-Affinity **reconstructs peptides** of requested length around the polymorph
 - **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
 
 *4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
-*Be careful with the terms of use of NetMHCpan and MixPred softwares*
+*Be careful with the terms of use of NetMHCpan and MixMHCpred softwares*
 
 
 <br/>
