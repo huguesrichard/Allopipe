@@ -320,24 +320,34 @@ def convert(df_indiv, subset, homozygosity_threshold):
         how="outer",
         on=["CHROM", "POS", "DP"],
     )
-    # compute allelic ratio
-    subset["ratio"] = subset["AD"].astype(int) / subset["DP"]
-    # keep only rows where the ratio is higher than (1 - the threshold)
-    subset = subset[subset["ratio"] >= 1 - homozygosity_threshold]    
-    # change the TYPE column of the rows with ratio >= threshold to homozygous
-    subset.loc[
-        ~(subset[["CHROM", "POS"]].duplicated(keep=False))
-        & (subset["ratio"].between(homozygosity_threshold, 1, inclusive="left")),
-        "TYPE",
-    ] = "homozygous"
-    subset.loc[
-        (subset["ratio"] == 1) & (subset["TYPE"] == "heterozygous"), "TYPE"
-    ] = "homozygous"
     type_subset = subset.groupby(["CHROM", "POS"], as_index=False)["TYPE"].first()
     # include above changes in individual df
     df_indiv = pd.merge(df_indiv, type_subset, on=["CHROM", "POS"], how="outer")
     df_indiv = df_indiv.drop("TYPE_x", axis=1)
     df_indiv = df_indiv.rename({"TYPE_y": "TYPE"}, axis=1)
+    # add allelic ratio
+    df_indiv["allelic_ratio"] = (
+        df_indiv["AD"].str.split(",").str[0].astype(int)
+        / (df_indiv["AD"].str.split(",").str[0].astype(int)
+         + df_indiv["AD"].str.split(",").str[1].astype(int))
+    )
+    cols = df_indiv.columns.tolist()
+    cols.insert(cols.index("AD") + 1, cols.pop(cols.index("allelic_ratio")))
+    df_indiv = df_indiv[cols]
+    # change GT & phased
+    df_indiv.loc[df_indiv["allelic_ratio"] < homozygosity_threshold, ["GT", "phased"]] = "1/1"
+    df_indiv.loc[df_indiv["allelic_ratio"] > 1 - homozygosity_threshold, ["GT", "phased"]] = "0/0"
+    # change the TYPE column of the rows with ratio <= threshold & ratio >= 1 - threshold to homozygous
+    df_indiv.loc[
+        ~(df_indiv[["CHROM", "POS"]].duplicated(keep=False))
+        & (df_indiv["allelic_ratio"].between(0, homozygosity_threshold, inclusive="left")),
+        "TYPE",
+    ] = "homozygous"
+    df_indiv.loc[
+        ~(df_indiv[["CHROM", "POS"]].duplicated(keep=False))
+        & (df_indiv["allelic_ratio"].between(1 - homozygosity_threshold, 1, inclusive="right")),
+        "TYPE",
+    ] = "homozygous"
     return df_indiv
 
 
@@ -462,8 +472,7 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, format
         print("Running with all consequences")
     # update dataframe with aa ref and aa alt from VEP info
     df_indiv = get_aa_indiv(df_indiv)
-    # decide on multiple gnomad
-    # print(df_indiv[df_indiv["gnomADe_AF"].str.len()>1])
+    # filter on gnomADe_AF
     df_indiv = df_indiv[df_indiv["gnomADe_AF"].str.len()==1]
     df_indiv["gnomADe_AF"] = df_indiv["gnomADe_AF"].apply(lambda x:x[0])
     df_indiv = df_indiv[df_indiv["gnomADe_AF"]!=""]
