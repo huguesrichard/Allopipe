@@ -68,6 +68,7 @@ def main():
     The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
     command line help : python3 multiprocess_ams.py [-h]
     """
+    print("Pipeline starting...")
     args = arguments_handling.arguments(sys.argv[1])
     couples = []
     read_pairs_info(args.file_pairs, couples)
@@ -84,23 +85,17 @@ def main():
         path_donor = path_out_couples + "/{}.vcf.gz".format(donor)
         path_recipient = path_out_couples + "/{}.vcf.gz".format(recipient)
         path_couples.append((path_donor, path_recipient))
-    print(commands_multivcf)
     
     # start mesuring time
     start = time.time()
     # multiprocessing
-    COUNT = 0
     with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
         # use all commands in list on the function
         results = executor.map(launch_multivcf_extract, commands_multivcf)
-        for res in results:
-            print(res)
-            COUNT += 1
-            print(COUNT)
-            print(res)
     # stop time count
     end = time.time()
-    print("Elapsed time:", end - start, "seconds")
+    print("Number of pairs extracted:",len(commands_multivcf))
+    print("Elapsed time:", int(end - start), "seconds")
     
     # leading zeros for pairs ID : 01 instead of 1 (nb > 10), 001 instead of 1 (nb > 100)
     leading_zeros_number = len(str(len(path_couples)))
@@ -116,25 +111,15 @@ def main():
     for pair_number, (path_donor, path_recipient) in enumerate(path_couples, 1)
     ]
     
-    print("couples : ",len(couples))
-    print("commands: ",len(commands))
-    print(commands)
-    
     # start mesuring time
     start = time.time()
     # multiprocessing
-    COUNT = 0
     with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
         # use all commands in list on the function
         results = executor.map(launch_ams_pipeline, commands)
-        for res in results:
-            print(res)
-            COUNT += 1
-            print(COUNT)
-            print(res)
     # stop time count
     end = time.time()
-    print("Elapsed time:", end - start, "seconds")
+    print("Elapsed time:", int(end - start), "seconds")
 
 if __name__ == "__main__":
     main()
