@@ -113,8 +113,8 @@ def check_if_valid_float(parser,arg):
         thresh = float(arg)
     except ValueError as err:
         raise argparse.ArgumentTypeError(f"{err}")
-    if not 0 < thresh <= 100:
-        parser.error(f"{threshold} not between 0 and 100%")
+    if not 0 <= thresh <= 100:
+        parser.error(f"{thresh} not between 0 and 100%")
     return thresh
     
 
@@ -159,12 +159,12 @@ def netmhc_arguments():
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_run_name(parser,x))
-    parser.add_argument("-p", "--pair",
-        help="name of the pair",
+    parser.add_argument("-p", "--pair", # automated pair naming for multiprocess
+        help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
+        default="",
+        const="",
         nargs="?",
-        default="input_pair",
-        const="input_pair",
         type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
     parser.add_argument("-w", "--workers",
         help="number of workers (cores) for multiprocessing",

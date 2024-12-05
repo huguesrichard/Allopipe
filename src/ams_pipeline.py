@@ -35,7 +35,9 @@ def main():
     )
     # output : filtered donor file
     df_donor_file = (
-        f"{run_tables}/{args.pair}_{args.run_name}_"
+        f"{run_tables}/"
+        f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"
+        f"{args.run_name}_"
         f"D0_{args.donor.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
@@ -47,7 +49,9 @@ def main():
         run_tables, args.recipient, args, args.wc_recipient, formatted_datetime
     )
     df_recipient_file = (
-        f"{run_tables}/{args.pair}_{args.run_name}_"
+        f"{run_tables}/"
+        f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"
+        f"{args.run_name}_"
         f"R0_{args.recipient.split('/')[-1].split('.')[0]}_"
         f"{args.min_dp}_{args.max_dp}_{args.min_ad}_"
         f"gq_{args.min_gq}_{args.homozygosity_thr}_"
@@ -67,7 +71,8 @@ def main():
         merged_df = ams_helpers.mismatch_type(merged_df)
         # output : merged df with mismatch counts
         mismatches_file = (
-            f"{run_tables}/{args.pair}_"
+            f"{run_tables}/"
+            f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"
             f"{args.run_name}_mismatches_{args.min_dp}_"
             f"{args.max_dp}_{args.min_ad}_gq_{args.min_gq}_"
             f"{args.homozygosity_thr}_bl_{args.base_length}{formatted_datetime}.tsv"
@@ -86,7 +91,8 @@ def main():
         transcripts_file = (
             os.path.join(
                 run_tables,
-                f"{args.pair}_{args.run_name}_transcripts_pair_codons_"
+                f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"
+                f"{args.run_name}_transcripts_pair_codons_"
                 f"{args.min_dp}_{args.max_dp}_{args.min_ad}_gq_"
                 f"{args.min_gq}_{args.homozygosity_thr}_bl_"
                 f"{args.base_length}{formatted_datetime}.tsv",
@@ -99,7 +105,10 @@ def main():
     ams_exp_path = table_operations.save_mismatch(
         run_ams, args, mismatch, formatted_datetime, df_donor_file, df_recipient_file, mismatches_file
     )
-    print(mismatch)
+    print(f"Mismatches: {mismatch} — pair "
+          f"{args.donor.split('/')[-1].split('.')[0]} "
+          f"{args.recipient.split('/')[-1].split('.')[0]}"
+          )
 
     # score normalization (multiprocess_ams only)
     if args.norm_score:
