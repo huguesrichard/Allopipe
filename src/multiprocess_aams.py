@@ -37,6 +37,7 @@ def main():
     The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
     command line help : python3 multiprocess_aams.py [-h]
     """
+    print("Pipeline starting...")
     args = netmhc_arguments.netmhc_arguments()
 
     # get list of mismatches
@@ -57,36 +58,28 @@ def main():
     MISMATCHES.sort()
     TRANSCRIPTS.sort()
 
-    print(len(TRANSCRIPTS))
-    print(len(MISMATCHES))
-
     # build a list of all commands
     commands = [
         f"python3 aams_pipeline.py -M {MISMATCH}"
         f" -T {TRANSCRIPT} -E {args.ensembl_transcripts} -P {args.peptides}"
         f" -R {args.refseq} -n {args.run_name} -l {args.length}"
         f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"
-        f" -a {args.hla_typing}"
+        f" -a {args.hla_typing} {'--dry_run' if args.dry_run else ''}"
         for (MISMATCH, TRANSCRIPT) in zip(MISMATCHES,TRANSCRIPTS)
     ]
 
-    print("commands : ",len(commands))
-    print(commands)
+    print("Number of pairs:",len(commands))
+    print("Processing transcripts...")
 
     # start mesuring time
     start = time.time()
     # multiprocessing
-    COUNT = 0
     with concurrent.futures.ProcessPoolExecutor(max_workers = args.workers) as executor:
         # use all commands in list on the function
         results = executor.map(launch_aams_pipeline, commands)
-        for res in results:
-            COUNT += 1
-            print(COUNT)
-            print(res)
     # stop time count
     end = time.time()
-    print(end - start)
+    print("Elapsed time:", int(end - start), "seconds")
 
 if __name__ == "__main__":
     main()
