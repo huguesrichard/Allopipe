@@ -18,6 +18,6 @@ elif [ "$1" == "rsID" ]; then
     done
 elif [ "$1" == "genes-transcripts" ]; then
     for file in $(ls $mismatchespath | grep "mismatches"); do
-        python args_gene-transcript_filtering.py $mismatchespath/"$file" $outputdir/filter_genes-transcripts_"$file" gene-transcript.txt
+        python args_gene-transcript_filtering.py $mismatchespath/"$file" $outputdir/filter_genes-transcripts_"$file" genes-transcripts.txt
     done
 fi
