@@ -364,7 +364,7 @@ def build_peptides(aams_run_tables,str_params,args):
         os.path.join(
             aams_run_tables,
             f"{args.pair + '_' if args.pair else ''}{args.run_name}_kmers.fa"),
-            f"{args.pair + '_' if args.pair else ''}{args.run_name}_netmhc_fasta.fa",
+            f"{args.pair + '_' if args.pair else ''}{args.run_name}_fasta.fa",
     )
 
     return fasta_path,pep_indiv_path
