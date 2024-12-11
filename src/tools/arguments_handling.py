@@ -228,8 +228,8 @@ def arguments(from_filePair : bool = False):
         "--homozygosity_thr",
         help="allelic ratio threshold for which a heterozygous position can be converted to homozygous",
         nargs="?",
-        default=0.8,
-        const=0.8,
+        default=0.2,
+        const=0.2,
         type=lambda x: check_threshold_value(parser, x, "homozygosity_thr"),
     )
     parser.add_argument("--gnomad_af",

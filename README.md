@@ -193,7 +193,7 @@ Those dataframe are then filtered considering a set of quality metrics (defaults
 - minimal depth per position (20x)
 - maxiaml depth per position (400x)
 - minimal allelic depth (5x)
-- homozygosity threshold (0.8)
+- homozygosity threshold (0.2)
 - GnomADe allele frequency threshold (0.01)
 - genotype quality threshold (0)
 - maximal indels length (3)
