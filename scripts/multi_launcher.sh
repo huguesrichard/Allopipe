@@ -1,6 +1,6 @@
 #!/bin/bash
-outputdir="filtered_mismatches"
-mismatchespath="run_tables"
+outputdir="$2"
+mismatchespath="$3"
 mkdir -p $outputdir
 
 # Check if an argument is provided
