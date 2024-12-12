@@ -88,7 +88,9 @@ def check_if_accepted_str(parser, arg):
     Returns:
                     arg (str): file name
     """
-    if not arg.isalnum() and not ("-" in arg or "_" in arg):
+    if arg == "":
+        return arg
+    if not arg.isalnum() and not ("-" in arg):
         parser.error(f"{arg} contains non accepted characters")
     return arg
 
@@ -228,8 +230,8 @@ def arguments(from_filePair : bool = False):
         "--homozygosity_thr",
         help="allelic ratio threshold for which a heterozygous position can be converted to homozygous",
         nargs="?",
-        default=0.8,
-        const=0.8,
+        default=0.2,
+        const=0.2,
         type=lambda x: check_threshold_value(parser, x, "homozygosity_thr"),
     )
     parser.add_argument("--gnomad_af",
@@ -269,12 +271,12 @@ def arguments(from_filePair : bool = False):
     )
     parser.add_argument(
         "-p",
-        "--pair",
-        help="name of the pair",
+        "--pair", # automated pair naming for multiprocess 
+        help=argparse.SUPPRESS,
         action=UniqueStore,
         nargs="?",
-        default="input_pair",
-        const="input_pair",
+        default="",
+        const="",
         type=lambda x: check_if_accepted_str(parser, x),
     )
     parser.add_argument(

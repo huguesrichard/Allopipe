@@ -82,7 +82,7 @@ def main(multi_vcf, donor_colname, recipient_colname):
     write_vcf(headers, names, infos, path, donor_colname, recipient_colname)
     path_donor = path + "/{}.vcf.gz".format(donor_colname)
     path_recipient = path + "/{}.vcf.gz".format(recipient_colname)
-    print(path_donor, path_recipient)
+    print("Extracting:", path_donor.split("/")[-1],path_recipient.split("/")[-1])
     return(path_donor, path_recipient)
     
 if __name__ == "__main__":

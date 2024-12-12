@@ -28,7 +28,7 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime, df_donor_file, df
                     Returns :
                                     ams_exp_path (str): path of AMS table
     """
-    save_ams = pd.DataFrame([[args.pair,
+    save_ams = pd.DataFrame([[args.pair if args.pair else "-",
                               args.donor.split('/')[-1].split('.')[0],
                               args.recipient.split('/')[-1].split('.')[0],
                               args.orientation,
@@ -39,36 +39,41 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime, df_donor_file, df
                             columns=["pair", "donor", "recipient", "orientation", "ams",
                                      "donor_table", "recipient_table", "mismatches_table"])
     
-    # change
+    ams_parts = [
+        args.run_name if args.run_name else None,  # Include only if not empty
+        "AMS",
+        args.min_dp,
+        args.max_dp,
+        args.min_ad,
+        args.homozygosity_thr,
+        args.min_gq,
+        args.orientation,
+        args.base_length,
+    ]
+    # Join only the non-None parts with "_"
     ams_exp_path = os.path.join(
         run_ams,
-        "{}_AMS_{}_{}_{}_{}_{}_{}_{}".format(
-            args.run_name,
-            args.min_dp,
-            args.max_dp,
-            args.min_ad,
-            args.homozygosity_thr,
-            args.min_gq,
-            args.orientation,
-            args.base_length,
-        ),
+        "_".join(str(part) for part in ams_parts if part is not None),
     )
+    
     Path(ams_exp_path).mkdir(parents=True, exist_ok=True)
+    AMS_parts = [
+        args.run_name,
+        args.pair if args.pair else None,  # include only if not empty
+        args.min_dp,
+        args.max_dp,
+        args.min_ad,
+        args.homozygosity_thr,
+        args.min_gq,
+        args.orientation,
+        args.base_length,
+    ]
+    # join only the non-None parts with "_"
     AMS_fname = os.path.join(
         ams_exp_path,
-        "AMS_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
-            args.run_name,
-            args.pair,
-            args.min_dp,
-            args.max_dp,
-            args.min_ad,
-            args.homozygosity_thr,
-            args.min_gq,
-            args.orientation,
-            args.base_length
-        ),
+        "AMS_{}".format("_".join(str(part) for part in AMS_parts if part is not None)),
     )
-    save_ams.to_pickle(AMS_fname+formatted_datetime)
+    save_ams.to_pickle(AMS_fname+formatted_datetime+".pkl")
     save_ams.to_csv(AMS_fname+formatted_datetime+".csv",index=False)
     return ams_exp_path
 
@@ -329,12 +334,12 @@ def get_ref_ratio(
     ams.sort()
 
     infos = []
+    print(
+        f"Normalizing: "
+        f"{donor_path.split('/')[-1].split('.')[0]} "
+        f"{recipient_path.split('/')[-1].split('.')[0]}"
+    )
     for donor, recipient, ams_pair in zip(donors, recipients, ams):
-        print(
-            ams_pair.split("/")[-1].split("_")[0],
-            donor.split("/")[-1].split("_")[2],
-            recipient.split("/")[-1].split("_")[2],
-        )
         donor_df, recipient_df = pd.read_csv(
             donor, sep="\t", dtype={"CHROM": str}
         ), pd.read_csv(recipient, sep="\t", dtype={"CHROM": str})

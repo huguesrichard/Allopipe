@@ -46,7 +46,7 @@ def dict_to_df(peptides):
     ]
     return peptides_ensembl
 
-def contributing_ams_transcripts(merged_pair, ensembl_transcripts):
+def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair):
     merged_pair[["transcripts_x", "transcripts_y"]] = merged_pair[
         ["transcripts_x", "transcripts_y"]
     ].fillna("")
@@ -57,7 +57,7 @@ def contributing_ams_transcripts(merged_pair, ensembl_transcripts):
         a for b in merged_pair["transcripts_y"].str.split(",").tolist() for a in b
     }
     transcripts = list(set(donor_transcripts) | set(recipient_transcripts))
-    print(f"Total potentially contributing transcripts : {len(transcripts)}")
+    print(f"[{pair}] Potentially contributing transcripts before Ensembl filtering: {len(transcripts)}")
     ams_transcripts = {
         key: value for key, value in ensembl_transcripts.items() if key in transcripts
     }
@@ -68,7 +68,6 @@ def filter_on_refseq(ams_transcripts, refseq_transcripts_path):
         ams_transcripts.items(), columns=["Transcript_id", "Sequence_nt"]
     )
     refseq_transcripts = pd.read_csv(refseq_transcripts_path, sep="\t")
-    print(f"REFSEQ transcripts : {len(refseq_transcripts)}")
     refseq_transcripts = refseq_transcripts.rename(
         {"transcript_stable_id": "Transcript_id"}, axis=1
     )
@@ -314,30 +313,27 @@ def get_ams_params(mismatches_path):
     min_dp, max_dp, min_ad, gq, homozygosity_threshold, base_length = list(
         filter(lambda x: is_float(x), str(Path(mismatches_path).stem).split("mismatches")[1].split("_"))
     )
-    str_params = (f"mindp_{min_dp}_maxdp_{max_dp}_minad"
-    f"_{min_ad}_gq_{gq}_thresh_{homozygosity_threshold}_bl_{base_length}")
+    str_params = (f"{min_dp}_{max_dp}_"
+    f"{min_ad}_{gq}_{homozygosity_threshold}_{base_length}")
     return str_params
 
 def build_peptides(aams_run_tables,str_params,args):
     # get ensembl transcripts from ensembl database
     ens_transcripts = parsing.read_fasta(args.ensembl_transcripts)
-    print(f"Ensembl transcripts in dictionary : {len(ens_transcripts.keys())}")
     # get proteins from ensembl database
     proteins = parsing.read_pep_fa(args.peptides)
-    print(f"Ensembl proteins in dictionary : {len(proteins.keys())}")
     peptides_ensembl = dict_to_df(proteins)
-    print(f"{len(peptides_ensembl)} peptides selected in ensembl refseq")
 
     # get mismatches file containing ams positions
     mismatches_df = pd.read_csv(args.merged, sep="\t")
     # get list of transcripts in AMS and intersect it with ensembl transcripts
-    ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts)
+    ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, args.pair)
     print(
-        f"Potential contributing transcripts after ensembl filtering : {len(ams_transcripts)}"
+        f"[{args.pair}] Potential contributing transcripts after Ensembl filtering : "
+        f"{len(ams_transcripts)}"
     )
     # filtering to keep transcripts present in refseq table
     transcripts_df = filter_on_refseq(ams_transcripts, args.refseq)
-    print(f"Transcripts after REFSEQ filter : {len(transcripts_df)}")
     # transcripts long format
     transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
     # intersect filtered transcripts and long format to get a long format with all info
@@ -345,18 +341,30 @@ def build_peptides(aams_run_tables,str_params,args):
     transcripts_pair = aa_ref(transcripts_pair)
     # get pep seq on long format table
     transcripts_pair = add_pep_seq(transcripts_pair, peptides_ensembl)
-    transcripts_pair.to_csv(os.path.join(aams_run_tables,f"{args.pair}_{args.run_name}_full.tsv"), sep="\t", index=False)
+    transcripts_pair.to_csv(os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}"
+        f"{args.run_name}_full.tsv"), sep="\t", index=False)
     transcripts_reduced = get_peptides_ref(transcripts_pair, args.length)
-    pep_indiv_path = os.path.join(aams_run_tables, f"{args.pair}_{args.run_name}_pep_df_{str_params}.pkl")
+    pep_indiv_path = os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}"
+        f"{args.run_name}_pep_df_{str_params}.pkl")
     transcripts_reduced.to_pickle(
         pep_indiv_path
     )
     write_pep_fasta(
-        os.path.join(aams_run_tables, f"{args.pair}_{args.run_name}_kmers.fa"), transcripts_reduced
+        os.path.join(
+            aams_run_tables,
+            f"{args.pair + '_' if args.pair else ''}"
+            f"{args.run_name}_kmers.fa"),
+            transcripts_reduced
     )
     fasta_path = write_netmhc_fasta(
-        os.path.join(aams_run_tables, f"{args.pair}_{args.run_name}_kmers.fa"),
-        f"{args.pair}_{args.run_name}_netmhc_fasta.fa",
+        os.path.join(
+            aams_run_tables,
+            f"{args.pair + '_' if args.pair else ''}{args.run_name}_kmers.fa"),
+            f"{args.pair + '_' if args.pair else ''}{args.run_name}_fasta.fa",
     )
 
     return fasta_path,pep_indiv_path
@@ -368,9 +376,15 @@ def run_netmhcpan(fasta_path,netmhc_dir,args):
         1: "netMHCpan",
         2: "netMHCIIpan"
     }[args.class_type]
-    print(f"Entering {netmhc_print} handler : running {netmhc_print} will last a long time")
-    netmhc_out = os.path.join(netmhc_dir,args.pair + ".out")
-    netmhc_run_output = os.path.join(netmhc_dir,args.pair + "_full_run_information.txt")
+    print(f"[{args.pair}] Entering {netmhc_print} handler : running {netmhc_print} may last a long time")
+    netmhc_out = os.path.join(
+        netmhc_dir,
+        (args.pair + "_" if args.pair else "") +
+        args.run_name + ".out")
+    netmhc_run_output = os.path.join(
+        netmhc_dir,
+        (args.pair + "_" if args.pair else "") +
+        args.run_name + "_full_run_information.txt")
     length_argname = {
         1: "-l",
         2: "-length"
@@ -440,24 +454,26 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams
     }
     merged_aams = merged_aams[merged_aams[column_to_filter[class_type]] <= ELR_thr]
     mismatch_count = merged_aams["mismatch"].sum()
-    aams_df = pd.DataFrame([[pair, mismatch_count]], columns=["pair", "AAMS"])
+    aams_df = pd.DataFrame([[pair if pair else "-", mismatch_count]], columns=["pair", "AAMS"])
     aams_dir = os.path.join(aams_path,f"AAMS_{str_params}")
     Path(aams_dir).mkdir(parents=True, exist_ok=True)
     aams_df.to_pickle(
         os.path.join(
             aams_dir,
-            pair
-            + f"_AAMS_df_{str_params}_el_{ELR_thr}"
+            (pair + "_" if pair else "")
+            + f"AAMS_df_{str_params}_el_{ELR_thr}.pkl"
         )
     )
     aams_df.to_csv(
         os.path.join(
             aams_dir,
-            pair
-            + f"_AAMS_df_{str_params}_el_{ELR_thr}.csv"
-        )
+            (pair + "_" if pair else "")
+            + f"AAMS_df_{str_params}_el_{ELR_thr}.csv"), index=False
     )
     merged_aams.to_csv(
-        os.path.join(aams_run_tables, f"{pair}_mismatches_aams_EL_{ELR_thr}.tsv"), sep="\t", index=False
+        os.path.join(
+            aams_run_tables,
+            (pair + "_" if pair else "")
+            + f"aams_EL_{ELR_thr}.tsv"), sep="\t", index=False
     )
     return mismatch_count
