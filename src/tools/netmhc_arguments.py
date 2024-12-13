@@ -129,28 +129,20 @@ def netmhc_arguments():
         usage="python %(prog)s [options]",
         description="Compute the AAMS for a pair of individuals"
         )
-    parser.add_argument("-M", "--merged",
-        help="path of the pair merged file",
+    parser.add_argument("-M", "--mismatches",
+        help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
-        required=True,
-        type=lambda x: check_if_existing_path(parser,x))
+        default="",
+        const="",
+        required=False)
     parser.add_argument("-T", "--transcripts",
-        help="path of the pair transcripts file",
+        help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
-        required=True,
-        type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-E", "--ensembl_transcripts",
-        help="path of the ensembl transcripts file",
-        action=arguments_handling.UniqueStore,
-        required=True,
-        type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-P", "--peptides",
-        help="path of the ensembl peptides file",
-        action=arguments_handling.UniqueStore,
-        required=True,
-        type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-R", "--refseq",
-        help="path of the ensembl refseq transcripts file",
+        default="",
+        const="",
+        required=False)
+    parser.add_argument("-d", "--ensembl_path",
+        help="path of directory of Ensembl files",
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
@@ -158,6 +150,8 @@ def netmhc_arguments():
         help="name of the ams pipeline ran previously",
         action=arguments_handling.UniqueStore,
         required=True,
+        default="run",
+        const="run",
         type=lambda x: check_if_existing_run_name(parser,x))
     parser.add_argument("-p", "--pair", # automated pair naming for multiprocess
         help=argparse.SUPPRESS,

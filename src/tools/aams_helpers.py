@@ -309,23 +309,58 @@ def is_float(element):
         return False
 
 
-def get_ams_params(mismatches_path):
+def get_ams_params(run_name):
+    # get from first element if several
+    mismatches_path = next(
+    (file for file in glob.glob(f"../output/runs/{run_name}/run_tables/*.tsv")
+     if "_mismatches_" in file and os.path.exists(file)),
+    None  # Default to None if no match is found
+    )
+    if mismatches_path is None:
+        raise FileNotFoundError(f"No such file or directory matching '_mismatches_' found.")
     min_dp, max_dp, min_ad, gq, homozygosity_threshold, base_length = list(
         filter(lambda x: is_float(x), str(Path(mismatches_path).stem).split("mismatches")[1].split("_"))
     )
     str_params = (f"{min_dp}_{max_dp}_"
     f"{min_ad}_{gq}_{homozygosity_threshold}_{base_length}")
-    return str_params
+    return str_params,mismatches_path
 
-def build_peptides(aams_run_tables,str_params,args):
+def build_peptides(aams_run_tables,str_params,args,mismatches_path):
     # get ensembl transcripts from ensembl database
-    ens_transcripts = parsing.read_fasta(args.ensembl_transcripts)
+    cdna_file = next(
+    (file for file in glob.glob(str(args.ensembl_path) + "/*.cdna.all.fa")),
+    None  # Default to None if no match is found
+    )
+    if cdna_file is None:
+        raise FileNotFoundError(f"No such file or directory matching '.cdna.all.fa' found.")
+    else:
+        print("cDNA file found:", cdna_file)
+    ens_transcripts = parsing.read_fasta(cdna_file)
     # get proteins from ensembl database
-    proteins = parsing.read_pep_fa(args.peptides)
+    pep_file = next(
+    (file for file in glob.glob(str(args.ensembl_path) + "/*.pep.all.fa")),
+    None  # Default to None if no match is found
+    )
+    if pep_file is None:
+        raise FileNotFoundError(f"No such file or directory matching '*.pep.all.fa' found.")
+    else:
+        print("pep file found:", pep_file)
+    proteins = parsing.read_pep_fa(pep_file)
     peptides_ensembl = dict_to_df(proteins)
-
+    # get ensembl transcripts from ensembl database
+    refseq_file = next(
+    (file for file in glob.glob(str(args.ensembl_path) + "/*.refseq.tsv")),
+    None  # Default to None if no match is found
+    )
+    if refseq_file is None:
+        raise FileNotFoundError(f"No such file or directory matching '*.refseq.tsv' found.")
+    else:
+        print("RefSeq file found:", refseq_file)
     # get mismatches file containing ams positions
-    mismatches_df = pd.read_csv(args.merged, sep="\t")
+    if args.mismatches == "": # uniprocess: get mistmaches from path
+        mismatches_df = pd.read_csv(mismatches_path, sep="\t")
+    else: # multiprocess: get mistmaches from arg
+        mismatches_df = pd.read_csv(args.mismatches, sep="\t")
     # get list of transcripts in AMS and intersect it with ensembl transcripts
     ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, args.pair)
     print(
@@ -333,9 +368,20 @@ def build_peptides(aams_run_tables,str_params,args):
         f"{len(ams_transcripts)}"
     )
     # filtering to keep transcripts present in refseq table
-    transcripts_df = filter_on_refseq(ams_transcripts, args.refseq)
+    transcripts_df = filter_on_refseq(ams_transcripts, refseq_file)
+     # get from first element if several
+    transcripts_path = next(
+    (file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+     if "_transcripts_" in file and os.path.exists(file)),
+    None  # Default to None if no match is found
+    )
+    if transcripts_path is None:
+        raise FileNotFoundError(f"No such file or directory matching '_transcripts_' found.")
     # transcripts long format
-    transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
+    if args.transcripts == "": # uniprocess: get mistmaches from path
+        transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
+    else: # multiprocess: get mistmaches from arg
+        transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
     # intersect filtered transcripts and long format to get a long format with all info
     transcripts_pair = intersect_positions(transcripts_pair, transcripts_df)
     transcripts_pair = aa_ref(transcripts_pair)
@@ -421,14 +467,17 @@ def clean_pep_df(netmhc_table, pep_path,args):
     return (netmhc_table, pep_df)
 
 
-def merge_netmhc(netmhc_df, pep_df, mismatches_path, ELR_thr,pair,aams_path,aams_run_tables,str_params,class_type):
+def merge_netmhc(netmhc_df, pep_df, mismatches_path_arg, mismatches_path, ELR_thr,pair,aams_path,aams_run_tables,str_params,class_type):
     # merge both pep and netmhc dataframes
     merged = pd.merge(netmhc_df, pep_df, how="inner", on=["Gene_id", "hla_peptides"])
     # group by peptide
     merged = merged.groupby(["peptide"]).agg("first")
     # remove duplicate positions
     merged = merged.drop_duplicates(["CHROM", "POS"])
-    ams_df = pd.read_csv(mismatches_path, sep="\t")
+    if mismatches_path_arg == "": # uniprocess: get mistmaches from path
+        ams_df = pd.read_csv(mismatches_path, sep="\t")
+    else: # multiprocess: get mistmaches from arg
+        ams_df = pd.read_csv(mismatches_path_arg, sep="\t")
     if (
         (
             "X" not in ams_df["CHROM"].unique().tolist()

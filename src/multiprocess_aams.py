@@ -60,9 +60,9 @@ def main():
 
     # build a list of all commands
     commands = [
-        f"python3 aams_pipeline.py -M {MISMATCH}"
-        f" -T {TRANSCRIPT} -E {args.ensembl_transcripts} -P {args.peptides}"
-        f" -R {args.refseq} -n {args.run_name} -l {args.length}"
+        f"python3 aams_pipeline.py"
+        f" -M {MISMATCH} -T {TRANSCRIPT}"
+        f" -n {args.run_name} -d {args.ensembl_path}"
         f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"
         f" -a {args.hla_typing} {'--dry_run' if args.dry_run else ''}"
         for (MISMATCH, TRANSCRIPT) in zip(MISMATCHES,TRANSCRIPTS)
