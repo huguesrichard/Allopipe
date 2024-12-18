@@ -6,7 +6,7 @@ command line help : python3 ams_pipeline.py [-h]
 import os
 import sys
 import datetime
-from tools import ams_helpers, arguments_handling, table_operations
+from tools import ams_helpers, arguments_handling, table_operations, plot_hist, plot_pie
 
 
 def main():
@@ -119,6 +119,10 @@ def main():
         )
         if ref_ratio is not None:
             table_operations.add_norm(ams_df, ams_exp_path)
+
+    # plots
+    plot_hist.hist(ams_exp_path, run_plots)
+    plot_pie.pie(run_tables, run_plots, args.pair, args.run_name)
     
     return 0
 
