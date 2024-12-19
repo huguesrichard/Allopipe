@@ -81,5 +81,5 @@ def hist(ams_exp_path, run_plots):
     plt.legend(loc='upper left')
 
     # Enregistrer le graphique sous format PNG
-    plot_path = run_plots + "/" + "distrib-fambiomnis-shufflecryostem.png"
+    plot_path = run_plots + "/" + "distrib.png"
     plt.savefig(plot_path, format='png')
