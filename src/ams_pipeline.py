@@ -117,8 +117,7 @@ def main():
             args.min_dp, args.max_dp, args.min_ad, args.homozygosity_thr, args.min_gq,
             args.orientation, args.base_length
         )
-        if ref_ratio is not None:
-            table_operations.add_norm(ams_df, ams_exp_path)
+        table_operations.add_norm(ams_df, ams_exp_path, ref_ratio)
 
     # plots
     plot_hist.hist(ams_exp_path, run_plots)
