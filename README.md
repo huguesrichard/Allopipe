@@ -378,6 +378,7 @@ Once the AMS run is complete, go back to the AlloPipe root directory and run thi
 		gzip -d <REFERENCE-GENOME>.cdna.all.fa.gz
 		gzip -d <REFERENCE-GENOME>.pep.fa.gz
 		gzip -d <REFERENCE-GENOME>.refseq.tsv.gz
+  
 		python aams_pipeline.py 
 		-M <MISMATCH-TABLE>.tsv 
 		-T <TRANSCRIPT-TABLE>.tsv
