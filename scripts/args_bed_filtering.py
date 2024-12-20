@@ -16,7 +16,9 @@ bed_df['CHROM'] = bed_df['CHROM'].str.replace('chr', '', regex=False)
 mismatches_df = pd.read_csv(mismatches_table, sep='\t')
 
 # convert columns to numeric types
+mismatches_df['CHROM'] = pd.to_numeric(mismatches_df['CHROM'], errors='coerce')
 mismatches_df['POS'] = pd.to_numeric(mismatches_df['POS'], errors='coerce')
+bed_df['CHROM'] = pd.to_numeric(bed_df['CHROM'], errors='coerce')
 bed_df['START'] = pd.to_numeric(bed_df['START'], errors='coerce')
 bed_df['END'] = pd.to_numeric(bed_df['END'], errors='coerce')
 
@@ -27,7 +29,6 @@ bed_df = bed_df.dropna(subset=['START', 'END'])
 # adjust the BED file's 'START' and 'END' columns for 1-based comparison (make them inclusive)
 bed_df['START'] = bed_df['START'] + 1
 bed_df['END'] = bed_df['END'] + 1
-
 
 # filter the positions to keep only those within an interval
 bed_MM_table = mismatches_df[
@@ -40,4 +41,3 @@ bed_MM_table = mismatches_df[
 
 # save the filtered result to a new TSV file
 bed_MM_table.to_csv(filtered_mismatches_table, sep='\t', index=False)
-
