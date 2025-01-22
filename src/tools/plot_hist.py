@@ -5,65 +5,65 @@ import os
 
 def hist(ams_exp_path, run_plots):
 
-    # Charger le fichier TSV dans un DataFrame
+    # Load the TSV file into a DataFrame
     data = pd.read_csv('../data/distrib_AMS.tsv', sep='\t')
 
-    # Filtrer les données pour les "related"
+    # Filter the data for "related"
     data_related = data[data['Relatedness'] == 'related']
 
-    # Filtrer les données pour les "unrelated"
+    # Filter the data for "unrelated"
     data_non_related = data[data['Relatedness'] == 'unrelated']
 
-    # Extraire la colonne d'intérêt (AMS) pour chaque groupe
-    AMS_related = data_related['AMS']  # Extraire la colonne 'AMS' du groupe "related"
-    AMS_unrelated = data_non_related['AMS']  # Extraire la colonne 'AMS' du groupe "unrelated"
+    # Extract the column of interest (AMS) for each group
+    AMS_related = data_related['AMS']  # Extract the 'AMS' column for the "related" group
+    AMS_unrelated = data_non_related['AMS']  # Extract the 'AMS' column for the "unrelated" group
 
-    # Tracer les distributions des deux groupes
+    # Plot the distributions for the two groups
     plt.figure(figsize=(10, 6))
 
-    # Tracer la distribution pour le groupe "related"
+    # Plot the distribution for the "related" group
     sns.histplot(AMS_related, kde=True, color='blue', label='Related pairs', stat='density', bins=30)
 
-    # Tracer la distribution pour le groupe "unrelated"
+    # Plot the distribution for the "unrelated" group
     sns.histplot(AMS_unrelated, kde=True, color='red', label='Unrelated pairs', stat='density', bins=30)
 
-    # Définir un répertoire pour la recherche des fichiers
-    repertoire = ams_exp_path
+    # Define a directory for searching files
+    directory = ams_exp_path
 
-    # Liste tous les fichiers dans le répertoire, en excluant les sous-répertoires
-    fichiers = [f for f in os.listdir(repertoire) if not os.path.isdir(os.path.join(repertoire, f))]
+    # List all files in the directory, excluding subdirectories
+    files = [f for f in os.listdir(directory) if not os.path.isdir(os.path.join(directory, f))]
 
-    # Trouver un fichier .tsv ou .csv
-    fichier_tsv = next((f for f in fichiers if f.endswith('.tsv')), None)
-    fichier_csv = next((f for f in fichiers if f.endswith('.csv')), None)
+    # Find a .tsv or .csv file
+    tsv_file = next((f for f in files if f.endswith('.tsv')), None)
+    csv_file = next((f for f in files if f.endswith('.csv')), None)
 
-    # Vérifier la priorité du fichier .tsv si disponible, sinon utiliser .csv
-    if fichier_tsv:
-        # Charger le fichier .tsv
-        df_ams = pd.read_csv(os.path.join(repertoire, fichier_tsv), sep='\t')
+    # Check for the priority of the .tsv file if available, otherwise use .csv
+    if tsv_file:
+        # Load the .tsv file
+        df_ams = pd.read_csv(os.path.join(directory, tsv_file), sep='\t')
 
-        # Vérifier que la colonne 'ams_giab' existe dans le fichier .tsv
+        # Check that the 'ams_giab' column exists in the .tsv file
         if 'ams_giab' in df_ams.columns:
-            valeurs_speciales = df_ams['ams_giab'].values  # Extraire les valeurs de la colonne 'ams_giab'
+            special_values = df_ams['ams_giab'].values  # Extract the values from the 'ams_giab' column
 
-            # Ajouter une ligne verticale pour chaque valeur spéciale et positionner le label
-            for ams in valeurs_speciales:
-                # Tracer la ligne verticale
+            # Add a vertical line for each special value and position the label
+            for ams in special_values:
+                # Draw the vertical line
                 plt.axvline(ams, color='red', linestyle='--')
         else:
             print("No 'ams_giab' column in .tsv file")
 
-    elif fichier_csv:
-        # Charger le fichier .csv
-        df_ams = pd.read_csv(os.path.join(repertoire, fichier_csv))
+    elif csv_file:
+        # Load the .csv file
+        df_ams = pd.read_csv(os.path.join(directory, csv_file))
 
-        # Vérifier que la colonne 'ams' existe dans le fichier .csv
+        # Check that the 'ams' column exists in the .csv file
         if 'ams' in df_ams.columns:
-            valeurs_speciales = df_ams['ams'].values  # Extraire les valeurs de la colonne 'ams'
+            special_values = df_ams['ams'].values  # Extract the values from the 'ams' column
 
-            # Ajouter une ligne verticale pour chaque valeur spéciale et positionner le label
-            for ams in valeurs_speciales:
-                # Tracer la ligne verticale
+            # Add a vertical line for each special value and position the label
+            for ams in special_values:
+                # Draw the vertical line
                 plt.axvline(ams, color='red', linestyle='--', label=f'AMS of the pair : {ams}')
         else:
             print("No 'ams' column in the .csv file")
@@ -71,15 +71,15 @@ def hist(ams_exp_path, run_plots):
     else:
         print("No .tsv or .csv file in the directory")
 
-    # Ajouter des labels et une légende
+    # Add labels and a legend
     plt.title('AMS Distribution Related vs Unrelated + computed AMS')
     plt.xlabel('AMS values')
     plt.ylabel('Density')
     plt.legend()
 
-    # Placer la légende en haut du graphique, centrée
+    # Place the legend at the top of the plot, aligned to the left
     plt.legend(loc='upper left')
 
-    # Enregistrer le graphique sous format PNG
+    # Save the plot as a PNG file
     plot_path = run_plots + "/" + "distrib.png"
     plt.savefig(plot_path, format='png')

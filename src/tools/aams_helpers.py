@@ -77,12 +77,9 @@ def filter_on_refseq(ams_transcripts, refseq_transcripts_path):
     return transcripts_df
 
 def intersect_positions(transcripts_pair, transcripts_df):
-    positions = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
     transcripts_pair = pd.merge(
         transcripts_df, transcripts_pair, how="inner", on="Transcript_id"
     )
-    positions_refseq = transcripts_pair[["CHROM", "POS"]].copy().drop_duplicates()
-    merged_positions = pd.merge(positions, positions_refseq, how="outer")
     return transcripts_pair
 
 def aa_ref(transcripts_pair):
@@ -206,15 +203,11 @@ def get_peptides_ref(transcripts_pair, pep_size):
             | (transcripts_pair["Consequence"].str.contains("splice"))
         )
     ]
-    transcripts_pair["Protein_position"] = transcripts_pair["Protein_position"].astype(
-        str
-    )
+    transcripts_pair["Protein_position"] = transcripts_pair["Protein_position"].astype(str)
     transcripts_pair = transcripts_pair[
         ~(transcripts_pair["Protein_position"].str.contains("-"))
     ]
-    transcripts_pair["Protein_position"] = transcripts_pair["Protein_position"].astype(
-        float
-    )
+    transcripts_pair["Protein_position"] = transcripts_pair["Protein_position"].astype(float)
     transcripts_pair["peptide_REF"] = transcripts_pair.apply(
         lambda x: mutation_process(
             x["Sequence_aa"], x["aa_REF"], x["Protein_position"], pep_size
@@ -321,8 +314,9 @@ def get_ams_params(run_name):
     min_dp, max_dp, min_ad, gq, homozygosity_threshold, base_length = list(
         filter(lambda x: is_float(x), str(Path(mismatches_path).stem).split("mismatches")[1].split("_"))
     )
-    str_params = (f"{min_dp}_{max_dp}_"
-    f"{min_ad}_{gq}_{homozygosity_threshold}_{base_length}")
+    str_params = (
+        f"{min_dp}_{max_dp}_{min_ad}_{gq}_"
+        f"{homozygosity_threshold}_{base_length}")
     return str_params,mismatches_path
 
 def build_peptides(aams_run_tables,str_params,args,mismatches_path):
@@ -357,14 +351,14 @@ def build_peptides(aams_run_tables,str_params,args,mismatches_path):
     else:
         print("RefSeq file found:", refseq_file)
     # get mismatches file containing ams positions
-    if args.mismatches == "": # uniprocess: get mistmaches from path
+    if args.mismatches == "": # uniprocess: get mismatches from path
         mismatches_df = pd.read_csv(mismatches_path, sep="\t")
-    else: # multiprocess: get mistmaches from arg
+    else: # multiprocess: get mismatches from arg
         mismatches_df = pd.read_csv(args.mismatches, sep="\t")
     # get list of transcripts in AMS and intersect it with ensembl transcripts
     ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, args.pair)
     print(
-        f"[{args.pair}] Potential contributing transcripts after Ensembl filtering : "
+        f"[{args.pair}] Potentially contributing transcripts after Ensembl filtering : "
         f"{len(ams_transcripts)}"
     )
     # filtering to keep transcripts present in refseq table
@@ -378,9 +372,9 @@ def build_peptides(aams_run_tables,str_params,args,mismatches_path):
     if transcripts_path is None:
         raise FileNotFoundError(f"No such file or directory matching '_transcripts_' found.")
     # transcripts long format
-    if args.transcripts == "": # uniprocess: get mistmaches from path
+    if args.transcripts == "": # uniprocess: get mismatches from path
         transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
-    else: # multiprocess: get mistmaches from arg
+    else: # multiprocess: get mismatches from arg
         transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
     # intersect filtered transcripts and long format to get a long format with all info
     transcripts_pair = intersect_positions(transcripts_pair, transcripts_df)
@@ -392,6 +386,14 @@ def build_peptides(aams_run_tables,str_params,args,mismatches_path):
         f"{args.pair + '_' if args.pair else ''}"
         f"{args.run_name}_full.tsv"), sep="\t", index=False)
     transcripts_reduced = get_peptides_ref(transcripts_pair, args.length)
+    pep_indiv_path = os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}"
+        f"{args.run_name}_pep_df_{str_params}.tsv")
+    # duplicate with .pkl below
+    transcripts_reduced.to_csv(
+        pep_indiv_path
+    )
     pep_indiv_path = os.path.join(
         aams_run_tables,
         f"{args.pair + '_' if args.pair else ''}"
@@ -474,9 +476,9 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path_arg, mismatches_path, ELR_th
     merged = merged.groupby(["peptide"]).agg("first")
     # remove duplicate positions
     merged = merged.drop_duplicates(["CHROM", "POS"])
-    if mismatches_path_arg == "": # uniprocess: get mistmaches from path
+    if mismatches_path_arg == "": # uniprocess: get mismatches from path
         ams_df = pd.read_csv(mismatches_path, sep="\t")
-    else: # multiprocess: get mistmaches from arg
+    else: # multiprocess: get mismatches from arg
         ams_df = pd.read_csv(mismatches_path_arg, sep="\t")
     if (
         (

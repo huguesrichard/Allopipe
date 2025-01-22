@@ -445,7 +445,7 @@ To test your VEP installation (v111 in this tutorial), run the following command
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
 
 	cd src/
-	python ams_pipeline.py -n test_run ../tutorial/donor_annotated_vep111.vcf ../tutorial/recipient_annotated_vep111.vcf rd no-imputation
+	python ams_pipeline.py -n test-run ../tutorial/HG002-VEPannotated.vcf ../tutorial/HG007-VEPannotated.vcf rd no-imputation
 <br/>
 If AMS returns 45, you're all set!
 Other commands should return the following results
@@ -458,9 +458,7 @@ Other commands should return the following results
 <br/>
  Finally, to get your af-AMS and related table, run:
  
-  	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.fa.gz
- 	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.fa.gz
-	gzip -d ../data/Ensembl/Homo_sapiens.GRCh38.111.refseq.tsv.gz
+  	gzip -d ../data/Ensembl/GRCh38/*
 	
 	python aams_pipeline.py \
 	-M ../output/runs/test_run/run_tables/test_pair_test_run_mismatches_20_400_5_gq_20_0.8_bl_3.tsv \
