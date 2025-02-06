@@ -12,6 +12,7 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 
 <br/>
 
+
 *We are currently working hard on the AlloPipe tool and the readme might temporarily outdated. Feel free to get in touch.*
 
 <br/>
@@ -26,6 +27,7 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 <br/>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/ce944565-18ff-4e98-98bb-5d522e46cb21" alt="AlloPipe"/>
+	img src = "https://github.com/user-attachments/assets/44dfd542-6305-4dca-bc37-5819e4da6d14" 
 </p>
 
 <br/>
