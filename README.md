@@ -2,7 +2,7 @@
 
 The AlloPipe tool is a computational workflow which imputes<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(i) **directional amino acid mismatches** and <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(ii) the related **minor histocompatibility antigens** candidates <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(ii) the related candidate **minor histocompatibility antigens** <br/>
 within a pair of annotated human genomic datasets.
 
 <br/>
@@ -26,17 +26,20 @@ AlloPipe is also available as a web application: https://www.allogenomics.com
 **The AlloPipe tool is divided into two sequential modules: Allo-Count, then Allo-Affinity**
 <br/>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/ce944565-18ff-4e98-98bb-5d522e46cb21" alt="AlloPipe"/>
-	img src = "https://github.com/user-attachments/assets/44dfd542-6305-4dca-bc37-5819e4da6d14" 
+	<img src ="https://github.com/user-attachments/assets/44dfd542-6305-4dca-bc37-5819e4da6d14" alt="AlloPipe"/>
 </p>
 
 <br/>
 
 &nbsp;&nbsp;&nbsp;&nbsp; **(1) Allo-Count imputes the directional amino acid mismatches from two genomic datasets**
 
-Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. Allo-Count returns: <br/>
+After reformating relevant data from the variant-annotated .VCF file(s), Allo-count performs a stringent data cleaning and computes the **directional comparison** of the genomic sequences. 
+
+ <br/>
+ 
+ Allo-Count returns: <br/>
 - **a quantitative output** called **Allogenomic Mismatch Score (AMS)**: a discrete quantitative variable numbering the directional amino acid mismatches
-- **a qualitative output** stored in the **mismatch table**: providing information about the non-synomous SNP contributing to the AMS
+- **a qualitative output** stored in the **mismatch table**: providing information about the polymorphisms contributing to the AMS
   
 <br/>  
 
@@ -49,14 +52,12 @@ Allo-Count reformats the relevant data from the variant-annotated .VCF file(s), 
 <br/>
 <br/>
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the candidates minor histocompatibility antigens**<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the te minor histocompatibility antigens (mHAgs)**<br/>
 
-Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms, then **returns their affinity towards HLA molecules** using [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1)(WIP) softwares. Allo-Affinity returns: <br/>
-- **a quantitative output** called **affinity-AMS (af-AMS)**: a discrete quantitative variable numbering the candidates minor histocompatibility antigens
-- **a qualitative output** stored in the **af-AMS table**: providing information about the peptides contributing to the af-AMS
+Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms present in the mismatches tables.<br/>
+The affinity of those peptides towards the HLA molecules can then be assessed using third party tools such as [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares.
 
-*4-digits HLA typing has to be provided by the user for the HLA molecules of interest.*\
-*Be careful with the terms of use of NetMHCpan and MixMHCpred softwares*
+*Be careful with the terms of use of NetMHCpan and MixMHCpred softwares. 4-digits HLA typing has to be provided by the user for the HLA molecules of interest, including the alpha/beta chains combination for HLA-DR and HLA-DQ molecules.*
 
 
 <br/>
@@ -112,7 +113,8 @@ AlloPipe installation specifically requires
 
 2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed in the suitable version for your operating system and python version, as we recommend to install the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in an dedicated environment.
   
-3. [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools\
+3. If you want to assess the affinity of the reconstructed peptides towards the HLA molecules:<br/>
+  [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools\
    and/or \
    [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) downloaded as command line tools.\
 *Make sure you use the softwares in accordance with their user licence.*
