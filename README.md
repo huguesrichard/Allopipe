@@ -87,11 +87,11 @@ You need to provide one unique variant-annotated .VCF file containing the genoty
 <br/>
 
 2. [Run the AlloPipe workflow](#run)
-	1. [Launch Allo-Count](#ams_run)
+	1. [Run Allo-Count](#ams_run)
 		1. [Single pair](#single_ams)
 		2. [Multiple pairs](#multi_ams)
 		3. [Exploring the AMS table](#ams_table)
-	2. [Launch Allo-Affinity](#aams_run)
+	2. [Run Allo-Affinity](#aams_run)
 		1. [Single pair](#single_aams)
 		2. [Multiple pairs](#multi_aams)
 		3. [Exploring the af-AMS table](#aams_table)
@@ -178,7 +178,7 @@ Where:\
 This command line works for individual .VCF files or  joint .VCF files, whether compressed (.vcf.gz) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
-**Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
+**Once the variant-annotation of your file(s) is(are) complete, you are now ready to run your first AlloPipe run!**
 
 <br/>
 
@@ -186,7 +186,7 @@ Run this command for every file you want to input in AlloPipe.
 
 ## Run the AlloPipe workflow <a name="run"></a>
 
-### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Launch Allo-Count  <a name="ams_run"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Run Allo-Count  <a name="ams_run"></a>
 
 <br/>
 
@@ -221,7 +221,7 @@ We provide the possibility to impute missing data as ref/ref (0/0), i.e. homozyg
 
 <br/>
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Launch Allo-Count for a single pair <a name="single_ams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Run Allo-Count for a single pair <a name="single_ams"></a>
 
 Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
@@ -247,9 +247,9 @@ A complete helper function is provided
 
 
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Launch Allo-Count for multiple pairs <a name="multi_ams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Run Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to launch Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
+It is possible to run Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
 In that case, you need to upload a [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
 
 		cd src/
@@ -338,7 +338,7 @@ The MISMATCH-TABLE gives youinformation on the mismatched positions:
 This table contains mandatory data to perform the reconstruct peptides in the second step
 <br/>
 
-### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ii)Launch Allo-Affinity <a name="aams_run"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ii)Run Allo-Affinity <a name="aams_run"></a>
 
 **What does Allo-Affinity perform?**
 
@@ -452,13 +452,13 @@ Once the VEP annotation is complete, go to the root of the AlloPipe directory to
 	cd src/
 	python ams_pipeline.py -n test-run ../tutorial/HG002-VEPannotated.vcf ../tutorial/HG007-VEPannotated.vcf rd no-imputation
 <br/>
-If AMS returns 45, you're all set!
-Other commands should return the following results
 
-|  Orientation |   Imputation  | No imputation |
-| ------------ | ------------- | ------------- |
-|  HSCT = rd   |       52      |      45       | 
-|  SOT = dr    |       79      |      67       | 
+The expected AMS are
+
+|  Orientation |   Imputation    | No imputation |
+| ------------ | --------------- | ------------- |
+|  HSCT = rd   |       2812      |      42       | 
+|  SOT = dr    |       1155      |      34       | 
 
 <br/>
  Finally, to get your af-AMS and related table, run:
