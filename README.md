@@ -52,12 +52,12 @@ After reformating relevant data from the variant-annotated .VCF file(s), Allo-co
 <br/>
 <br/>
 
-&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the te minor histocompatibility antigens (mHAgs)**<br/>
+&nbsp;&nbsp;&nbsp;&nbsp; **(2) Allo-Affinity imputes the minor histocompatibility antigens (mHAgs)**<br/>
 
 Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms present in the mismatches tables.<br/>
-The affinity of those peptides towards the HLA molecules can then be assessed using third party tools such as [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares.
+The affinity of those peptides towards the HLA molecules can then be assessed using third party tools such as [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares, to retrieve the candidate mHAgs.
 
-*Be careful with the terms of use of NetMHCpan and MixMHCpred softwares. 4-digits HLA typing has to be provided by the user for the HLA molecules of interest, including the alpha/beta chains combination for HLA-DR and HLA-DQ molecules.*
+*Please read the terms of use for the NetMHCpan and MixMHCpred software. 4-digit HLA typing must be provided by the user for the HLA molecules of interest, including the alpha/beta chain combination for HLA-DR and HLA-DQ molecules.*
 
 
 <br/>
@@ -147,7 +147,7 @@ The following command lines will perform the steps 1-2-3:
 
 <br/>
 
->*Any variant annotator could be used at this step, but keep in mind that AlloPipe has been developed with .VCF v4.2 files annotated with VEP command line installation for versions 103, 104, 110 and 111.*
+>*Any variant annotator could be used at this step, but keep in mind that AlloPipe has been developed with .VCF v4.2 files annotated with VEP command line installation for versions older than 103.*
 
 <br/>
 
@@ -175,7 +175,7 @@ Where:\
 ```<FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.\
 ```<ANNOTATED-FILE>.vcf``` is the path to the directory and the name of the ouput annotated file.\
 
-This command line works for individual .VCF files or  joint .VCF files, whether compressed (.gvcf) or not (.vcf). 
+This command line works for individual .VCF files or  joint .VCF files, whether compressed (.vcf.gz) or not (.vcf). 
 Run this command for every file you want to input in AlloPipe.
 
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to launch your first AlloPipe run!**
@@ -199,7 +199,7 @@ Those dataframe are then filtered considering a set of quality metrics (defaults
 - minimal allelic depth (5x)
 - homozygosity threshold (0.2)
 - GnomADe allele frequency threshold (0.01)
-- genotype quality threshold (0)
+- genotype quality threshold (0 : you might adjust this value according to your sequencing platform)
 - maximal indels length (3)
 
 The curated dataframes are then queried to assess the **directional mismatches** between samples.
@@ -215,9 +215,9 @@ The curated dataframes are then queried to assess the **directional mismatches**
 <br/>
 
 **How does AlloPipe handle with missing data?**\
-We provide the possibility to impute missing variants as ref/ref (0/0), i.e. homozygous for the nucletotide of reference.
+We provide the possibility to impute missing data as ref/ref (0/0), i.e. homozygous for the nucletotide of reference.
  - If you are using individual .VCF files as input ('single pair mode'), you most probably want to run with the 'imputation mode' as ref/ref variants are omitted in those files.
- - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will explicitely rull out unsequenced variants.
+ - If you are using joint .VCF ('multiple pairs mode'), running 'no-imputation mode' will only keep variants sequenced in the two datasets of each pair.
 
 <br/>
 
@@ -319,7 +319,7 @@ The MISMATCH-TABLE gives youinformation on the mismatched positions:
 
 
 3. **VEP information**\
-**consequences_{x, y} (int)**: All the columns with a consequence with the number of times it is recorded in transcripts for the variant\
+**consequences_{x, y} (int)**: Count of each consequence type (i.e. framshift indel, missense variant, ...)\
 **transcripts_{x, y} (str**:Transcripts recorded for the variant\
 **genes_{x, y} (str** Genes recorded for the variant\
 **aa_REF, aa_ALT (str)**: Amino-acid for REF and ALT alleles for the variant\
@@ -334,7 +334,8 @@ The MISMATCH-TABLE gives youinformation on the mismatched positions:
 
 <br/>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3) The TRANSCRIPT-TABLE \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3) The **TRANSCRIPT-TABLE** \
+This table contains mandatory data to perform the reconstruct peptides in the second step
 <br/>
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ii)Launch Allo-Affinity <a name="aams_run"></a>
@@ -346,16 +347,9 @@ From previously generated files that are the MISMATCH-TABLE and the TRANSCRIPT-T
 **The directionality of the mismatch is kept**, meaning that if Allo-Count has been run within the *donor-to-recipient* direction, only peptides exhibiting a polymorphism present by the donor but absent from the recipient will be reconstructed.\
 In the same way, if Allo-Count has been run within the *recipient-to-donor direction*, only peptides exhibiting a polymorphism present by the recipient but absent from the donor will be reconstructed.
 
-In the mean of assessing the peptides potentially trigerring the alloreactivity, the latter need to be embedded in HLA class I and/or class II molecules, therefore being of 9-AA long (9-mers) or 15-AA long (15-mers), even though any length is tolerated by Allo-Affinity.
-Allo-Affinity eventually prepares the .fasta files containing the peptides and the appended files that are required to run by
- - [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/)
- - [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) 
- - tbu
-
-
 <br/>
 
-> To run NetMHCpan, you will need the following files:\
+> To recontruct the peptides, you will need the following files:\
 > **BEWARE! The number of the release has to match your VEP version!**\
 > Do not forget to select the reference genome used to perfom the alignment.
 > - <REFERENCE-GENOME>.cdna.all.fa.gz [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna)
@@ -367,9 +361,16 @@ Allo-Affinity eventually prepares the .fasta files containing the peptides and t
 
 <br/>
 
+Allo-Affinity output those peptides in a .fasta file that can be process by the following third party softwares:
+ - [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/)
+ - [NETMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) 
+ - [MixMHCPred](https://github.com/GfellerLab/MixMHCpred)
+ - [MicMHC2Pred](https://github.com/GfellerLab/MixMHC2pred)
+
+
 Each of these tool imputes the affinity of the reconstructed peptides towards the HLA peptide grooves, therefore output **potential minor histocompatibility antigens (mHAgs)**
 **Please note that the HLA typing has to be known before running the command line**, as the AlloPipe tool does not impute the HLA typing from genomic data.
-You can use [nfcore-HLAtyping](https://github.com/nf-core/hlatyping) for HLA class I
+*Hint: You can use [nfcore-HLAtyping](https://github.com/nf-core/hlatyping) to assess the HLA class I from exome data.*
 
 <br/>
 
