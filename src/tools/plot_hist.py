@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -83,3 +85,4 @@ def hist(ams_exp_path, run_plots):
     # Save the plot as a PNG file
     plot_path = run_plots + "/" + "distrib.png"
     plt.savefig(plot_path, format='png')
+    plt.close()

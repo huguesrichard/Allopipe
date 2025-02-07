@@ -1,7 +1,9 @@
-import os
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np  # For color palette
+import os
 
 def pie(run_tables, run_plots, pair, run_name):
 
@@ -83,6 +85,7 @@ def pie(run_tables, run_plots, pair, run_name):
             # Save the pie chart with the table as a PNG image
             output_path = f"{run_plots}/{run_name}_{pair + '_' if pair else ''}pie_chart.png"
             plt.savefig(output_path, format='png', dpi=300, bbox_inches='tight')
+            plt.close()
         else:
             print(f"File {file} is missing the 'CHROM' column or could not be read.")
 
