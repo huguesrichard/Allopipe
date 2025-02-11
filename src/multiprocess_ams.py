@@ -8,7 +8,7 @@ import os
 import concurrent.futures
 import time
 import sys
-from tools import arguments_handling, multivcf_extract, table_operations
+from tools import arguments_handling, multivcf_extract
 
 # one argument function to be used by ProcessPoolExecutor.map multiprocessing function
 def launch_ams_pipeline(command_line):
@@ -73,14 +73,23 @@ def main():
     couples = []
     read_pairs_info(args.file_pairs, couples)
     
-    # extract donor and recipient columns from multi VCF
-    path_couples = []
-    path_out_couples = multivcf_extract.create_dependencies()
+
+    # extract unique individuals and sort
+    unique_individuals = sorted({ind for pair in couples for ind in pair})
+
+    # ensure an even number of individuals for pairing (and duplicating one if needed)
+    if len(unique_individuals) % 2 != 0:
+        unique_individuals.append(unique_individuals[-2])
+
     commands_multivcf = [
-    f"python3 tools/multivcf_extract.py {args.multi_vcf} {donor} {recipient}"
-    for (donor, recipient) in couples
+        f"python3 tools/multivcf_extract.py {args.multi_vcf} "
+        f"{unique_individuals[i]} {unique_individuals[i + 1]} {args.run_name}"
+        for i in range(0, len(unique_individuals), 2)
     ]
     
+    # extract donor and recipient columns from multi VCF
+    path_couples = []
+    path_out_couples = multivcf_extract.create_dependencies(args.run_name)
     for (donor, recipient) in couples:
         path_donor = path_out_couples + "/{}.vcf.gz".format(donor)
         path_recipient = path_out_couples + "/{}.vcf.gz".format(recipient)

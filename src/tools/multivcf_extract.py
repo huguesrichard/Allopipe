@@ -3,7 +3,6 @@
 This script splits a multi-sample VCF into single VCFs then groupped by pair
 """
 import sys
-import argparse
 import gzip
 from pathlib import Path
 
@@ -34,10 +33,10 @@ def get_infos_mvcf(multi_vcf_path):
     return (headers, lines[0], lines[1:])
 
 # str directory_name -> create str path and make directory
-def create_dependencies():
-    Path("../output").mkdir(parents=True, exist_ok=True)
-    Path("../output/indiv_vcf").mkdir(parents=True, exist_ok=True)
-    path = "../output/indiv_vcf"
+def create_dependencies(run_name):
+    Path(f"../output").mkdir(parents=True, exist_ok=True)
+    Path(f"../output/runs/{run_name}/vcf_indiv").mkdir(parents=True, exist_ok=True)
+    path = f"../output/runs/{run_name}/vcf_indiv"
     return path
 
 # checks GT field status -> True: isn't empty; False: is empty
@@ -76,9 +75,9 @@ def write_vcf(headers, names, infos, path, donor_colname, recipient_colname):
                     ).encode())
     
 
-def main(multi_vcf, donor_colname, recipient_colname):
+def main(multi_vcf, donor_colname, recipient_colname, run_name):
     headers, names, infos = get_infos_mvcf(multi_vcf)
-    path = create_dependencies()
+    path = create_dependencies(run_name)
     write_vcf(headers, names, infos, path, donor_colname, recipient_colname)
     path_donor = path + "/{}.vcf.gz".format(donor_colname)
     path_recipient = path + "/{}.vcf.gz".format(recipient_colname)
@@ -86,4 +85,4 @@ def main(multi_vcf, donor_colname, recipient_colname):
     return(path_donor, path_recipient)
     
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
