@@ -234,18 +234,11 @@ def get_peptides_ref(transcripts_pair, pep_size):
     return transcripts_reduced
 
 def create_header_fasta(x):
-    if x["peptide"] == x["peptide_REF"]:
-        header = (
-            f">{x['Gene_id']}:{x['Transcript_id']}:"
-            f"{x['Peptide_id']}:{x['CHROM']}:{x['POS']}:REF-"
-            f"{x['peptide_REF']}:DIFF-{x['peptide']}:0"
-        )
-    else:
-        header = (
-            f">{x['Gene_id']}:{x['Transcript_id']}:"
-            f"{x['Peptide_id']}:{x['CHROM']}:{x['POS']}:REF-"
-            f"{x['peptide_REF']}:DIFF-{x['peptide']}:1"
-        )
+    header = (
+        f">{x['Gene_id']}:{x['Transcript_id']}:"
+        f"{x['Peptide_id']}:{x['CHROM']}:{x['POS']}:REF-"
+        f"{x['peptide_REF']}:DIFF-{x['peptide']}"
+    )
     return header
 
 def write_pep_fasta(file_path, transcripts_pair):
@@ -257,24 +250,18 @@ def write_pep_fasta(file_path, transcripts_pair):
             zip(
                 transcripts_pair["header"],
                 zip(
-                    transcripts_pair["hla_peptides_REF"],
                     transcripts_pair["hla_peptides"],
                 ),
             )
         )
-        stock = False
         for head, hla_peptides in peptides.items():
             for i, peps in enumerate(hla_peptides):
-                if stock:
-                    stock = False
-                    continue
-                file.write(head[:-2] + f":{i+1}")
+                file.write(head)
                 file.write("\n")
                 for hla_peptide in peps:
                     file.write(hla_peptide)
                     file.write("\n")
-                if head[-1] == "0":
-                    stock = True
+
 
 def write_netmhc_fasta(pep_fasta_path, netmhc_fasta_file_name):
     with open(pep_fasta_path, "r", encoding="utf-8") as rf:

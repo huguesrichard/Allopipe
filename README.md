@@ -131,11 +131,11 @@ AlloPipe installation specifically requires
    
 The following command lines will perform the steps 1-2-3:
 
-		git clone https://github.com/huguesrichard/Allopipe.git
-		cd Allopipe
- 		conda create --name Allopipe python=3.9
-  		conda activate Allopipe
-		python -m pip install -r requirements.txt
+	git clone https://github.com/huguesrichard/Allopipe.git
+	cd Allopipe
+	conda create --name Allopipe python=3.9
+	conda activate Allopipe
+	python -m pip install -r requirements.txt
 
 <br/>
 
@@ -161,14 +161,14 @@ To install the VEP command line tool, follow the installation tutorial available
       
  We then recommend to **add VEP to your PATH** by adding the following line to your ```~/.profile``` or ```~/.bash_profile```:
 
-		export PATH=%%PATH/TO/VEP%%:${PATH}
+	export PATH=%%PATH/TO/VEP%%:${PATH}
 
 <br/>
 
 Run the following command to annotate you VCF file(s) with VEP.\
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
 	
-		vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
+	vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
 
 Where:\
 ```<GRChXX>``` is the version of the genome used to align the sequences.\
@@ -226,8 +226,8 @@ We provide the possibility to impute missing data as ref/ref (0/0), i.e. homozyg
 Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal \
 *Do not forget to activate your conda environment!* 
 
-		cd src/
-		python ams_pipeline.py -n <NAME-RUN> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION> <IMPUTATION-MODE>
+	cd src/
+	python ams_pipeline.py -n <NAME-RUN> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION> <IMPUTATION-MODE>
 
 
 Where :\
@@ -240,7 +240,7 @@ Where :\
 <br/>
 A complete helper function is provided
 
-		python ams_pipeline.py --help
+	python ams_pipeline.py --help
   
 
 <br/>
@@ -252,8 +252,8 @@ A complete helper function is provided
 It is possible to run Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
 In that case, you need to upload a [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
 
-		cd src/
-		python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
+	cd src/
+	python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
 
 Where:\
 ```<NAME-RUN>``` is the name of the run\
@@ -443,8 +443,8 @@ We provide a couple of example data in /tutorial, i.e. tutorial/donor_to_annotat
 <br/>
 To test your VEP installation (v111 in this tutorial), run the following command:  
 	
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf
-		vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
+	vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf
+	vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
 
 <br/>
 Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
@@ -466,15 +466,10 @@ The expected AMS are
   	gzip -d ../data/Ensembl/GRCh38/*
 	
 	python aams_pipeline.py \
-	-M ../output/runs/test_run/run_tables/test_pair_test_run_mismatches_20_400_5_gq_20_0.8_bl_3.tsv \
-	-T ../output/runs/test_run/run_tables/test_pair_test_run_transcripts_pair_codons_20_400_5_gq_20_0.8_bl_3.tsv \
-	-E ../data/Ensembl/Homo_sapiens.GRCh38.cdna.all.fa \
-	-P ../data/Ensembl/Homo_sapiens.GRCh38.pep.all.fa \
-	-R ../data/Ensembl/Homo_sapiens.GRCh38.111.refseq.tsv \
-	-n test_run \
-	-l 9 --el_rank 2 \
+	-d ../data/Ensembl/GRCh38 \ 
+	-n test-run \
+	-l 9 \
+	-e 2 \
 	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
-
-Ir your af-AMS returns 31, you are all set !
 
 You can now enjoy AlloPipe. We will be happy of any feedback !
