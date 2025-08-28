@@ -1,10 +1,9 @@
-# coding : utf-8
+#coding:utf-8
 """
 The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
 command line help : python3 ams_pipeline.py [-h]
 """
 import os
-import sys
 import datetime
 from tools import ams_helpers, arguments_handling, table_operations, plot_hist, plot_pie
 
@@ -86,7 +85,7 @@ def main():
             vep_recipient, merged_df, vep_indices_recipient, "recipient"
         )
         merged_transcripts = table_operations.build_transcripts_table(
-            transcripts_donor, transcripts_recipient, merged_df
+            transcripts_donor, transcripts_recipient
         )
         transcripts_file = (
             os.path.join(

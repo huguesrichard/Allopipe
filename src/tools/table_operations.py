@@ -6,9 +6,6 @@ import pandas as pd
 import os
 import glob
 from pathlib import Path
-import re
-import sys
-import numpy as np
 import sklearn.linear_model as lm
 
 
@@ -97,7 +94,6 @@ def create_AMS_df(ams_exp_path):
 ######################## Transcripts tables ########################
 ####################################################################
 
-# build transcripts table for an individual
 def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv_type):
     """
     Returns the vep dataframe of the individual containing the transcripts information
@@ -111,7 +107,6 @@ def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv
     """
     # read the VEP table
     vep_table = pd.read_pickle(vep_table_path)
-    # merged_ams = pd.read_csv(merged_ams_path,sep="\t")
     if indiv_type == "donor":
         indiv = "x"
     elif indiv_type == "recipient":
@@ -164,7 +159,7 @@ def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv
 
 
 # build transcripts table for a pair
-def build_transcripts_table(transcripts_donor, transcripts_recipients, merged_ams):
+def build_transcripts_table(transcripts_donor, transcripts_recipients):
     """
     Returns the vep dataframe of the individual containing the transcripts information
                     Parameters :

@@ -2,7 +2,7 @@
 """
 This file contains all the helpers required to run the ams pipeline
 """
-import sys
+
 import os
 from pathlib import Path
 import numpy as np
@@ -491,6 +491,7 @@ def merge_dfs(df_donor, df_recipient, orientation, imputation):
                                     df_donor (pd.DataFrame): dataframe of the donor
                                     df_recipient (pd.DataFrame): dataframe of the recipient
                                     orientation (str): orientation of the merge
+                                    imputation (str): imputation type ("imputation" or "no-imputation")
                     Returns :
                                     merged_dataframe of the individuals, based on the provided orientation
                                     side (str): reference when looking at duplicated indices within the merged dataframe
