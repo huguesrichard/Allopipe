@@ -28,7 +28,18 @@ def create_aams_dependencies(ams_run_directory):
     Path(netmhc_dir).mkdir(parents=True, exist_ok=True)
     aams_path = f"../output/runs/{ams_run_directory}/AAMS"
     Path(aams_path).mkdir(parents=True, exist_ok=True)
-    return aams_run_tables,netmhc_dir,aams_path
+    netchop_dir = f"../output/runs/{ams_run_directory}/netChop"
+    Path(netchop_dir).mkdir(parents=True, exist_ok=True)
+    return aams_run_tables, netmhc_dir, aams_path, netchop_dir
+
+
+def read_log_field(log_file, field_name):
+    with open(log_file) as f:
+        for line in f:
+            if line.startswith(f"{field_name}:"):
+                return line.split(":", 1)[1].strip()
+    return None
+
 
 def dict_to_df(peptides):
     peptides_ensembl = pd.DataFrame(peptides.items(), columns=["Peptide_id", "INFO"])
@@ -379,6 +390,7 @@ def create_header_fasta(x):
     )
     return header
 
+
 def write_pep_fasta(file_path, transcripts_pair):
     with open(file_path, "w", encoding="utf-8") as file:
         transcripts_pair["header"] = transcripts_pair.apply(
@@ -419,6 +431,7 @@ def write_netmhc_fasta(pep_fasta_path, netmhc_fasta_file_name):
                     count += 1
     return fasta_path
 
+
 def is_float(element):
     try:
         float(element)
@@ -443,6 +456,7 @@ def get_ams_params(run_name):
         f"{min_dp}_{max_dp}_{min_ad}_{gq}_"
         f"{homozygosity_threshold}_{base_length}")
     return str_params,mismatches_path
+
 
 def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_path=None, mismatches_df=None,
                    cleavage_mode=False, ens_transcripts=None, peptides_ensembl=None, refseq_file=None):
@@ -539,13 +553,12 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
         return mismatches_df, transcripts_pair, peptides_ensembl
 
 
-
 def run_netmhcpan(fasta_path,netmhc_dir,args):
     netmhc_print = {
         1: "netMHCpan",
         2: "netMHCIIpan"
     }[args.class_type]
-    print(f"[{args.pair}] Entering {netmhc_print} handler : running {netmhc_print} may last a long time")
+    print(f"[{args.pair}] Entering {netmhc_print} handler: running {netmhc_print} may last a long time")
     netmhc_out = os.path.join(
         netmhc_dir,
         (args.pair + "_" if args.pair else "") +
@@ -558,12 +571,15 @@ def run_netmhcpan(fasta_path,netmhc_dir,args):
         1: "-l",
         2: "-length"
     }[args.class_type]
+    
+    # netMHCpan command
     os.system(f"{netmhc_print} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
+    
     return netmhc_out
 
 
 # get the peptides table ready to merge
-def clean_pep_df(netmhc_table, pep_path,args):
+def clean_pep_df(netmhc_table, pep_path, args):
     """
     Returns
     Parameters :
@@ -590,17 +606,17 @@ def clean_pep_df(netmhc_table, pep_path,args):
     return (netmhc_table, pep_df)
 
 
-def merge_netmhc(netmhc_df, pep_df, mismatches_path_arg, mismatches_path, ELR_thr,pair,aams_path,aams_run_tables,str_params,class_type):
+def merge_netmhc(netmhc_df, pep_df, mismatches_path, aams_path, aams_run_tables, str_params, args):
     # merge both pep and netmhc dataframes
     merged = pd.merge(netmhc_df, pep_df, how="inner", on=["Gene_id", "hla_peptides"])
     # group by peptide
     merged = merged.groupby(["peptide"]).agg("first")
     # remove duplicate positions
     merged = merged.drop_duplicates(["CHROM", "POS"])
-    if mismatches_path_arg == "": # uniprocess: get mismatches from path
+    if args.mismatches == "": # uniprocess: get mismatches from path
         ams_df = pd.read_csv(mismatches_path, sep="\t")
     else: # multiprocess: get mismatches from arg
-        ams_df = pd.read_csv(mismatches_path_arg, sep="\t")
+        ams_df = pd.read_csv(args.mismatches, sep="\t")
     if (
         (
             "X" not in ams_df["CHROM"].unique().tolist()
@@ -624,28 +640,28 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path_arg, mismatches_path, ELR_th
         1: "EL_Rank",
         2: "Rank"
     }
-    merged_aams = merged_aams[merged_aams[column_to_filter[class_type]] <= ELR_thr]
+    merged_aams = merged_aams[merged_aams[column_to_filter[args.class_type]] <= args.el_rank]
     mismatch_count = merged_aams["mismatch"].sum()
-    aams_df = pd.DataFrame([[pair if pair else "-", mismatch_count]], columns=["pair", "AAMS"])
+    aams_df = pd.DataFrame([[args.pair if args.pair else "-", mismatch_count]], columns=["pair", "AAMS"])
     aams_dir = os.path.join(aams_path,f"AAMS_{str_params}")
     Path(aams_dir).mkdir(parents=True, exist_ok=True)
     aams_df.to_pickle(
         os.path.join(
             aams_dir,
-            (pair + "_" if pair else "")
-            + f"AAMS_df_{str_params}_el_{ELR_thr}.pkl"
+            (args.pair + "_" if args.pair else "")
+            + f"AAMS_df_{str_params}_el_{args.el_rank}.pkl"
         )
     )
     aams_df.to_csv(
         os.path.join(
             aams_dir,
-            (pair + "_" if pair else "")
-            + f"AAMS_df_{str_params}_el_{ELR_thr}.csv"), index=False
+            (args.pair + "_" if args.pair else "")
+            + f"AAMS_df_{str_params}_el_{args.el_rank}.csv"), index=False
     )
     merged_aams.to_csv(
         os.path.join(
             aams_run_tables,
-            (pair + "_" if pair else "")
-            + f"aams_EL_{ELR_thr}.tsv"), sep="\t", index=False
+            (args.pair + "_" if args.pair else "")
+            + f"{args.run_name}_aams_EL_{args.el_rank}.tsv"), sep="\t", index=False
     )
     return mismatch_count

@@ -227,19 +227,10 @@ def get_ref_ratio_pair(donor_df, recipient_df):
 
 
 def get_ref_ratio(
-    run_name,
-    pair_name,
     run_path,
     ams_exp_path,
     donor_path,
     recipient_path,
-    min_DP,
-    max_DP,
-    min_AD,
-    homozygosity_threshold,
-    min_GQ,
-    orientation,
-    base_length,
 ):
 
     donors = [
@@ -252,9 +243,6 @@ def get_ref_ratio(
         for file in glob.glob(os.path.join(run_path, "**/*.tsv"))
         if ("R0_" in file and "transcripts" not in file and "mismatches" not in file)
     ]
-    ams_folder = os.path.join(ams_exp_path, "AMS_{}_{}_{}_{}_{}_{}_{}_{}_{}").format(
-        run_name, pair_name, min_DP, max_DP, min_AD, homozygosity_threshold, min_GQ, orientation, base_length
-    )
     ams = [
     file
     for file in glob.glob(ams_exp_path + "/*")

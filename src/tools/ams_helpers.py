@@ -4,6 +4,8 @@ This file contains all the helpers required to run the ams pipeline
 """
 
 import os
+import sys
+import time
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -30,13 +32,11 @@ def create_run_directory(run_name):
     # create other needed dependencies for the output
     run_tables = os.path.join(run_path, "run_tables")
     run_plots = os.path.join(run_path, "plots")
-    # run_beds = os.path.join(run_path,"bedfiles")
     run_ams = os.path.join(run_path, "AMS")
     # create subdirectories inside of the run_name directory
     Path(run_path).mkdir(parents=True, exist_ok=True)
     Path(run_tables).mkdir(parents=True, exist_ok=True)
     Path(run_plots).mkdir(parents=True, exist_ok=True)
-    # Path(run_beds).mkdir(parents=True,exist_ok=True)
     Path(run_ams).mkdir(parents=True, exist_ok=True)
     return run_path, run_tables, run_plots, run_ams
 
@@ -62,6 +62,16 @@ def handle_overwrite(args):
             return overwrite
     return False
 
+
+def write_log(run_path, args):
+    with open(os.path.join(run_path, "run.log"), "w") as f:
+        f.write(f"Run_name: {args.run_name}\n")
+        f.write(f"Orientation: {args.orientation}\n")
+        f.write(f"Donor: {args.donor}\n")
+        f.write(f"Recipient: {args.recipient}\n")
+        f.write(f"Command: {' '.join(sys.argv)}\n")
+        f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    
 
 #############
 # giab v1.3 #
@@ -178,8 +188,6 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
         | (df_indiv["CHROM"] == "Y")
     ]
     # get the name of the indiv
-    # indiv_path = "/".join(indiv_file.split("/")[:-1])
-    # indiv_pair = indiv_file.split("/")[-2]
     indiv_name = indiv_file.split("/")[-1].split(".")[0]
     if indiv_name not in list(df_indiv.columns):
         indiv_name = list(df_indiv.columns)[-1]
@@ -416,8 +424,6 @@ def clean_df(df_indiv, vcf_path_indiv):
     df_indiv = df_indiv.loc[:, (df_indiv != 0).any(axis=0)]
     # remove rows where there is no aa in both indiv columns
     df_indiv = df_indiv.dropna(subset=["aa_alt_indiv", "aa_ref_indiv"], how="all")
-    # remove non rsid SNP
-    # df_indiv = df_indiv[df_indiv["ID"].str.contains("rs",na=False)]
     return df_indiv
 
 
@@ -601,45 +607,3 @@ def mismatch_type(merged_df):
         "heterozygous",
     )
     return merged_df
-
-
-# filter based on fisher test results and binomial
-def create_noisy_ams_regions_bed(intervals_table, window, alpha):
-    # filter based on number of pairs and p-values
-    intervals_table = intervals_table[
-        ~(
-            (intervals_table["npairs"] <= 15)
-            | (intervals_table["pval_GVHa"] < alpha)
-            | (intervals_table["pval_GVHc"] < alpha)
-            | (intervals_table["pval_GVH"] < alpha)
-            | (intervals_table["pval_noGVH"] < alpha)
-        )
-    ]
-    # split the interval column
-    intervals_table[["CHROM", "pos_start"]] = intervals_table["interval"].str.split(
-        "-", expand=True
-    )
-    # convert to int type
-    intervals_table["pos_start"] = intervals_table["pos_start"].astype(int)
-    # get the accurate position numbers
-    intervals_table["pos_start"] = intervals_table["pos_start"] * window
-    intervals_table["pos_end"] = intervals_table["pos_start"] + window
-    # sort ascend
-    intervals_table["CHR"] = np.select(
-        [
-            intervals_table["CHROM"].str.isdigit(),
-            intervals_table["CHROM"] == "X",
-            intervals_table["CHROM"] == "Y",
-        ],
-        [intervals_table["CHROM"], "23", "24"],
-    )
-    intervals_table["CHR"] = intervals_table["CHR"].astype(int)
-    intervals_table = intervals_table[
-        ["CHROM", "pos_start", "pos_end", "CHR"]
-    ].sort_values(by=["CHR", "pos_start"])
-    # add chr
-    intervals_table["CHROM"] = "chr" + intervals_table["CHROM"]
-    # drop CHR column
-    intervals_table = intervals_table.drop("CHR", axis=1)
-    # save in bed format
-    intervals_table.to_csv("noisy_regions.bed", sep="\t", index=False, header=False)

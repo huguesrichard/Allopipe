@@ -1,23 +1,25 @@
 #coding:utf-8
 import os
 import pandas as pd
+from tools import aams_helpers
 
-import tools.aams_helpers as aams_helpers
 
 def pickle_parsing(str_params, args):
-    #############################################################################################
-    # TO FIX: regarding how we pick up D/R
-    donor_or_recipient = "HG002-VEPannotated"
-    #############################################################################################
+    # get donor or recipient name from orientation in log file
+    log_file = os.path.join(f"../output/runs/{args.run_name}/run.log")
+    orientation = aams_helpers.read_log_field(log_file, "Orientation")
+    if orientation == "dr":
+        sample = aams_helpers.read_log_field(log_file, "Donor").split("/")[-1].split(".")[0]
+    if orientation == "rd":
+        sample = aams_helpers.read_log_field(log_file, "Recipient").split("/")[-1].split(".")[0]
     
-    import os
     # removes base_length from str_params
     str_params_split = "_".join(str_params.split("_")[i] for i in [0, 1, 2, 4])
     pickle_path = os.path.join(
         f"../output/runs/",
         f"{args.run_name}",
         f"run_tables",
-        f"{donor_or_recipient}_vep_infos_table_{str_params_split}.pkl"
+        f"{sample}_vep_infos_table_{str_params_split}.pkl"
     )
 
     pickle_df = pd.read_pickle(pickle_path)
@@ -43,7 +45,7 @@ def pickle_parsing(str_params, args):
         prot_pos = fields[ENST_PROT_POS] if len(fields) > ENST_PROT_POS else None
         return pd.Series([ensg, enst, prot_pos])
 
-    # Apply to df_mini and drop INFO
+    # Apply to pickle_df and drop INFO
     pickle_df[["Gene_id", "Transcript_id", "Protein_position"]] = pickle_df["INFO"].apply(extract_ensg_enst)
     pickle_df = pickle_df.drop(columns=["INFO"])
 
@@ -78,7 +80,7 @@ def add_pep_seq_chop(transcripts_pair, peptides_ensembl):
     return transcripts_pair
 
 
-def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl):
+def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir):
     chop_table = mm_intersect(mismatches_df, transcripts_pair)
     # Get the rows with missing peptide_ALT
     missing_mask = chop_table["peptide_ALT"].isna()
@@ -100,30 +102,38 @@ def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl):
         subset=["CHROM", "Gene_id", "Transcript_id", "Peptide_id", "peptide_ALT"]
     )
     chop_table = chop_table.dropna(subset=["peptide_ALT"])
-    chop_table.to_csv("chop_table.tsv", sep="\t", index=False)
+    
+    
+    # save table
+    chop_table_path = os.path.join(
+        netchop_dir,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_table.csv"
+    )
+    chop_table.to_csv(chop_table_path, sep="\t", index=False)
 
-    return chop_table
+    return chop_table, chop_table_path
 
 
-def run_netchop(chop_table, args):
+def run_netchop(chop_table, args, netchop_dir):
     # prepare input for netchop
-    chop_fasta = "chop_peptides.fasta"
+    chop_fasta = os.path.join(
+        netchop_dir,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_peptides.fa"
+    )
     with open(chop_fasta, "w") as fasta_file:
         for _, row in chop_table.iterrows():
             # NetChop accepts only 10 characters for ID: keep the 10 last characters to have full ENSP ID
             fasta_file.write(f">{row['Peptide_id'][-10:]}\n{row['peptide_ALT']}\n")
 
 
-    print(f"[{args.pair}] Entering NetChop handler : running NetChop may last a few minutes...")
+    print(f"[{args.pair}] Entering NetChop handler: running NetChop may last a few minutes...")
     
-    #######################################################################################################
-    # netmhc_run_output = os.path.join(
-    # netmhc_dir,
-    # (args.pair + "_" if args.pair else "") +
-    # args.run_name + "_full_run_information.txt")
-    chop_output = "netchop_output.txt"
-    #######################################################################################################
+    chop_output = os.path.join(
+        netchop_dir,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_output.txt"
+    )
 
+    # netChop command
     os.system(f"netchop {chop_fasta} -verbose -tdir /tmp > {chop_output}")
 
     return chop_output
@@ -205,7 +215,7 @@ def load_peptide_id_map(tsv_path):
         try:
             idx = header.index("Peptide_id")
         except ValueError:
-            raise ValueError("Column 'Peptide_id' not found in chop_table.tsv")
+            raise ValueError("Column 'Peptide_id' not found in the table")
 
         for line in f:
             cols = line.strip().split('\t')
@@ -217,12 +227,16 @@ def load_peptide_id_map(tsv_path):
     return mapping
 
 
-def postprocess_netchop(chop_output):
+def postprocess_netchop(chop_output, chop_table_path, args, netchop_dir):
     dot_runs, all_positions = parse_netchop_output(chop_output, min_run_length=9)
-    id_map = load_peptide_id_map("chop_table.tsv")
+    id_map = load_peptide_id_map(chop_table_path)
 
-    # Write sequences to CSV
-    with open("chop_pep.csv", "w") as out:
+    # save peptides table
+    chop_peptides = os.path.join(
+        netchop_dir,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_peptides.txt"
+    )
+    with open(chop_peptides, "w") as out:
         out.write("ID,Peptide\n")
         for ident in dot_runs:
             aa_lookup = dict(all_positions[ident])
