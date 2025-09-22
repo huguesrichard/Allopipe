@@ -17,7 +17,7 @@ AlloPipe is also available as a [web application](https://www.allogenomics.com)
 
 <br/>
 <p align="center">
-	<img src ="img/allopipeline.png" alt="AlloPipe" width="600"/>
+	<img src ="img/allopipeline.png" alt="AlloPipe" width="800"/>
 </p>
 
 <br/>
