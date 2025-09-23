@@ -381,7 +381,7 @@ Each of these tool imputes the affinity of the reconstructed peptides towards th
 Once the AMS run is complete, go back to the AlloPipe root directory and run this second set of commands:  
 ```
 		cd src
-		gunzip <ENSEMBL-PATH>/*
+		gzip -d <ENSEMBL-PATH>/*
 		python aams_pipeline.py 
 		-d <ENSEMBL-PATH>
 		-n <TEST-RUN> -l <PEP-LENGTH> --el_rank <EL-THR> 
@@ -389,11 +389,11 @@ Once the AMS run is complete, go back to the AlloPipe root directory and run thi
 ```
 
 Where:
-- ```<ENSEMBL>/``` is the path to the Ensembl files previously downloaded : gzip .cdna.fasta,  gzip .pep.fa and gzip .refseq.tsv files
-- ```<NAME-RUN>``` is the name of the run. **It has to be consistent with the value of ```<NAME-RUN>``` used in the Allo-Count part** 
-- ```<PEP-LENGTH>``` is the length of peptides to be imputed (recommended 9 for class I)
-- ```<EL-THR>``` is the elution threshold (recommended 0.5)
-- ```<HLA-TYPING>``` is the HLA typing e.g. ```HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01```
+  - ```<ENSEMBL>/``` is the path to the Ensembl files previously downloaded compressed gzip files of the different information: `.cdna.fasta`,  `.pep.fa` and `.refseq.tsv`.
+  - ```<NAME-RUN>``` is the name of the run. **It has to be consistent with the value of ```<NAME-RUN>``` used in the Allo-Count part** 
+  - ```<PEP-LENGTH>``` is the length of peptides to be imputed (recommended 9 for class I)
+  - ```<EL-THR>``` is the elution threshold (recommended 0.5)
+  - ```<HLA-TYPING>``` is the HLA typing e.g. ```HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01```
 
  
 <br/>
