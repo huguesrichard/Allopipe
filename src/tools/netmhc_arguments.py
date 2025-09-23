@@ -164,6 +164,10 @@ def netmhc_arguments():
         help="number of workers (cores) for multiprocessing",
         default=os.cpu_count() // 2,
         type=lambda x: arguments_handling.check_workers_count(parser, x))
+    parser.add_argument("--cleavage",
+        help="enables cleavage prediction with netChop",
+        action="store_true",
+    )
     parser.add_argument("--dry_run",
         help=argparse.SUPPRESS,
         action="store_true",

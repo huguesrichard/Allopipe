@@ -26,7 +26,7 @@ class VepIndices:
                     prot (int): index of the protein field in VEP
                     aa (int): index of the amino-acid field in VEP
                     codons (int): index of the codons field in VEP
-                    gnomad (float): index of the frequency of existing variant in gnomAD exomes combined population in VEP
+                    gnomad (int): index of the frequency of existing variant in gnomAD exomes combined population in VEP
     """
     def __init__(self, consequence, gene, transcript, cdna, cds, prot, aa, codons, gnomad):
         self.consequence = consequence

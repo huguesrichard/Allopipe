@@ -1,10 +1,9 @@
-# coding : utf-8
+#coding:utf-8
 """
 The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
 command line help : python3 ams_pipeline.py [-h]
 """
 import os
-import sys
 import datetime
 from tools import ams_helpers, arguments_handling, table_operations, plot_hist, plot_pie
 
@@ -29,6 +28,8 @@ def main():
     run_path, run_tables, run_plots, run_ams = ams_helpers.create_run_directory(
         args.run_name
     )
+    # basic logging (to pass paramaters from AMS to AAMS)
+    ams_helpers.write_log(run_path, args)
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
         run_tables, args.donor, args, args.wc_donor, formatted_datetime
@@ -86,7 +87,7 @@ def main():
             vep_recipient, merged_df, vep_indices_recipient, "recipient"
         )
         merged_transcripts = table_operations.build_transcripts_table(
-            transcripts_donor, transcripts_recipient, merged_df
+            transcripts_donor, transcripts_recipient
         )
         transcripts_file = (
             os.path.join(
@@ -113,9 +114,7 @@ def main():
     # score normalization (multiprocess_ams only)
     if args.norm_score:
         ams_df, ams_exp_path, ref_ratio = table_operations.get_ref_ratio(
-            args.run_name, args.pair, run_path, ams_exp_path, args.donor, args.recipient,
-            args.min_dp, args.max_dp, args.min_ad, args.homozygosity_thr, args.min_gq,
-            args.orientation, args.base_length
+            run_path, ams_exp_path, args.donor, args.recipient,
         )
         table_operations.add_norm(ams_df, ams_exp_path, ref_ratio)
 

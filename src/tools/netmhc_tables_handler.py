@@ -97,6 +97,8 @@ def filter_netMHC_table(netmhc_table,args,netmhc_file,NB_min = 0,ELS_thr = 0):
     # filter the EL_Rank values (after seeing plots, 2 might be a good value)
     # filter the EL-score values (no real filter atm, must just not be 0)
     elr_thr = args.el_rank
+    # intermediate save before filtering
+    netmhc_table.to_csv(netmhc_file.split(".out")[0]+f"_netmhc_ELR_nofilter.csv",index=False)
     netmhc_table = netmhc_table[((netmhc_table["NB"]>NB_min)&
         (netmhc_table[rank_col_cl]<=elr_thr)&
         (netmhc_table[scor_col_cl]>ELS_thr))]
