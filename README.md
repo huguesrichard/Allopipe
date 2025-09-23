@@ -89,6 +89,7 @@ You need to provide one unique variant-annotated `.VCF` file containing the geno
 		1. [Single pair](#single_aams)
 		2. [Multiple pairs](#multi_aams)
 		3. [Exploring the af-AMS table](#aams_table)
+		4. [Predicting cleaved peptide](#cleavage)
 
 <br/>
      
@@ -102,17 +103,19 @@ You need to provide one unique variant-annotated `.VCF` file containing the geno
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) Requirements<a name="requirements"></a>
 
-AlloPipe installation specifically requires
-1. [Python](https://www.python.org/downloads/) ≥ 3.6 (developed on 3.9)
+For installing AlloPipe you will specifically require the following softwares:
+1. [Python](https://www.python.org/downloads/) ≥ 3.6 (Allopipe was developed on v3.9)
 
 2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed for your operating system and python version. Verify that you have a suitable version of Conda, as we recommend installing the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in a dedicated environment.
-  
-3. If you want to assess the affinity of the reconstructed peptides towards the HLA molecules, you need to install program for the prediction of peptide affinities towards HLA class I or class II molecules:<br/>
- &nbsp;&nbsp; [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) downloaded as command line tools\
-   and/or \
- &nbsp;&nbsp;  [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) downloaded as command line tools.\
-*Make sure you use the difference pieces of software in accordance with their user license.*
-   
+
+3. To run Allo-affinity, you need to assess the affinity of the reconstructed peptides towards the HLA molecules. We recommend two groups of software suites for that (only NetMHCpan is supported in command line for now):
+	- [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
+	- [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) (support development in progress).
+4. To predict proteasomal cleavage on the proteins of the donor or the recipient, you will also need the [netchop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool installed as a standalone version. 
+
+*Make sure you use each software in accordance with its user license.*
+
+ 
 <br/>
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(ii) AlloPipe installation <a name="install"></a>
@@ -131,12 +134,13 @@ The following command lines will perform steps 1 to 3:
 	conda activate Allopipe
 	python -m pip install -r requirements.txt
 ```
+1) Remember that to run prediction of affinity for the peptides you will also need netMHCpan installed (netchop to account for proteasomal cleavage).
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(iii) Preprocess the input data: variant annotation <a name="vep"></a>
 
 <br/>
 
-**AlloPipe input file(s) must be variant-annotated .VCF file(s). We highly recommend performing the variant annotation with the most recent version of VEP using the command line installation and all the arguments specified below.**
+**AlloPipe input file(s) must be variant-annotated VCF file(s). We highly recommend performing the variant annotation with the most recent version of VEP using the command line installation and all the arguments specified below.**
 
 <br/>
 
@@ -221,7 +225,7 @@ We provide the possibility to impute genotype missing data as being ref/ref (e.g
 
 Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal
 
-*Do not forget to activate your conda environment!*  
+*Do not forget to activate your conda environment with `conda activate Allopipe`!*  
 ```
 	cd src/
 	python ams_pipeline.py -n <NAME-RUN> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION> <IMPUTATION-MODE>
@@ -246,8 +250,8 @@ python ams_pipeline.py --help
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Running Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to run Allo-Count from an annotated joint .VCF file containing the genomic data of interest.\
-In that case, you need to upload a [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
+It is possible to run Allo-Count from an annotated joint VCF file containing the genomic data of interest.
+In that case, you need to upload an [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
 ```
 	cd src/
 	python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
@@ -376,7 +380,7 @@ Each of these tool imputes the affinity of the reconstructed peptides towards th
 
 <br/>
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Simple pair <a name="single_aams"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. Simple pair <a name="single_aams"></a>
 
 Once the AMS run is complete, go back to the AlloPipe root directory and run this second set of commands:  
 ```
@@ -404,7 +408,7 @@ Where:
 This functionality is in development, please get in touch if you would like to use it.
 
 
-### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
 
 This second step of AlloPipe uses the AMS information of the first step.  
 You will find 3 new subdirectories in the **test_run/** directory :  
@@ -415,7 +419,7 @@ You will find 3 new subdirectories in the **test_run/** directory :
 
 The AAMS value obtained with VEP v107 and netMHCpan4.1 is 34.
 
-#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (c) Exploring the Allo-Affinity output <a name="aams_mismatches"></a>
+#### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3. Exploring the Allo-Affinity output <a name="aams_mismatches"></a>
 
 If you want more in-depth information on the mismatches contributing to the AAMS, you will find a mismatches table in the **`aams_run_tables/`** directory.  
 It contains the mismatches information from the AMS run along with information provided by netMHCpan :
@@ -435,6 +439,30 @@ It contains the mismatches information from the AMS run along with information p
 You can now get started with your files, check the [documentation](#docs/documentation.pdf) if you want more control over the filters that we implemented.  
 
 <br/>
+
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4. Predicting cleaved peptides <a name="cleavage"></a>
+
+Allopipe can also run the [netchop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool to annotate the potential proteasomal cleavage sites on the proteins that contain mismatch. This then give you a reduced set of candidate peptides that you can compare with their affinity values. 
+
+The cleaved sites are predicted on a protein sequence which depends of the directionality of the run:
+- `dr` direction: Proteins reconstructed from the genotype of the *donor*. 
+- `rd` direction: Proteins reconstructed from the genotype of the *recipient*. 
+
+2. **Cleaved peptide information**
+
+More information about the cleaved peptide is available in the **`netChop/`** directory in the `netchop_table.csv` file, which contains the following information. 
+ - **CHROM** (str):
+ - **POS** (int):
+ - **Protein_position** (str):
+ - **Gene_id** (str):
+ - **Transcript_id** (str):
+ - **Peptide_id** (str):
+ - **Sequence_aa** (str):
+ - **aa_REF** (str):
+ - **aa_ALT** (str):
+ - **peptide_ALT** (str):
+
+Each row of the table corresponds to a cleaved peptide on a protein that contributes to a mismatch in the AMS.
 
 ## Tutorial <a name="tuto"></a>
 
@@ -472,5 +500,18 @@ The expected AMS are:
 	-e 2 \
 	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 ```
+
+<br/>
+If you want to run the cleaved peptide prediction, add the `--cleavage` switch:
+```
+	python aams_pipeline.py \
+	--cleavage
+	-d ../data/Ensembl/GRCh38 \ 
+	-n test-run \
+	-l 9 \
+	-e 2 \
+	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
+```
+
 
 You can now enjoy AlloPipe. If you have any feedback, please get in touch, we will be happy to help!
