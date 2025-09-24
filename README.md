@@ -91,9 +91,7 @@ You need to provide one unique variant-annotated `.VCF` file containing the geno
 		3. [Exploring the af-AMS table](#aams_table)
 		4. [Predicting cleaved peptide](#cleavage)
 
-<br/>
-     
-  3. [Tutorial](#tuto)
+3. [Tutorial](#tuto)
 
 <br/>
 
@@ -394,12 +392,17 @@ Once the Allo-Count run is complete, go back to the AlloPipe root directory and 
 Where:
   - ```<ENSEMBL>/``` is the path to the Ensembl compressed gzip files previously downloaded of the different information: `.cdna.fa`,  `.pep.fa` and `.refseq.tsv`
   - ```<NAME-RUN>``` is the name of the run. **It has to be consistent with the value of ```<NAME-RUN>``` used in the Allo-Count part** 
-  - ```<PEP-LENGTH>``` is the length of peptides to be imputed (recommended 9 for class I)
-  - ```<EL-THR>``` is the elution threshold (recommended 0.5)
+  - ```<PEP-LENGTH>``` is the length of peptides to be imputed (recommended value of 9 for class I)
+  - ```<EL-THR>``` is the elution threshold (recommended value: 2)
   - ```<HLA-TYPING>``` is the HLA typing e.g. ```HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01```
 
  
 <br/>
+
+> **Note on providing HLA typing**
+> 
+> Allo-Affinity let you be flexible in providing the HLA alleles used for typing, as long as they can be set as parameter for the affinity prediction program (NetMHCPan for the moment). 
+> In most of the scenario you should provide both HLA alleles to compute affinity, but it is perfectly possible to provide for instance only one allele (as could be the case for bone marrow transplantation). 
 
 
 #### Multiple pairs <a name="multi_aams"></a>
