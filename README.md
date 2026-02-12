@@ -9,6 +9,9 @@ The AlloPipe tool is a computational workflow designed to compute, given a pair 
 The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind. <br/>
 AlloPipe is also available as a [web application](https://www.allogenomics.com).
 
+### Allopipe is now published in HLA: 
+A. Dhuyser, P. Delaugère, P. Laville, et al., [AlloPipe and Its Web Server Allogenomics: From Genomic Data to Candidate Minor Histocompatibility Antigens](https://doi.org/10.1111/tan.70590), HLA 107, no. 2 (2026): e70590, https://doi.org/10.1111/tan.70590. 
+
 ---
 ## In a nutshell
 
