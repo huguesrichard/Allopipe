@@ -6,12 +6,11 @@ from tools import aams_helpers
 
 def pickle_parsing(str_params, args):
     # get donor or recipient name from orientation in log file
-    log_file = os.path.join(f"../output/runs/{args.run_name}/run.log")
-    orientation = aams_helpers.read_log_field(log_file, "Orientation")
+    orientation = aams_helpers.read_log_field(args, "Orientation")
     if orientation == "dr":
-        sample = aams_helpers.read_log_field(log_file, "Donor").split("/")[-1].split(".")[0]
+        sample = aams_helpers.read_log_field(args, "Donor").split("/")[-1].split(".")[0]
     if orientation == "rd":
-        sample = aams_helpers.read_log_field(log_file, "Recipient").split("/")[-1].split(".")[0]
+        sample = aams_helpers.read_log_field(args, "Recipient").split("/")[-1].split(".")[0]
     
     # removes base_length from str_params
     str_params_split = "_".join(str_params.split("_")[i] for i in [0, 1, 2, 4])

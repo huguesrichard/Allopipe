@@ -33,7 +33,8 @@ def create_aams_dependencies(ams_run_directory):
     return aams_run_tables, netmhc_dir, aams_path, netchop_dir
 
 
-def read_log_field(log_file, field_name):
+def read_log_field(args, field_name):
+    log_file = os.path.join(f"../output/runs/{args.run_name}/run.log")
     with open(log_file) as f:
         for line in f:
             if line.startswith(f"{field_name}:"):
@@ -125,7 +126,7 @@ def intersect_positions(transcripts_pair, transcripts_df, cleavage_mode=False):
     return transcripts_pair
 
 
-def aa_ref(transcripts_pair):
+def aa_ref(transcripts_pair, imputation):
     transcripts_pair["aa_REF"] = np.select(
         [
             transcripts_pair["aa_ref_indiv_x"].notna()
@@ -141,7 +142,9 @@ def aa_ref(transcripts_pair):
             transcripts_pair["aa_ref_indiv_x"],
             transcripts_pair["aa_ref_indiv_y"],
             transcripts_pair["aa_ref_indiv_x"],
-            np.nan,
+            (transcripts_pair["Amino_acids"].str.split("/").str[0]
+             if imputation == "imputation"
+             else np.nan),
         ],
     )
     return transcripts_pair
@@ -306,7 +309,7 @@ def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False):
         transcripts_pair["diff"] = transcripts_pair["diff"].str.split(",")
         transcripts_pair = transcripts_pair.explode("diff")
 
-        # filter aa longer than 3 aminoacids
+        # filter aa longer than 3 aminoacids (warning: filter if empty ["aa_REF"] => "no-imputation" mode)
         transcripts_pair = transcripts_pair[
             (transcripts_pair["diff"].str.len() <= 3) &
             (transcripts_pair["aa_REF"].str.len() <= 3)
@@ -496,7 +499,6 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
         transcripts_path = next((file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv") 
                                 if "_transcripts_" in file and os.path.exists(file)), None)
     else:
-        ############################ TO FIX D0 below #####################################
         transcripts_path = next((file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
                                 if "_D0_" in file and os.path.exists(file)), None)
 
@@ -516,7 +518,9 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
     transcripts_pair = intersect_positions(transcripts_pair, transcripts_df, cleavage_mode)
 
     if not cleavage_mode:
-        transcripts_pair = aa_ref(transcripts_pair)
+        # get imputation mode in log file
+        imputation = read_log_field(args, "Imputation")
+        transcripts_pair = aa_ref(transcripts_pair, imputation)
     
     # get pep seq on long format table
     transcripts_pair = add_pep_seq(transcripts_pair, peptides_ensembl, cleavage_mode)
@@ -555,10 +559,10 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
 
 def run_netmhcpan(fasta_path,netmhc_dir,args):
     netmhc_print = {
-        1: "netMHCpan",
-        2: "netMHCIIpan"
+        1: "NetMHCpan",
+        2: "NetMHCIIpan"
     }[args.class_type]
-    print(f"[{args.pair}] Entering {netmhc_print} handler: running {netmhc_print} may last a long time")
+    print(f"[{args.pair}] Entering {netmhc_print} handler: running {netmhc_print} may last a long time...")
     netmhc_out = os.path.join(
         netmhc_dir,
         (args.pair + "_" if args.pair else "") +
