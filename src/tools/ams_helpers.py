@@ -66,9 +66,10 @@ def handle_overwrite(args):
 def write_log(run_path, args):
     with open(os.path.join(run_path, "run.log"), "w") as f:
         f.write(f"Run_name: {args.run_name}\n")
-        f.write(f"Orientation: {args.orientation}\n")
         f.write(f"Donor: {args.donor}\n")
         f.write(f"Recipient: {args.recipient}\n")
+        f.write(f"Orientation: {args.orientation}\n")
+        f.write(f"Imputation: {args.imputation}\n")
         f.write(f"Command: {' '.join(sys.argv)}\n")
         f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
