@@ -2,15 +2,12 @@
 """
 Script to launch multiple aams pipeline processes
 The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
-command line help : python3 multiprocess_aams.py [-h]
+command line help : python multiprocess_aams.py [-h]
 """
 import os
-import sys
 import glob
 import concurrent.futures
 import time
-import re
-from tools import parsing_functions, table_operations
 from tools import netmhc_arguments
 from pathlib import Path
 
@@ -35,7 +32,7 @@ def main():
     """
     Script to launch multiple aams pipeline processes
     The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
-    command line help : python3 multiprocess_aams.py [-h]
+    command line help : python multiprocess_aams.py [-h]
     """
     print("Pipeline starting...")
     args = netmhc_arguments.netmhc_arguments()
@@ -60,7 +57,7 @@ def main():
 
     # build a list of all commands
     commands = [
-        f"python3 aams_pipeline.py"
+        f"python aams_pipeline.py"
         f" -M {MISMATCH} -T {TRANSCRIPT}"
         f" -n {args.run_name} -d {args.ensembl_path}"
         f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"

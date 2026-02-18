@@ -2,7 +2,7 @@
 """
 Script to launch multiple AMS pipeline processes
 The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
-command line help : python3 multiprocess_ams.py [-h]
+command line help : python multiprocess_ams.py [-h]
 """
 import os
 import concurrent.futures
@@ -66,7 +66,7 @@ def main():
     """
     Script to launch multiple AMS pipeline processes
     The AMS pipeline estimates the mismatch between a donor and a recipient based on VCF information
-    command line help : python3 multiprocess_ams.py [-h]
+    command line help : python multiprocess_ams.py [-h]
     """
     print("Pipeline starting...")
     args = arguments_handling.arguments(sys.argv[1])
@@ -82,7 +82,7 @@ def main():
         unique_individuals.append(unique_individuals[-2])
 
     commands_multivcf = [
-        f"python3 tools/multivcf_extract.py {args.multi_vcf} "
+        f"python tools/multivcf_extract.py {args.multi_vcf} "
         f"{unique_individuals[i]} {unique_individuals[i + 1]} {args.run_name}"
         for i in range(0, len(unique_individuals), 2)
     ]
@@ -109,7 +109,7 @@ def main():
     # leading zeros for pairs ID : 01 instead of 1 (nb > 10), 001 instead of 1 (nb > 100)
     leading_zeros_number = len(str(len(path_couples)))
     commands = [
-    f"python3 ams_pipeline.py {path_donor} {path_recipient} {args.orientation} "
+    f"python ams_pipeline.py {path_donor} {path_recipient} {args.orientation} "
     f"{args.imputation} --norm_score "
     f"--min_dp {args.min_dp} --max_dp {args.max_dp} --min_ad {args.min_ad} "
     f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
