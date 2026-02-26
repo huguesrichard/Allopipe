@@ -25,11 +25,11 @@ def main():
         formatted_datetime = datetime_object.strftime("_%Y-%m-%d_%H-%M-%S")
         print("Warning: directory already exists and contains an AMS file with the same run parameters.\nTimestamp will be added to output files names instead of overwriting.")
     # create run dependencies
-    run_path, run_tables, run_plots, run_ams = ams_helpers.create_run_directory(
+    run_path, run_tables, run_plots, run_ams, run_logs = ams_helpers.create_run_directory(
         args.run_name
     )
     # basic logging (to pass paramaters from AMS to AAMS)
-    ams_helpers.write_log(run_path, args)
+    ams_helpers.write_log(run_logs, args)
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
         run_tables, args.donor, args, args.wc_donor, formatted_datetime
