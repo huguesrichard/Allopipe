@@ -61,7 +61,8 @@ def main():
         f" -M {MISMATCH} -T {TRANSCRIPT}"
         f" -n {args.run_name} -d {args.ensembl_path}"
         f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"
-        f" -a {args.hla_typing} {'--dry_run' if args.dry_run else ''}"
+        f" -a {args.hla_typing}{' --cleavage' if args.cleavage else ''}"
+        f"{' --dry_run' if args.dry_run else ''}"
         for (MISMATCH, TRANSCRIPT) in zip(MISMATCHES,TRANSCRIPTS)
     ]
 

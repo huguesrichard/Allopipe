@@ -34,7 +34,10 @@ def create_aams_dependencies(ams_run_directory):
 
 
 def read_log_field(args, field_name):
-    log_file = os.path.join(f"../output/runs/{args.run_name}/run.log")
+    log_file = os.path.join(
+        f"../output/runs/{args.run_name}/logs/"
+        f"{args.pair + '_' if args.pair else ''}run.log"
+    )
     with open(log_file) as f:
         for line in f:
             if line.startswith(f"{field_name}:"):
@@ -501,14 +504,15 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
     else:
         transcripts_path = next((file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
                                 if "_D0_" in file and os.path.exists(file)), None)
-
     if transcripts_path is None:
         raise FileNotFoundError(f"No such file or directory matching the expected pattern found.")
-    # transcripts long format    
     if args.transcripts == "":
         transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
     else:
-        transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
+        if cleavage_mode:
+            transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
+        else:
+            transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
 
     if cleavage_mode:
         transcripts_pair.rename(columns={'transcripts': 'Transcript_id'}, inplace=True)

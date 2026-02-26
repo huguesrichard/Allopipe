@@ -22,6 +22,7 @@ def create_run_directory(run_name):
                                     run_tables (str): path of tables subdir
                                     run_plots (str): path of the plots subdir
                                     run_ams (str): path of the AMS subdir
+                                    run_logs (str): path of the logs subdir
     """
     # create output directory if it does not exist
     Path("../output").mkdir(parents=True, exist_ok=True)
@@ -33,12 +34,14 @@ def create_run_directory(run_name):
     run_tables = os.path.join(run_path, "run_tables")
     run_plots = os.path.join(run_path, "plots")
     run_ams = os.path.join(run_path, "AMS")
+    run_logs = os.path.join(run_path, "logs")
     # create subdirectories inside of the run_name directory
     Path(run_path).mkdir(parents=True, exist_ok=True)
     Path(run_tables).mkdir(parents=True, exist_ok=True)
     Path(run_plots).mkdir(parents=True, exist_ok=True)
     Path(run_ams).mkdir(parents=True, exist_ok=True)
-    return run_path, run_tables, run_plots, run_ams
+    Path(run_logs).mkdir(parents=True, exist_ok=True)
+    return run_path, run_tables, run_plots, run_ams, run_logs
 
 
 def handle_overwrite(args):
@@ -63,8 +66,9 @@ def handle_overwrite(args):
     return False
 
 
-def write_log(run_path, args):
-    with open(os.path.join(run_path, "run.log"), "w") as f:
+def write_log(run_logs, args):
+    log_name = f"{args.pair + '_' if args.pair else ''}run.log"
+    with open(os.path.join(run_logs, log_name), "w") as f:
         f.write(f"Run_name: {args.run_name}\n")
         f.write(f"Donor: {args.donor}\n")
         f.write(f"Recipient: {args.recipient}\n")
