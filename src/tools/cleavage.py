@@ -15,10 +15,11 @@ def pickle_parsing(str_params, args):
     # removes base_length from str_params
     str_params_split = "_".join(str_params.split("_")[i] for i in [0, 1, 2, 4])
     pickle_path = os.path.join(
-        f"../output/runs/",
-        f"{args.run_name}",
-        f"run_tables",
-        f"{sample}_vep_infos_table_{str_params_split}.pkl"
+        args.output_dir,
+        "runs",
+        args.run_name,
+        "run_tables",
+        f"{sample}_vep_infos_table_{str_params_split}.pkl",
     )
 
     pickle_df = pd.read_pickle(pickle_path)

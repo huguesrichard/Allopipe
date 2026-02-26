@@ -8,6 +8,7 @@ import os
 import concurrent.futures
 import time
 import sys
+import shlex
 from tools import arguments_handling, multivcf_extract
 
 # one argument function to be used by ProcessPoolExecutor.map multiprocessing function
@@ -22,7 +23,7 @@ def launch_ams_pipeline(command_line):
     # execute command line
     os.system(command_line)
     # get donor and recipient names
-    donor, recipient = command_line.split(" ")[2:4]
+    donor, recipient = shlex.split(command_line)[2:4]
     return f"Done comparing the couple {donor} {recipient}"
     
 def launch_multivcf_extract(command_line):
@@ -36,7 +37,7 @@ def launch_multivcf_extract(command_line):
     # execute command line
     os.system(command_line)
     # get donor and recipient names
-    donor, recipient = command_line.split(" ")[-2:]
+    donor, recipient = shlex.split(command_line)[3:5]
     return f"Done extracting the couple {donor} {recipient}"    
 
 
@@ -69,7 +70,8 @@ def main():
     command line help : python multiprocess_ams.py [-h]
     """
     print("Pipeline starting...")
-    args = arguments_handling.arguments(sys.argv[1])
+    args = arguments_handling.arguments(True)
+    q = shlex.quote
     couples = []
     read_pairs_info(args.file_pairs, couples)
     
@@ -82,17 +84,18 @@ def main():
         unique_individuals.append(unique_individuals[-2])
 
     commands_multivcf = [
-        f"python tools/multivcf_extract.py {args.multi_vcf} "
-        f"{unique_individuals[i]} {unique_individuals[i + 1]} {args.run_name}"
+        f"python tools/multivcf_extract.py {q(args.multi_vcf)} "
+        f"{q(unique_individuals[i])} {q(unique_individuals[i + 1])} "
+        f"{q(args.run_name)} {q(args.output_dir)}"
         for i in range(0, len(unique_individuals), 2)
     ]
     
     # extract donor and recipient columns from multi VCF
     path_couples = []
-    path_out_couples = multivcf_extract.create_dependencies(args.run_name)
+    path_out_couples = multivcf_extract.create_dependencies(args.run_name, args.output_dir)
     for (donor, recipient) in couples:
-        path_donor = path_out_couples + "/{}.vcf.gz".format(donor)
-        path_recipient = path_out_couples + "/{}.vcf.gz".format(recipient)
+        path_donor = os.path.join(path_out_couples, f"{donor}.vcf.gz")
+        path_recipient = os.path.join(path_out_couples, f"{recipient}.vcf.gz")
         path_couples.append((path_donor, path_recipient))
     
     # start mesuring time
@@ -109,12 +112,13 @@ def main():
     # leading zeros for pairs ID : 01 instead of 1 (nb > 10), 001 instead of 1 (nb > 100)
     leading_zeros_number = len(str(len(path_couples)))
     commands = [
-    f"python ams_pipeline.py {path_donor} {path_recipient} {args.orientation} "
+    f"python ams_pipeline.py {q(path_donor)} {q(path_recipient)} {args.orientation} "
     f"{args.imputation} --norm_score "
     f"--min_dp {args.min_dp} --max_dp {args.max_dp} --min_ad {args.min_ad} "
     f"--homozygosity_thr {args.homozygosity_thr} --gnomad_af {args.gnomad_af} "
     f"--min_gq {args.min_gq} --base_length {args.base_length} "
-    f"--run_name {args.run_name} --pair P{pair_number:0{leading_zeros_number}d}"
+    f"--run_name {q(args.run_name)} --pair P{pair_number:0{leading_zeros_number}d} "
+    f"--output_dir {q(args.output_dir)}"
 #   Doesn't take into account -wc
 #    f"-wc --wc_donor {args.wc_donor} --wc_recipient {args.wc_recipient}"
     for pair_number, (path_donor, path_recipient) in enumerate(path_couples, 1)

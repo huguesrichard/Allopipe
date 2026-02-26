@@ -26,7 +26,7 @@ def main():
         print("Warning: directory already exists and contains an AMS file with the same run parameters.\nTimestamp will be added to output files names instead of overwriting.")
     # create run dependencies
     run_path, run_tables, run_plots, run_ams, run_logs = ams_helpers.create_run_directory(
-        args.run_name
+        args.run_name, args.output_dir
     )
     # basic logging (to pass paramaters from AMS to AAMS)
     ams_helpers.write_log(run_logs, args)

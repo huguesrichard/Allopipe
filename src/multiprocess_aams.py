@@ -8,6 +8,7 @@ import os
 import glob
 import concurrent.futures
 import time
+import shlex
 from tools import netmhc_arguments
 from pathlib import Path
 
@@ -23,9 +24,9 @@ def launch_aams_pipeline(command_line):
     """
     # execute command line
     os.system(command_line)
-    # get donor and recipient names
-    donor, recipient = command_line.split(" ")[2:4]
-    return f"Done estimating AAMS for the couple {donor} {recipient}"
+    parts = shlex.split(command_line)
+    pair = parts[parts.index("-p") + 1] if "-p" in parts else "-"
+    return f"Done estimating AAMS for pair {pair}"
 
 
 def main():
@@ -36,18 +37,20 @@ def main():
     """
     print("Pipeline starting...")
     args = netmhc_arguments.netmhc_arguments()
+    q = shlex.quote
+    run_tables_dir = os.path.join(args.output_dir, "runs", args.run_name, "run_tables")
 
     # get list of mismatches
     MISMATCHES = [
         file
-        for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+        for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
         if "_mismatches_" in file
     ]
 
     # get list of transcripts
     TRANSCRIPTS = [
         file
-        for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+        for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
         if "_transcripts_" in file
     ]
 
@@ -58,8 +61,9 @@ def main():
     # build a list of all commands
     commands = [
         f"python aams_pipeline.py"
-        f" -M {MISMATCH} -T {TRANSCRIPT}"
-        f" -n {args.run_name} -d {args.ensembl_path}"
+        f" -M {q(MISMATCH)} -T {q(TRANSCRIPT)}"
+        f" -n {q(args.run_name)} -d {q(str(args.ensembl_path))}"
+        f" --output_dir {q(args.output_dir)}"
         f" --el_rank {args.el_rank} -p {Path(MISMATCH).name.split('_')[0]}"
         f" -a {args.hla_typing}{' --cleavage' if args.cleavage else ''}"
         f"{' --dry_run' if args.dry_run else ''}"
