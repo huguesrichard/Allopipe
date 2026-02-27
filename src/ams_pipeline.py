@@ -30,6 +30,11 @@ def main():
     )
     # basic logging (to pass paramaters from AMS to AAMS)
     ams_helpers.write_log(run_logs, args)
+    
+    # avoids long time with no print
+    pair_print = f"[{args.pair}] " if args.pair else ""
+    print(f"{pair_print}Preparing donor and recipient tables...")
+    
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
         run_tables, args.donor, args, args.wc_donor, formatted_datetime

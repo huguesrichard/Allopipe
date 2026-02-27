@@ -113,7 +113,7 @@ def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, 
     return chop_table, chop_table_path
 
 
-def run_netchop(chop_table, args, netchop_dir):
+def run_netchop(chop_table, args, netchop_dir, pair_print):
     # prepare input for netchop
     chop_fasta = os.path.join(
         netchop_dir,
@@ -125,7 +125,7 @@ def run_netchop(chop_table, args, netchop_dir):
             fasta_file.write(f">{row['Peptide_id'][-10:]}\n{row['peptide_ALT']}\n")
 
 
-    print(f"[{args.pair}] Entering NetChop handler: running NetChop may last a few minutes...")
+    print(f"{pair_print}Entering NetChop handler: running NetChop may last a few minutes...")
     
     chop_output = os.path.join(
         netchop_dir,
