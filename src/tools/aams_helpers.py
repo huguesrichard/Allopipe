@@ -564,11 +564,12 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
 
 
 def run_netmhcpan(fasta_path, netmhc_dir, args, pair_print):
-    netmhc_print = {
+    netmhc_command = {
         1: "netMHCpan",
         2: "netMHCIIpan"
     }[args.class_type]
-    print(f"{pair_print}Entering {netmhc_print.capitalize()} handler: running {netmhc_print.capitalize()} may last a long time...")
+    netmhc_print = netmhc_command[:1].upper() + netmhc_command[1:]
+    print(f"{pair_print}Entering {netmhc_print} handler: running {netmhc_print} may last a long time...")
     netmhc_out = os.path.join(
         netmhc_dir,
         (args.pair + "_" if args.pair else "") +
@@ -583,7 +584,7 @@ def run_netmhcpan(fasta_path, netmhc_dir, args, pair_print):
     }[args.class_type]
     
     # netMHCpan command
-    os.system(f"{netmhc_print} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
+    os.system(f"{netmhc_command} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
     
     return netmhc_out
 
