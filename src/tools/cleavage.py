@@ -133,7 +133,7 @@ def run_netchop(chop_table, args, netchop_dir, pair_print):
     )
 
     # netChop command
-    os.system(f"netchop {chop_fasta} -verbose -tdir /tmp > {chop_output}")
+    os.system(f"netchop {chop_fasta} -verbose > {chop_output}")
 
     return chop_output
 
