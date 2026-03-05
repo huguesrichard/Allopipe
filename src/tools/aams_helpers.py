@@ -75,7 +75,7 @@ def read_mismatches(args, mismatches_path):
     return mismatches_df
 
 
-def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair):
+def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair_print):
     merged_pair[["transcripts_x", "transcripts_y"]] = merged_pair[
         ["transcripts_x", "transcripts_y"]
     ].fillna("")
@@ -86,7 +86,7 @@ def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair):
         a for b in merged_pair["transcripts_y"].str.split(",").tolist() for a in b
     }
     transcripts = list(set(donor_transcripts) | set(recipient_transcripts))
-    print(f"[{pair}] Potentially contributing transcripts before Ensembl filtering: {len(transcripts)}")
+    print(f"{pair_print}Potentially contributing transcripts before Ensembl filtering: {len(transcripts)}")
     ams_transcripts = {
         key: value for key, value in ensembl_transcripts.items() if key in transcripts
     }
@@ -472,33 +472,35 @@ def get_ams_params(run_name, output_dir):
 
 def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_path=None, mismatches_df=None,
                    cleavage_mode=False, ens_transcripts=None, peptides_ensembl=None, refseq_file=None):
+    # pair ID for print in multiprocess mode
+    pair_print = f"[{args.pair}] " if args.pair else ""
     # Read only once at firt call (without cleavage mode)
     if ens_transcripts is None and peptides_ensembl is None and refseq_file is None:
         cdna_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.cdna.all.fa")), None)
         if cdna_file is None:
             raise FileNotFoundError(f"No such file or directory matching '.cdna.all.fa' found.")
-        print("cDNA file found:", cdna_file)
+        print(f"{pair_print}cDNA file found: {cdna_file}")
         ens_transcripts = parsing.read_fasta(cdna_file)
         # get proteins from ensembl database
         pep_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.pep.all.fa")), None)
         if pep_file is None:
             raise FileNotFoundError(f"No such file or directory matching '*.pep.all.fa' found.")
-        print("pep file found:", pep_file)
+        print(f"{pair_print}pep file found: {pep_file}")
         proteins = parsing.read_pep_fa(pep_file)
         peptides_ensembl = dict_to_df(proteins)
 
         refseq_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.refseq.tsv")), None)
         if refseq_file is None:
             raise FileNotFoundError(f"No such file or directory matching '*.refseq.tsv' found.")
-        print("RefSeq file found:", refseq_file)
+        print(f"{pair_print}RefSeq file found: {refseq_file}")
 
     if cleavage_mode:
         # transcripts are collected from the mismatches table here
         ams_transcripts = mismatches_df
     else:
         mismatches_df = read_mismatches(args, mismatches_path)
-        ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, args.pair)
-        print(f"[{args.pair}] Potentially contributing transcripts after Ensembl filtering : {len(ams_transcripts)}")
+        ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, pair_print)
+        print(f"{pair_print}Potentially contributing transcripts after Ensembl filtering : {len(ams_transcripts)}")
 
     # filtering to keep transcripts present in refseq table
     transcripts_df = filter_on_refseq(ams_transcripts, refseq_file, cleavage_mode)
@@ -561,19 +563,20 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
                 aams_run_tables,
                 f"{args.pair + '_' if args.pair else ''}{args.run_name}_kmers.fa"),
                 f"{args.pair + '_' if args.pair else ''}{args.run_name}_fasta.fa")
-        return fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file
+        return fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file, pair_print
     else:
         transcripts_pair = get_peptides_ref(transcripts_pair, args.length, cleavage_mode)
         mismatches_df = read_mismatches(args, mismatches_path)
-        return mismatches_df, transcripts_pair, peptides_ensembl
+        return mismatches_df, transcripts_pair, peptides_ensembl, pair_print
 
 
-def run_netmhcpan(fasta_path,netmhc_dir,args):
-    netmhc_print = {
-        1: "NetMHCpan",
-        2: "NetMHCIIpan"
+def run_netmhcpan(fasta_path, netmhc_dir, args, pair_print):
+    netmhc_command = {
+        1: "netMHCpan",
+        2: "netMHCIIpan"
     }[args.class_type]
-    print(f"[{args.pair}] Entering {netmhc_print} handler: running {netmhc_print} may last a long time...")
+    netmhc_print = netmhc_command[:1].upper() + netmhc_command[1:]
+    print(f"{pair_print}Entering {netmhc_print} handler: running {netmhc_print} may last a long time...")
     netmhc_out = os.path.join(
         netmhc_dir,
         (args.pair + "_" if args.pair else "") +
@@ -588,7 +591,7 @@ def run_netmhcpan(fasta_path,netmhc_dir,args):
     }[args.class_type]
     
     # netMHCpan command
-    os.system(f"{netmhc_print} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
+    os.system(f"{netmhc_command} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
     
     return netmhc_out
 

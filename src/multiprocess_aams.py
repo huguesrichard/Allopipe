@@ -81,7 +81,7 @@ def main():
         results = executor.map(launch_aams_pipeline, commands)
     # stop time count
     end = time.time()
-    print("Elapsed time:", int(end - start), "seconds")
+    print("Total elapsed time:", int(end - start), "seconds")
 
 if __name__ == "__main__":
     main()

@@ -107,7 +107,7 @@ def main():
     # stop time count
     end = time.time()
     print("Number of pairs extracted:",len(commands_multivcf))
-    print("Elapsed time:", int(end - start), "seconds")
+    print("Elapsed time for extraction:", int(end - start), "seconds")
     
     # leading zeros for pairs ID : 01 instead of 1 (nb > 10), 001 instead of 1 (nb > 100)
     leading_zeros_number = len(str(len(path_couples)))
@@ -132,7 +132,7 @@ def main():
         results = executor.map(launch_ams_pipeline, commands)
     # stop time count
     end = time.time()
-    print("Elapsed time:", int(end - start), "seconds")
+    print("Elapsed total time:", int(end - start), "seconds")
 
 if __name__ == "__main__":
     main()

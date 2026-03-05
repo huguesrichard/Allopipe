@@ -79,10 +79,10 @@ def write_vcf(headers, names, infos, path, donor_colname, recipient_colname):
 def main(multi_vcf, donor_colname, recipient_colname, run_name, output_dir):
     headers, names, infos = get_infos_mvcf(multi_vcf)
     path = create_dependencies(run_name, output_dir)
+    print(f"Extracting {donor_colname} and {recipient_colname}...")
     write_vcf(headers, names, infos, path, donor_colname, recipient_colname)
     path_donor = path + "/{}.vcf.gz".format(donor_colname)
     path_recipient = path + "/{}.vcf.gz".format(recipient_colname)
-    print("Extracting:", path_donor.split("/")[-1],path_recipient.split("/")[-1])
     return(path_donor, path_recipient)
     
 if __name__ == "__main__":
