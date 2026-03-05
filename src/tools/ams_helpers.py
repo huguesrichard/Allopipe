@@ -12,7 +12,7 @@ import pandas as pd
 from tools import parsing_functions
 
 
-def create_run_directory(run_name):
+def create_run_directory(run_name, output_dir):
     """
     Returns the paths created at the beginning of the run
                     Parameters :
@@ -25,11 +25,12 @@ def create_run_directory(run_name):
                                     run_logs (str): path of the logs subdir
     """
     # create output directory if it does not exist
-    Path("../output").mkdir(parents=True, exist_ok=True)
-    # create runs directory, subdict of runs
-    Path("../output/runs").mkdir(parents=True, exist_ok=True)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    # create runs directory, subdir of output directory
+    runs_dir = os.path.join(output_dir, "runs")
+    Path(runs_dir).mkdir(parents=True, exist_ok=True)
     # create path with run_name
-    run_path = os.path.join("../output/runs", run_name)
+    run_path = os.path.join(runs_dir, run_name)
     # create other needed dependencies for the output
     run_tables = os.path.join(run_path, "run_tables")
     run_plots = os.path.join(run_path, "plots")
@@ -52,7 +53,7 @@ def handle_overwrite(args):
     Returns:
             overwrite (bool): True if the .csv file exists, False otherwise
     """
-    run_path = f"../output/runs/{args.run_name}"
+    run_path = os.path.join(args.output_dir, "runs", args.run_name)
     if os.path.isdir(run_path) and os.listdir(run_path)!=[]:
         if Path(os.path.join(run_path),f"AMS/{args.run_name}_AMS_{args.min_dp}"
             f"_{args.max_dp}_{args.min_ad}_{args.homozygosity_thr}_{args.min_gq}"
@@ -75,6 +76,7 @@ def write_log(run_logs, args):
         f.write(f"Orientation: {args.orientation}\n")
         f.write(f"Imputation: {args.imputation}\n")
         f.write(f"Command: {' '.join(sys.argv)}\n")
+        f.write(f"Output_dir: {args.output_dir}\n")
         f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
 

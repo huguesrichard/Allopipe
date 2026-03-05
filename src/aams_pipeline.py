@@ -13,8 +13,10 @@ def main():
     """
     # get args from cmd line
     args = netmhc_arguments.netmhc_arguments()
-    str_params, mismatches_path = aams_helpers.get_ams_params(args.run_name)
-    aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(args.run_name)
+    str_params, mismatches_path = aams_helpers.get_ams_params(args.run_name, args.output_dir)
+    aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
+        args.run_name, args.output_dir
+    )
     fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file, pair_print = aams_helpers.build_peptides(
         aams_run_tables, str_params, args, mismatches_path, cleavage_mode=False
     )

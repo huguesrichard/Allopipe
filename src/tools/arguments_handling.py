@@ -6,6 +6,7 @@ the ams pipeline command line easy to use and user friendly
 import argparse
 import sys
 import os
+from pathlib import Path
 
 # Custom Parser
 
@@ -153,6 +154,10 @@ def check_workers_count(parser,arg):
     return workers
 
 
+def parse_output_dir(arg):
+    return str(Path(arg).expanduser().resolve(strict=False))
+
+
 def arguments(from_filePair : bool = False):
     """
     Returns the parsed arguments of the ams pipeline
@@ -260,6 +265,16 @@ def arguments(from_filePair : bool = False):
         type=lambda x: handle_type_error(x),
     )
     parser.add_argument(
+        "-o",
+        "--output_dir",
+        help="base output directory where all generated files/folders are created",
+        action=UniqueStore,
+        nargs="?",
+        default="../output",
+        const="../output",
+        type=parse_output_dir,
+    )
+    parser.add_argument(
         "-n",
         "--run_name",
         help="name of the run",
@@ -277,7 +292,6 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default="",
         const="",
-        type=lambda x: check_if_accepted_str(parser, x),
     )
     parser.add_argument(
         "-ns",

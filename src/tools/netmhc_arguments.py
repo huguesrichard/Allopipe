@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from tools import arguments_handling
 
+
 def check_if_valid_k(initial_args, arg):
     """
     Returns the peptide size if the value is valid
@@ -38,6 +39,7 @@ def check_if_valid_k(initial_args, arg):
         raise argparse.ArgumentTypeError(f"{err}")
     return arg
 
+
 def check_if_existing_path(parser,arg):
     """
     Returns the directory path if it exists
@@ -53,7 +55,8 @@ def check_if_existing_path(parser,arg):
         parser.error(f"No such file or directory : {arg}")
     return arg
 
-def check_if_existing_run_name(parser,arg):
+
+def check_if_existing_output_run_name(parser, run_name, output_dir):
     """
     Returns the directory name if it exists
 
@@ -63,9 +66,10 @@ def check_if_existing_run_name(parser,arg):
     Returns:
             arg (str): name of a run directory
     """
-    if not Path(os.path.join("../output/runs",f"{arg}")).exists():
-        parser.error(f"No such file or directory : {arg}")
-    return arg
+    run_path = Path(os.path.join(output_dir, "runs", run_name))
+    if not run_path.exists():
+        parser.error(f"No such file or directory : {run_path}")
+
 
 def check_hla_format(initial_args, parser,arg):
     """
@@ -108,6 +112,7 @@ def check_hla_format(initial_args, parser,arg):
 
     return arg
 
+
 def check_if_valid_float(parser,arg):
     try:
         thresh = float(arg)
@@ -146,20 +151,26 @@ def netmhc_arguments():
         action=arguments_handling.UniqueStore,
         required=True,
         type=lambda x: check_if_existing_path(parser,x))
+    parser.add_argument("-o", "--output_dir",
+        help="output directory of the ams pipeline ran previously",
+        action=arguments_handling.UniqueStore,
+        default="../output",
+        const="../output",
+        nargs="?",
+        type=arguments_handling.parse_output_dir)
     parser.add_argument("-n", "--run_name",
         help="name of the ams pipeline ran previously",
         action=arguments_handling.UniqueStore,
         required=True,
         default="run",
         const="run",
-        type=lambda x: check_if_existing_run_name(parser,x))
+        type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
     parser.add_argument("-p", "--pair", # automated pair naming for multiprocess
         help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
         default="",
         const="",
-        nargs="?",
-        type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
+        nargs="?")
     parser.add_argument("-w", "--workers",
         help="number of workers (cores) for multiprocessing",
         default=os.cpu_count() // 2,
@@ -204,4 +215,5 @@ def netmhc_arguments():
         type=lambda x: check_if_valid_float(parser,x)
         )
     args = parser.parse_args()
+    check_if_existing_output_run_name(parser, args.run_name, args.output_dir)
     return args

@@ -12,7 +12,7 @@ import pandas as pd
 import tools.parsing_functions as parsing
 
 
-def create_aams_dependencies(ams_run_directory):
+def create_aams_dependencies(ams_run_directory, output_dir):
     """
     Returns directory paths after completing the creation of the required directories
         Parameters :
@@ -21,22 +21,27 @@ def create_aams_dependencies(ams_run_directory):
                 aams_run_tables (str): path to the aams_run_tables dir
                 netmhc_dir (str): path to the netMHCpan_out dir
                 aams_path (str): path to the AAMS dir
+                netchop_dir (str): path to the netChop dir
     """
-    aams_run_tables = f"../output/runs/{ams_run_directory}/aams_run_tables"
+    run_path = os.path.join(output_dir, "runs", ams_run_directory)
+    aams_run_tables = os.path.join(run_path, "aams_run_tables")
     Path(aams_run_tables).mkdir(parents=True, exist_ok=True)
-    netmhc_dir = f"../output/runs/{ams_run_directory}/netMHCpan_out"
+    netmhc_dir = os.path.join(run_path, "netMHCpan_out")
     Path(netmhc_dir).mkdir(parents=True, exist_ok=True)
-    aams_path = f"../output/runs/{ams_run_directory}/AAMS"
+    aams_path = os.path.join(run_path, "AAMS")
     Path(aams_path).mkdir(parents=True, exist_ok=True)
-    netchop_dir = f"../output/runs/{ams_run_directory}/netChop"
+    netchop_dir = os.path.join(run_path, "netChop")
     Path(netchop_dir).mkdir(parents=True, exist_ok=True)
     return aams_run_tables, netmhc_dir, aams_path, netchop_dir
 
 
 def read_log_field(args, field_name):
     log_file = os.path.join(
-        f"../output/runs/{args.run_name}/logs/"
-        f"{args.pair + '_' if args.pair else ''}run.log"
+        args.output_dir,
+        "runs",
+        args.run_name,
+        "logs",
+        f"{args.pair + '_' if args.pair else ''}run.log",
     )
     with open(log_file) as f:
         for line in f:
@@ -446,10 +451,11 @@ def is_float(element):
         return False
 
 
-def get_ams_params(run_name):
+def get_ams_params(run_name, output_dir):
+    run_tables_dir = os.path.join(output_dir, "runs", run_name, "run_tables")
     # get from first element if several
     mismatches_path = next(
-    (file for file in glob.glob(f"../output/runs/{run_name}/run_tables/*.tsv")
+    (file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
      if "_mismatches_" in file and os.path.exists(file)),
     None  # Default to None if no match is found
     )
@@ -499,12 +505,13 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
     # filtering to keep transcripts present in refseq table
     transcripts_df = filter_on_refseq(ams_transcripts, refseq_file, cleavage_mode)
     
+    run_tables_dir = os.path.join(args.output_dir, "runs", args.run_name, "run_tables")
     if not cleavage_mode:
         # get from first element if several
-        transcripts_path = next((file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv") 
+        transcripts_path = next((file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv")) 
                                 if "_transcripts_" in file and os.path.exists(file)), None)
     else:
-        transcripts_path = next((file for file in glob.glob(f"../output/runs/{args.run_name}/run_tables/*.tsv")
+        transcripts_path = next((file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
                                 if "_D0_" in file and os.path.exists(file)), None)
     if transcripts_path is None:
         raise FileNotFoundError(f"No such file or directory matching the expected pattern found.")
