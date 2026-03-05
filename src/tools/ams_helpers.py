@@ -26,7 +26,7 @@ def create_run_directory(run_name, output_dir):
     """
     # create output directory if it does not exist
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    # create runs directory, subdict of runs
+    # create runs directory, subdir of output directory
     runs_dir = os.path.join(output_dir, "runs")
     Path(runs_dir).mkdir(parents=True, exist_ok=True)
     # create path with run_name
@@ -76,6 +76,7 @@ def write_log(run_logs, args):
         f.write(f"Orientation: {args.orientation}\n")
         f.write(f"Imputation: {args.imputation}\n")
         f.write(f"Command: {' '.join(sys.argv)}\n")
+        f.write(f"Output_dir: {args.output_dir}\n")
         f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
 

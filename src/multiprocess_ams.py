@@ -7,9 +7,9 @@ command line help : python multiprocess_ams.py [-h]
 import os
 import concurrent.futures
 import time
-import sys
 import shlex
 from tools import arguments_handling, multivcf_extract
+
 
 # one argument function to be used by ProcessPoolExecutor.map multiprocessing function
 def launch_ams_pipeline(command_line):
@@ -26,6 +26,7 @@ def launch_ams_pipeline(command_line):
     donor, recipient = shlex.split(command_line)[2:4]
     return f"Done comparing the couple {donor} {recipient}"
     
+
 def launch_multivcf_extract(command_line):
     """
     Returns a message saying the couple was successfully extracted, after having executed the command line
@@ -75,7 +76,6 @@ def main():
     couples = []
     read_pairs_info(args.file_pairs, couples)
     
-
     # extract unique individuals and sort
     unique_individuals = sorted({ind for pair in couples for ind in pair})
 

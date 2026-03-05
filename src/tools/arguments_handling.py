@@ -154,8 +154,8 @@ def check_workers_count(parser,arg):
     return workers
 
 
-def normalize_output_dir(arg):
-    return str(Path(arg).expanduser())
+def parse_output_dir(arg):
+    return str(Path(arg).expanduser().resolve(strict=False))
 
 
 def arguments(from_filePair : bool = False):
@@ -272,7 +272,7 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default="../output",
         const="../output",
-        type=normalize_output_dir,
+        type=parse_output_dir,
     )
     parser.add_argument(
         "-n",
@@ -292,7 +292,6 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default="",
         const="",
-        type=lambda x: check_if_accepted_str(parser, x),
     )
     parser.add_argument(
         "-ns",
@@ -331,7 +330,6 @@ def arguments(from_filePair : bool = False):
         type=lambda x: check_workers_count(parser, x)
     )
     args = parser.parse_args()
-    args.output_dir = os.path.abspath(os.path.expanduser(args.output_dir))
     if args.min_dp > args.max_dp:
         raise ValueError(
             "The minimal Depth should not be higher than the maximal Depth"

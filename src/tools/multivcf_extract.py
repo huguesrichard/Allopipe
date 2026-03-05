@@ -34,7 +34,7 @@ def get_infos_mvcf(multi_vcf_path):
     return (headers, lines[0], lines[1:])
 
 # str directory_name -> create str path and make directory
-def create_dependencies(run_name, output_dir="../output"):
+def create_dependencies(run_name, output_dir):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     path = os.path.join(output_dir, "runs", run_name, "vcf_indiv")
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -76,7 +76,7 @@ def write_vcf(headers, names, infos, path, donor_colname, recipient_colname):
                     ).encode())
     
 
-def main(multi_vcf, donor_colname, recipient_colname, run_name, output_dir="../output"):
+def main(multi_vcf, donor_colname, recipient_colname, run_name, output_dir):
     headers, names, infos = get_infos_mvcf(multi_vcf)
     path = create_dependencies(run_name, output_dir)
     write_vcf(headers, names, infos, path, donor_colname, recipient_colname)
@@ -86,5 +86,4 @@ def main(multi_vcf, donor_colname, recipient_colname, run_name, output_dir="../o
     return(path_donor, path_recipient)
     
 if __name__ == "__main__":
-    output_dir = sys.argv[5] if len(sys.argv) > 5 else "../output"
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], output_dir)
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])

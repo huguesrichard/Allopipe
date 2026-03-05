@@ -21,6 +21,7 @@ def create_aams_dependencies(ams_run_directory, output_dir):
                 aams_run_tables (str): path to the aams_run_tables dir
                 netmhc_dir (str): path to the netMHCpan_out dir
                 aams_path (str): path to the AAMS dir
+                netchop_dir (str): path to the netChop dir
     """
     run_path = os.path.join(output_dir, "runs", ams_run_directory)
     aams_run_tables = os.path.join(run_path, "aams_run_tables")
@@ -471,7 +472,6 @@ def get_ams_params(run_name, output_dir):
 
 def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_path=None, mismatches_df=None,
                    cleavage_mode=False, ens_transcripts=None, peptides_ensembl=None, refseq_file=None):
-    run_tables_dir = os.path.join(args.output_dir, "runs", args.run_name, "run_tables")
     # Read only once at firt call (without cleavage mode)
     if ens_transcripts is None and peptides_ensembl is None and refseq_file is None:
         cdna_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.cdna.all.fa")), None)
@@ -503,6 +503,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
     # filtering to keep transcripts present in refseq table
     transcripts_df = filter_on_refseq(ams_transcripts, refseq_file, cleavage_mode)
     
+    run_tables_dir = os.path.join(args.output_dir, "runs", args.run_name, "run_tables")
     if not cleavage_mode:
         # get from first element if several
         transcripts_path = next((file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv")) 
