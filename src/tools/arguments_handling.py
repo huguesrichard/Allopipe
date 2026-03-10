@@ -207,6 +207,11 @@ def arguments(from_filePair : bool = False):
         choices=["imputation", "no-imputation"],
     )
     parser.add_argument(
+        "--frameshift",
+        help="enable frameshift neoantigen peptide generation for downstream AAMS (requires VEP Frameshift plugin annotation)",
+        action="store_true",
+    )
+    parser.add_argument(
         "--min_dp",
         help="minimal accepted depth per position",
         nargs="?",

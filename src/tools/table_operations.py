@@ -129,31 +129,35 @@ def build_transcripts_table_indiv(vep_table_path, merged_ams, vep_indices, indiv
     # explode the dataframe on the INFO column (VEP information only)
     vep_table = vep_table.explode("INFO", ignore_index=True)
     # keep the columns of interest
-    vep_table[
-        [
-            "Consequence",
-            "Gene_id",
-            "Transcript_id",
-            "cDNA_position",
-            "CDS_position",
-            "Protein_position",
-            "Amino_acids",
-            "Codons",
-            "gnomADe_AF"
-        ]
-    ] = vep_table["INFO"].str.split("|", expand=True)[
-        [
-            vep_indices.consequence,
-            vep_indices.gene,
-            vep_indices.transcript,
-            vep_indices.cdna,
-            vep_indices.cds,
-            vep_indices.prot,
-            vep_indices.aa,
-            vep_indices.codons,
-            vep_indices.gnomad
-        ]
+    info_split = vep_table["INFO"].str.split("|", expand=True)
+    base_indices = [
+        vep_indices.consequence,
+        vep_indices.gene,
+        vep_indices.transcript,
+        vep_indices.cdna,
+        vep_indices.cds,
+        vep_indices.prot,
+        vep_indices.aa,
+        vep_indices.codons,
+        vep_indices.gnomad,
     ]
+    base_cols = [
+        "Consequence",
+        "Gene_id",
+        "Transcript_id",
+        "cDNA_position",
+        "CDS_position",
+        "Protein_position",
+        "Amino_acids",
+        "Codons",
+        "gnomADe_AF",
+    ]
+    vep_table[base_cols] = info_split[base_indices]
+    # Frameshift_sequence is optional
+    if vep_indices.frameshift is not None:
+        vep_table["Frameshift_sequence"] = info_split[vep_indices.frameshift]
+    else:
+        vep_table["Frameshift_sequence"] = ""
     # return the dataframe without the INFO column
     return vep_table.drop("INFO", axis=1)
 
@@ -187,6 +191,7 @@ def build_transcripts_table(transcripts_donor, transcripts_recipients):
             "Codons",
             "gnomADe_AF",
             "diff",
+            "Frameshift_sequence",
         ],
     )
     # drop duplicates
@@ -205,6 +210,7 @@ def build_transcripts_table(transcripts_donor, transcripts_recipients):
             "Codons",
             "gnomADe_AF",
             "diff",
+            "Frameshift_sequence",
         ],
         as_index=False,
     )["Transcript_id"].agg(lambda x: x.tolist())
