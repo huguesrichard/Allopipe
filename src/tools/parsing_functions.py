@@ -28,7 +28,7 @@ class VepIndices:
                     codons (int): index of the codons field in VEP
                     gnomad (int): index of the frequency of existing variant in gnomAD exomes combined population in VEP
     """
-    def __init__(self, consequence, gene, transcript, cdna, cds, prot, aa, codons, gnomad):
+    def __init__(self, consequence, gene, transcript, cdna, cds, prot, aa, codons, gnomad, frameshift):
         self.consequence = consequence
         self.gene = gene
         self.transcript = transcript
@@ -38,9 +38,11 @@ class VepIndices:
         self.aa = aa
         self.codons = codons
         self.gnomad = gnomad
+        # May be None if the VEP annotation does not include FrameshiftSequence
+        self.frameshift = frameshift
 
 
-def vcf_vep_parser(vcf_path):
+def vcf_vep_parser(vcf_path, frameshift_mode):
     """
     Returns a dataframe of the parsed VCF file containing VEP information and the VepIndices object containing the indices
     Parameters :
@@ -68,6 +70,8 @@ def vcf_vep_parser(vcf_path):
                 aa_index = match.group(1).split("|").index("Amino_acids")
                 codons_index = match.group(1).split("|").index("Codons")
                 gnomad_index = match.group(1).split("|").index("gnomADe_AF")
+                # FrameshiftSequence is optional: handle absence
+                frameshift_index = _get_frameshift_index(match.group(1).split("|"), frameshift_mode)
                 matched = True
             # get row number and break the loop if column names are found
             if "#CHROM" in line:
@@ -86,7 +90,8 @@ def vcf_vep_parser(vcf_path):
         prot_index,
         aa_index,
         codons_index,
-        gnomad_index
+        gnomad_index,
+        frameshift_index,
     )
     return (
         pd.read_csv(vcf_path, header=header_index, dtype="str", sep="\t"),
@@ -94,7 +99,7 @@ def vcf_vep_parser(vcf_path):
     )
 
 
-def gzvcf_vep_parser(vcf_path):
+def gzvcf_vep_parser(vcf_path, frameshift_mode):
     """
     Returns a dataframe of the parsed gzipped VCF file containing VEP information and the VepIndices object containing the indices
     Parameters :
@@ -127,6 +132,8 @@ def gzvcf_vep_parser(vcf_path):
             aa_index = match.group(1).decode("utf-8").split("|").index("Amino_acids")
             codons_index = match.group(1).decode("utf-8").split("|").index("Codons")
             gnomad_index = match.group(1).decode("utf-8").split("|").index("gnomADe_AF")
+            # FrameshiftSequence is optional: handle absence
+            frameshift_index = _get_frameshift_index(match.group(1).decode("utf-8").split("|"), frameshift_mode)
         # get row number and break the loop if column names are found
         if b"#CHROM" in line:
             header_index = count
@@ -144,11 +151,26 @@ def gzvcf_vep_parser(vcf_path):
         aa_index,
         codons_index,
         gnomad_index,
+        frameshift_index,
     )
     return (
         pd.read_csv(vcf_path, header=header_index, dtype="str", sep="\t"),
         vep_indices,
     )
+
+
+def _get_frameshift_index(fields, frameshift_mode):
+    """Get FrameshiftSequence index from VEP fields, or None if absent and frameshift_mode is off."""
+    try:
+        return fields.index("FrameshiftSequence")
+    except ValueError:
+        if frameshift_mode:
+            sys.exit(
+                "Frameshift mode is enabled but 'FrameshiftSequence' annotation "
+                "is missing from the VEP input file. "
+                "Please re-run VEP with the Frameshift plugin enabled."
+            )
+        return None
 
 
 def extract_aa_from_vep(df_infos, vep_indices):
@@ -191,6 +213,20 @@ def extract_aa_from_vep(df_infos, vep_indices):
         .groupby(level=0)
         .apply(lambda x: x.dropna().unique().tolist())
     )
+    # get frameshift sequence using found index in the vep line parser (optional)
+    if vep_indices.frameshift is not None:
+        frameshift_subset = vep_split_df[list(range(len_expand))].apply(
+            lambda x: x.str.split("|").str[vep_indices.frameshift]
+        )
+        frameshift_subset["Frameshift_sequence"] = (
+            frameshift_subset.stack()
+            .groupby(level=0)
+            .apply(lambda x: x.dropna().unique().tolist())
+        )
+        frameshift_series = frameshift_subset["Frameshift_sequence"].str.join(",")
+    else:
+        # If FrameshiftSequence is not annotated by VEP, keep an empty string
+        frameshift_series = pd.Series([""] * len(selected_df), index=selected_df.index)
     # get aa ref and aa alt from VEP info
     aa_ref_subset = vep_split_df[list(range(len_expand))].apply(
         lambda x: x.str.split("|").str[vep_indices.aa].str.split("/").str[0]
@@ -217,6 +253,7 @@ def extract_aa_from_vep(df_infos, vep_indices):
         .groupby(level=0)
         .apply(lambda x: x.dropna().unique().tolist())
     )
+    selected_df["Frameshift_sequence"] = frameshift_series
     selected_df["transcripts"] = transcript_subset["transcript"].str.join(",")
     selected_df["genes"] = gene_subset["gene"].str.join(",")
     selected_df["aa_REF"] = aa_ref_subset["aa"].str.join(",")

@@ -194,6 +194,7 @@ def add_pep_seq(transcripts_pair, peptides_ensembl, cleavage_mode=False):
                 "Sequence_nt",
                 "Peptide_id",
                 "Sequence_aa",
+                "Frameshift_sequence",
                 "Amino_acids",
                 "aa_ref_indiv_x",
                 "aa_alt_indiv_x",
@@ -308,7 +309,81 @@ def peptide_seg(peptide, pep_size):
     return hla_peptides
 
 
-def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False):
+def get_frameshift_peptides(transcripts_frameshift, pep_size):
+    """
+    Build reference and alternative peptides for frameshift variants.
+    """
+
+    # Keep rows with a valid protein position (start from first position if interval)
+    transcripts_frameshift = transcripts_frameshift.dropna(subset=["Protein_position"])
+    transcripts_frameshift["Protein_position"] = (
+        transcripts_frameshift["Protein_position"]
+        .astype(str)
+        .str.split("-")
+        .str[0]
+        .astype(float)
+        .astype(int)
+    )
+
+    def build_peptide_alt(row):
+        """
+        Build alternative peptide around the same position using the frameshift sequence.
+        No additional mutation is applied: 'Frameshift_sequence' is the final sequence.
+        Sliding window is kept on the left side (pep_size upstream),
+        and the peptide is extended until the end of the protein.
+        """
+        seq_alt = row["Frameshift_sequence"]
+        if pd.isna(seq_alt) or str(seq_alt) == "nan":
+            return None
+        pos = row["Protein_position"]
+        # Convert to 0-based index
+        pos0 = pos - 1
+        # Start pep_size upstream of the position (or at 0)
+        start = max(0, pos0 - pep_size + 1)
+        # Return from start to the end of the protein
+        return seq_alt[start:]
+
+    transcripts_frameshift["peptide"] = transcripts_frameshift.apply(
+        build_peptide_alt, axis=1
+    )
+    # No reference peptide is generated for frameshift cases.
+    # Keep an empty placeholder to preserve downstream schema.
+    transcripts_frameshift["peptide_REF"] = ""
+
+    # Drop rows without valid peptides and remove duplicates
+    transcripts_frameshift = transcripts_frameshift.dropna(
+        subset=["peptide"]
+    )
+    transcripts_frameshift = transcripts_frameshift.drop_duplicates(
+        ["CHROM", "POS", "Gene_id", "peptide"]
+    )
+
+    # For frameshift variants, only ALT peptides are generated.
+    # Keep REF peptide lists empty to preserve downstream schema.
+    transcripts_frameshift["hla_peptides_REF"] = transcripts_frameshift["peptide"].apply(
+        lambda _: []
+    )
+    transcripts_frameshift["hla_peptides"] = transcripts_frameshift["peptide"].apply(
+        lambda x: peptide_seg(x, pep_size)
+    )
+
+    # Align columns with the non-frameshift output
+    return transcripts_frameshift[
+        [
+            "CHROM",
+            "POS",
+            "Gene_id",
+            "Transcript_id",
+            "Peptide_id",
+            "peptide_REF",
+            "peptide",
+            "hla_peptides_REF",
+            "hla_peptides",
+        ]
+    ]
+
+
+def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False, frameshift_mode=False):
     transcripts_pair["aa_REF"] = transcripts_pair["aa_REF"].str.split(",")
     transcripts_pair = transcripts_pair.explode("aa_REF")
 
@@ -323,7 +398,14 @@ def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False):
             (transcripts_pair["aa_REF"].str.len() <= 3)
         ]
 
-        # exclude frameshift and stop variants
+        # Initialize frameshift container so it is always defined
+        transcripts_frameshift = pd.DataFrame()
+
+        # Exclude splice and stop variants; keep frameshift apart if enabled
+        if frameshift_mode:
+            mask_frameshift = transcripts_pair["Consequence"].str.contains("frameshift")
+            transcripts_frameshift = transcripts_pair[mask_frameshift].copy()
+
         transcripts_pair = transcripts_pair[
             ~(
                 transcripts_pair["Consequence"].str.contains("frameshift|stop|splice")
@@ -385,11 +467,20 @@ def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False):
             ["CHROM", "POS", "Gene_id", "peptide_REF", "peptide"], as_index=False
         )[["Transcript_id", "Peptide_id"]].agg("first")
         transcripts_reduced["hla_peptides_REF"] = transcripts_reduced["peptide_REF"].apply(
-            lambda x: peptide_seg(x, pep_size)
-        )
+            lambda x: peptide_seg(x, pep_size))
         transcripts_reduced["hla_peptides"] = transcripts_reduced["peptide"].apply(
             lambda x: peptide_seg(x, pep_size)
         )
+        
+        # Handle frameshift variants that were split earlier, only if frameshift_mode is enabled
+        if frameshift_mode and not transcripts_frameshift.empty:
+            frameshift_reduced = get_frameshift_peptides(transcripts_frameshift, pep_size)
+            # Align columns and concatenate
+            frameshift_reduced = frameshift_reduced[transcripts_reduced.columns]
+            transcripts_reduced = pd.concat(
+                [transcripts_reduced, frameshift_reduced], ignore_index=True
+            )
+
         return transcripts_reduced
 
 
@@ -534,7 +625,13 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
         # get imputation mode in log file
         imputation = read_log_field(args, "Imputation")
         transcripts_pair = aa_ref(transcripts_pair, imputation)
-    
+
+        # get frameshift mode in log file
+        frameshift_mode = read_log_field(args, "Frameshift") == "True"
+    else:
+        # frameshift handling is disabled in cleavage mode
+        frameshift_mode = False
+
     # get pep seq on long format table
     transcripts_pair = add_pep_seq(transcripts_pair, peptides_ensembl, cleavage_mode)
 
@@ -542,9 +639,9 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
         transcripts_pair.to_csv(os.path.join(
             aams_run_tables,
             f"{args.pair + '_' if args.pair else ''}{args.run_name}_full.tsv"), sep="\t", index=False)
-        
-        transcripts_reduced = get_peptides_ref(transcripts_pair, args.length, cleavage_mode)
-        
+
+        transcripts_reduced = get_peptides_ref(transcripts_pair, args.length, cleavage_mode, frameshift_mode)
+
         pep_base_name = f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_{str_params}"
         # duplicate with .pkl below
         pep_indiv_path = os.path.join(aams_run_tables, f"{pep_base_name}.tsv")
@@ -565,7 +662,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
                 f"{args.pair + '_' if args.pair else ''}{args.run_name}_fasta.fa")
         return fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file, pair_print
     else:
-        transcripts_pair = get_peptides_ref(transcripts_pair, args.length, cleavage_mode)
+        transcripts_pair = get_peptides_ref(transcripts_pair, args.length, cleavage_mode, frameshift_mode)
         mismatches_df = read_mismatches(args, mismatches_path)
         return mismatches_df, transcripts_pair, peptides_ensembl, pair_print
 
