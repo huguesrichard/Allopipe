@@ -10,8 +10,6 @@ import re
 import pandas as pd
 import numpy as np
 
-#TODO: check better technique for file paths
-FILE_CONSEQUENCE = "../data/consequences.txt"
 
 class VepIndices:
     """
@@ -161,6 +159,7 @@ def extract_aa_from_vep(df_infos, vep_indices):
                     selected_df (pd.DataFrame): dataframe containing the amino-acid information
     """
     # get the selected consequences from file
+    FILE_CONSEQUENCE = Path(__file__).resolve().parent.parent.parent / "data" / "consequences.txt"
     with open(FILE_CONSEQUENCE, encoding="utf-8") as file:
         consequences = file.readline().split("\t")
     for conseq in consequences:

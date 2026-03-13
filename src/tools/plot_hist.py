@@ -4,11 +4,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from pathlib import Path
+
 
 def hist(ams_exp_path, run_plots):
 
     # Load the TSV file into a DataFrame
-    data = pd.read_csv('../data/distrib_AMS.tsv', sep='\t')
+    data_path = Path(__file__).resolve().parent.parent.parent / "data" / "distrib_AMS.tsv"
+    data = pd.read_csv(data_path, sep='\t')
 
     # Filter the data for "related"
     data_related = data[data['Relatedness'] == 'related']
