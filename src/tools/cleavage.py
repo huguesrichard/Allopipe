@@ -1,17 +1,27 @@
 #coding:utf-8
 import os
 import pandas as pd
-from tools import aams_helpers
+from tools import aams_helpers, parsing_functions
+
+
+def _get_vep_indices_from_vcf(vcf_path):
+    if vcf_path.endswith(".vcf"):
+        _, vep_indices = parsing_functions.vcf_vep_parser(vcf_path)
+    elif vcf_path.endswith(".vcf.gz"):
+        _, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path)
+    return vep_indices
 
 
 def pickle_parsing(str_params, args):
-    # get donor or recipient name from orientation in log file
+    # get donor or recipient vcf path from orientation in log file
     orientation = aams_helpers.read_log_field(args, "Orientation")
     if orientation == "dr":
-        sample = aams_helpers.read_log_field(args, "Donor").split("/")[-1].split(".")[0]
-    if orientation == "rd":
-        sample = aams_helpers.read_log_field(args, "Recipient").split("/")[-1].split(".")[0]
-    
+        vcf_path_indiv = aams_helpers.read_log_field(args, "Donor")
+    elif orientation == "rd":
+        vcf_path_indiv = aams_helpers.read_log_field(args, "Recipient")
+
+    sample = os.path.basename(vcf_path_indiv).split(".")[0]
+
     # removes base_length from str_params
     str_params_split = "_".join(str_params.split("_")[i] for i in [0, 1, 2, 4])
     pickle_path = os.path.join(
@@ -25,24 +35,21 @@ def pickle_parsing(str_params, args):
     pickle_df = pd.read_pickle(pickle_path)
 
     # remove rows where 'INFO' is NaN or empty
-    pickle_df = pickle_df[pickle_df['INFO'].notna() & (pickle_df['INFO'] != '')]
+    pickle_df = pickle_df[pickle_df["INFO"].notna() & (pickle_df["INFO"] != "")]
     # explode the 'INFO' column to handle multiple entries
     pickle_df = pickle_df.explode("INFO", ignore_index=True)
 
-    # Define VEP field indices
-    # see `vcf_vep_parser()` for proper parsing
-    ENSG_INDEX = 4   # gene
-    ENST_INDEX = 6   # transcript
-    ENST_PROT_POS = 14 # protein position
+    # Derive field indices from VCF header to avoid hard-coded positions
+    vep_indices = _get_vep_indices_from_vcf(vcf_path_indiv)
 
-    # Function to extract ENSG and ENST from INFO string
+    # Function to extract ENSG, ENST and protein position from INFO string
     def extract_ensg_enst(info_str):
         if pd.isna(info_str):
             return pd.Series([None, None, None])
         fields = info_str.split("|")
-        ensg = fields[ENSG_INDEX] if len(fields) > ENSG_INDEX else None
-        enst = fields[ENST_INDEX] if len(fields) > ENST_INDEX else None
-        prot_pos = fields[ENST_PROT_POS] if len(fields) > ENST_PROT_POS else None
+        ensg = fields[vep_indices.gene] if len(fields) > vep_indices.gene else None
+        enst = fields[vep_indices.transcript] if len(fields) > vep_indices.transcript else None
+        prot_pos = fields[vep_indices.prot] if len(fields) > vep_indices.prot else None
         return pd.Series([ensg, enst, prot_pos])
 
     # Apply to pickle_df and drop INFO
