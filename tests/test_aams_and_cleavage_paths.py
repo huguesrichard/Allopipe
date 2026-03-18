@@ -1,6 +1,5 @@
-from pathlib import Path
 from types import SimpleNamespace
-
+import gzip
 import pandas as pd
 
 from tools import aams_helpers, cleavage
@@ -36,7 +35,20 @@ def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
     logs_dir.mkdir(parents=True)
     run_tables.mkdir(parents=True)
 
-    donor_path = "/tmp/SAMPLE_DONOR.vcf.gz"
+    donor_path = str(tmp_path / "SAMPLE_DONOR.vcf.gz")
+    # Create a minimal VCF for extracting VEP field indices
+    vcf_text = "\n".join(
+        [
+            "##fileformat=VCFv4.2",
+            '##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. '
+            'Format: Allele|Consequence|Gene|Feature|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|gnomADe_AF">',
+            "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO",
+            "1\t100\t.\tA\tT\t.\t.\tCSQ=T|missense_variant|ENSG0001|ENST0001|123|45|15|K/N|aAa/aTa|0.001",
+        ]
+    ) + "\n"
+    with gzip.open(donor_path, "wt", encoding="utf-8") as f:
+        f.write(vcf_text)
+
     (logs_dir / "run.log").write_text(
         f"Orientation: dr\nDonor: {donor_path}\nRecipient: /tmp/r.vcf.gz\n",
         encoding="utf-8",
@@ -46,10 +58,10 @@ def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
     str_params_split = "20_400_5_0.2"
     pickle_path = run_tables / f"SAMPLE_DONOR_vep_infos_table_{str_params_split}.pkl"
     df = pd.DataFrame(
-        {
-            "CHROM": ["1"],
-            "POS": [100],
-            "INFO": ["0|1|2|3|ENSG0001|5|ENST0001|7|8|9|10|11|12|13|42"],
+       {
+        "CHROM": ["1"],
+        "POS": [100],
+        "INFO": ["T|missense_variant|ENSG0001|ENST0001|123|45|42|K/N|aAa/aTa|0.001"],
         }
     )
     df.to_pickle(pickle_path)
