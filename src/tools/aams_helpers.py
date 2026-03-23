@@ -4,6 +4,8 @@ This file contains all the helpers required to run the aams pipeline
 """
 
 import os
+import sys
+import shutil
 import glob
 from pathlib import Path
 import numpy as np
@@ -500,7 +502,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
     else:
         mismatches_df = read_mismatches(args, mismatches_path)
         ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, pair_print)
-        print(f"{pair_print}Potentially contributing transcripts after Ensembl filtering : {len(ams_transcripts)}")
+        print(f"{pair_print}Potentially contributing transcripts after Ensembl filtering: {len(ams_transcripts)}")
 
     # filtering to keep transcripts present in refseq table
     transcripts_df = filter_on_refseq(ams_transcripts, refseq_file, cleavage_mode)
@@ -570,6 +572,13 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
         return mismatches_df, transcripts_pair, peptides_ensembl, pair_print
 
 
+def binary_check(binary):
+    if not shutil.which(binary):
+        print(f"Error: no binaries found for '{binary}'. "
+              f"Please ensure it is installed and available in your PATH.", file=sys.stderr)
+        sys.exit(1)
+
+
 def run_netmhcpan(fasta_path, netmhc_dir, args, pair_print):
     netmhc_command = {
         1: "netMHCpan",
@@ -591,6 +600,7 @@ def run_netmhcpan(fasta_path, netmhc_dir, args, pair_print):
     }[args.class_type]
     
     # netMHCpan command
+    binary_check(netmhc_command)
     os.system(f"{netmhc_command} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
     
     return netmhc_out

@@ -1,5 +1,7 @@
 #coding:utf-8
 import os
+import sys
+import shutil
 import pandas as pd
 from tools import aams_helpers, parsing_functions
 
@@ -141,7 +143,9 @@ def run_netchop(chop_table, args, netchop_dir, pair_print):
     )
 
     # netChop command
-    os.system(f"netchop {chop_fasta} -verbose > {chop_output}")
+    netchop_command = "netchop"
+    aams_helpers.binary_check(netchop_command)
+    os.system(f"{netchop_command} {chop_fasta} -verbose > {chop_output}")
 
     return chop_output
 
