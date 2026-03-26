@@ -12,13 +12,13 @@ def _get_vep_indices_from_vcf(vcf_path):
     return vep_indices
 
 
-def pickle_parsing(str_params, args):
-    # get donor or recipient vcf path from orientation in log file
-    orientation = aams_helpers.read_log_field(args, "Orientation")
-    if orientation == "dr":
+def pickle_parsing(str_params, args, individual):
+    if individual == "donor":
         vcf_path_indiv = aams_helpers.read_log_field(args, "Donor")
-    elif orientation == "rd":
+    elif individual == "recipient":
         vcf_path_indiv = aams_helpers.read_log_field(args, "Recipient")
+    else:
+        raise ValueError("individual must be 'donor' or 'recipient'")
 
     sample = os.path.basename(vcf_path_indiv).split(".")[0]
 
@@ -87,7 +87,7 @@ def add_pep_seq_chop(transcripts_pair, peptides_ensembl):
     return transcripts_pair
 
 
-def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir):
+def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir, sample_suffix=""):
     chop_table = mm_intersect(mismatches_df, transcripts_pair)
     # Get the rows with missing peptide_ALT
     missing_mask = chop_table["peptide_ALT"].isna()
@@ -104,40 +104,37 @@ def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, 
     chop_table.loc[filled_rows.index, "peptide_ALT"] = filled_rows["Sequence_aa_y"].values
     chop_table.loc[filled_rows.index, "Peptide_id"] = filled_rows["Peptide_id_y"].values
     
-    # remove duplicates and empty rows
+    # remove duplicates and empty rows and unused columns
     chop_table = chop_table.drop_duplicates(
         subset=["CHROM", "Gene_id", "Transcript_id", "Peptide_id", "peptide_ALT"]
     )
     chop_table = chop_table.dropna(subset=["peptide_ALT"])
-    
+    chop_table = chop_table.drop(columns=["POS", "aa_REF", "aa_ALT"])
     
     # save table
     chop_table_path = os.path.join(
         netchop_dir,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_table.csv"
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}{sample_suffix}_netchop_table.csv"
     )
     chop_table.to_csv(chop_table_path, sep="\t", index=False)
 
     return chop_table, chop_table_path
 
 
-def run_netchop(chop_table, args, netchop_dir, pair_print):
+def run_netchop(chop_table, args, netchop_dir, sample_suffix=""):
     # prepare input for netchop
     chop_fasta = os.path.join(
         netchop_dir,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_peptides.fa"
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}{sample_suffix}_netchop_peptides.fa"
     )
     with open(chop_fasta, "w") as fasta_file:
         for _, row in chop_table.iterrows():
             # NetChop accepts only 10 characters for ID: keep the 10 last characters to have full ENSP ID
             fasta_file.write(f">{row['Peptide_id'][-10:]}\n{row['peptide_ALT']}\n")
-
-
-    print(f"{pair_print}Entering NetChop handler: running NetChop may last a few minutes...")
     
     chop_output = os.path.join(
         netchop_dir,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_output.txt"
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}{sample_suffix}_netchop_output.txt"
     )
 
     # netChop command
@@ -234,14 +231,14 @@ def load_peptide_id_map(tsv_path):
     return mapping
 
 
-def postprocess_netchop(chop_output, chop_table_path, args, netchop_dir):
+def postprocess_netchop(chop_output, chop_table_path, args, netchop_dir, sample_suffix=""):
     dot_runs, all_positions = parse_netchop_output(chop_output, min_run_length=9)
     id_map = load_peptide_id_map(chop_table_path)
 
     # save peptides table
     chop_peptides = os.path.join(
         netchop_dir,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_peptides.txt"
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}{sample_suffix}_netchop_peptides.txt"
     )
     with open(chop_peptides, "w") as out:
         out.write("ID,Peptide\n")
@@ -253,3 +250,38 @@ def postprocess_netchop(chop_output, chop_table_path, args, netchop_dir):
             for run in dot_runs[ident]:
                 seq = "".join(aa_lookup.get(pos, "X") for pos in run["positions"])
                 out.write(f"{full_id},{seq}\n")
+
+    return chop_peptides
+
+
+def load_peptides(path):
+    peptides = set()
+    with open(path) as f:
+        next(f)
+        for line in f:
+            parts = line.strip().split(',')
+            if len(parts) == 2:
+                id_, pep = parts
+                peptides.add((id_, pep))
+    return peptides
+
+def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netchop_dir, args):
+    donor_peptides = load_peptides(donor_peptides_path)
+    recipient_peptides = load_peptides(recipient_peptides_path)
+
+    orientation = aams_helpers.read_log_field(args, "Orientation")
+    if orientation == "dr":
+        cleaved = donor_peptides - recipient_peptides
+    elif orientation == "rd":
+        cleaved = recipient_peptides - donor_peptides
+    else:
+        raise ValueError(f"Invalid orientation: {orientation}")
+
+    deduced_pep_path = os.path.join(
+        netchop_dir,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_netchop_peptides.txt"
+    )
+    with open(deduced_pep_path, "w") as out:
+        out.write("ID,Peptide\n")
+        for id_, pep in cleaved:
+            out.write(f"{id_},{pep}\n")
