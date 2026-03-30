@@ -1,6 +1,5 @@
 # coding : utf-8
 import pandas as pd
-import glob
 
 # get the columns associated to one HLA and return the subsets columns associated
 def find_subsets(netmhc_file,args):
