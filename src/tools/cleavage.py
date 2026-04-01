@@ -1,16 +1,14 @@
 #coding:utf-8
 import os
-import sys
-import shutil
 import pandas as pd
 from tools import aams_helpers, parsing_functions
 
 
-def _get_vep_indices_from_vcf(vcf_path):
+def _get_vep_indices_from_vcf(vcf_path, frameshift_mode):
     if vcf_path.endswith(".vcf"):
-        _, vep_indices = parsing_functions.vcf_vep_parser(vcf_path)
+        _, vep_indices = parsing_functions.vcf_vep_parser(vcf_path, frameshift_mode)
     elif vcf_path.endswith(".vcf.gz"):
-        _, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path)
+        _, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path, frameshift_mode)
     return vep_indices
 
 
@@ -42,7 +40,7 @@ def pickle_parsing(str_params, args):
     pickle_df = pickle_df.explode("INFO", ignore_index=True)
 
     # Derive field indices from VCF header to avoid hard-coded positions
-    vep_indices = _get_vep_indices_from_vcf(vcf_path_indiv)
+    vep_indices = _get_vep_indices_from_vcf(vcf_path_indiv, frameshift_mode=False)
 
     # Function to extract ENSG, ENST and protein position from INFO string
     def extract_ensg_enst(info_str):
