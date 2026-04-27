@@ -11,8 +11,13 @@ def main():
     The AAMS pipeline estimates the mismatch between a donor and a recipient after running NetMHCpan
     command line help : python3 aams_pipeline.py [-h]
     """
-    # get args from cmd line
     args = netmhc_arguments.netmhc_arguments()
+    if args.cleavage == True:
+        try:
+            cleavage.validate_cleavage_imputation(args)
+        except ValueError as err:
+            print(err)
+            return 1
     str_params, mismatches_path = aams_helpers.get_ams_params(args.run_name, args.output_dir)
     aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
         args.run_name, args.output_dir
@@ -35,17 +40,21 @@ def main():
             )
             chop_output = cleavage.run_netchop(chop_table, args, netchop_dir, sample_suffix)
             pep_paths[sample] = cleavage.postprocess_netchop(chop_output, chop_table_path, args, netchop_dir, sample_suffix)
-        cleavage.deduce_cleaved_peptides(pep_paths["donor"], pep_paths["recipient"], netchop_dir, args)
+        deduced_pep_path = cleavage.deduce_cleaved_peptides(pep_paths["donor"], pep_paths["recipient"], netchop_dir, args, pair_print)
+        fasta_path, pep_indiv_path = cleavage.prepare_cleavage_netmhcpan_inputs(
+            aams_run_tables, args, pep_indiv_path, deduced_pep_path,
+        )
     if args.dry_run == False:
         netmhc_out = aams_helpers.run_netmhcpan(fasta_path, netmhc_dir, args, pair_print)
         netmhc_table = netmhc_tables_handler.handle_netMHCpan(netmhc_out, args)
         netmhc_df, pep_df = aams_helpers.clean_pep_df(netmhc_table, pep_indiv_path, args)
-        mismatch = aams_helpers.merge_netmhc(
-            netmhc_df, pep_df, mismatches_path,
-            aams_path,aams_run_tables,str_params, args
-        )
-        print(mismatch)
-        return 0
+        if args.cleavage == False:
+            mismatch = aams_helpers.merge_netmhc(
+                netmhc_df, pep_df, mismatches_path,
+                aams_path,aams_run_tables,str_params, args
+            )
+            print(mismatch)
+            return 0
 
 if __name__ == '__main__':
     main()
