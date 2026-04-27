@@ -166,10 +166,8 @@ To install the VEP command line tool, follow the installation tutorial available
 Run the following command to annotate your `.VCF` file(s) with VEP.
 
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
-
-
 ```
-vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf
+	vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
 ```
 
 Where:
@@ -181,23 +179,6 @@ This command line works for individual `.VCF` files or joint `.VCF` files, wheth
 Run this command for every file you want to input in AlloPipe.
 
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to run your first AlloPipe run!**
-
-<br/>
-
-Note: if you want to take into account frameshift neoantigens peptide generation in the af-AMS, you need to add the [Frameshift plugin](https://github.com/griffithlab/pVACtools/blob/0c05768b7b9b317eebdeeb2a7a178b8a12c880d6/pvactools/tools/pvacseq/VEP_plugins/Frameshift.pm) from the [pVACtools](https://github.com/griffithlab/pVACtools) software to your VEP installation.
-
-```
-mv Frameshift.pm ~/.vep/Plugins
-```
-
-You should then add these options to the VEP command:
-
-```
---plugin Frameshift --dir_plugins <PLUGIN-PATH>
-```
-
-with ```<PLUGIN-PATH>``` being the path to your VEP plugins directory.
-
 
 <br/>
 
@@ -263,9 +244,6 @@ More detailed help can be obtained with the ``--help`` switch:
 ```
 python ams_pipeline.py --help
 ```  
-
-
-For instance, you can generate frameshift neoantigen candidates in the second step (Allo‑Affinity) with the dedicated mode when running Allo‑Count by adding the `--frameshift` option to the Allo-Count run. Note: you need to have installed the VEP `Frameshift` plugin.
 
 <br/>
 
@@ -341,12 +319,11 @@ This table gives you information on the mismatched positions. For each type of i
 - **TYPE_{x, y} (str):** type of genotype (homozygous, heterozygous)
 
 3. **VEP information**: 
-- **consequences_{x, y} (int)**: Count of each consequence type (i.e. frameshift indel, missense variant, ...)
+- **consequences_{x, y} (int)**: Count of each consequence type (i.e. framshift indel, missense variant, ...)
 - **transcripts_{x, y} (str)**: Transcripts recorded for the variant
 - **genes_{x, y} (str)**: Genes recorded for the variant
 - **aa_REF, aa_ALT (str)**: Amino-acid for REF and ALT alleles for the variant
 - **gnomADe_AF_{x, y} (float)**: Frequency of existing variant in gnomAD exomes combined population
-- **Frameshift_sequence_{x, y} (str):** Frameshift sequences annotated by VEP (if `--frameshift` is activated, empty otherwise)
 - **aa_ref_indiv_{x, y}, aa_alt_indiv_{x, y} (str)**: REF and ALT amino acids recorded for the sample (x and y)
 - **aa_indiv_{x, y} (str)**: REF and ALT amino acids combined in one column
 
@@ -464,27 +441,20 @@ It contains the mismatches information from the AMS run along with information p
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4. Predicting cleaved peptides <a name="cleavage"></a>
 
-AlloPipe can also run the [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool to annotate the potential proteasomal cleavage sites on the proteins that contain mismatch. This then give you a reduced set of candidate peptides that you can compare with their affinity values. 
+AlloPipe can also run [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) to predict proteasomal cleavage on proteins containing mismatches and keep only a set of deduced peptides before affinity scoring.
 
-The cleaved sites are predicted on a protein sequence which depends of the directionality of the run:
-- `dr` direction: Proteins reconstructed from the genotype of the *donor*. 
-- `rd` direction: Proteins reconstructed from the genotype of the *recipient*. 
+Cleavage predictions are generated for both donor and recipient reconstructed proteins, then filtered by run directionality:
+- `dr`: keep donor-only peptides (`D - R`).
+- `rd`: keep recipient-only peptides (`R - D`).
 
-2. **Cleaved peptide information**
+Generated cleavage-related tables are written in **`/netChop`** directory:
 
-More information about the cleaved peptide is available in the **`netChop/`** directory in the `netchop_table.csv` file, which contains the following information. 
- - **CHROM** (str): Chromosome of the variant
- - **POS** (int): Position on the chromosome
- - **Protein_position** (str): Position on the protein
- - **Gene_id** (str): Ensembl Gene ID
- - **Transcript_id** (str): Ensembl Transcript ID
- - **Peptide_id** (str): Ensembl Peptide ID
- - **Sequence_aa** (str): Amino acid sequence of the peptide
- - **aa_REF** (str): Amino acid for REF
- - **aa_ALT** (str): Amino acid for ALT
- - **peptide_ALT** (str): Amino acid sequence of the peptide with mutation(s)
-
-Each row of the table corresponds to a cleaved peptide on a protein that contributes to a mismatch in the AMS.
+| File | Description |
+| ---- | ----------- |
+| `*_donor_netchop_table.csv` / `*_recipient_netchop_table.csv` | NetChop input tables built from mismatch mutated proteins for each sample. |
+| `*_donor_netchop_peptides.csv` / `*_recipient_netchop_peptides.csv` | Cleavage peptides extracted from NetChop outputs for each sample. |
+| `*_netchop_peptides.csv` | Directional deduced cleavage peptide table after donor/recipient subtraction (`dr` or `rd`). |
+| `*_pep_df_cleavage_filtered.tsv` / `*_pep_df_cleavage_filtered.pkl` | Filtered peptide table |
 
 ## Tutorial <a name="tuto"></a>
 
@@ -528,7 +498,6 @@ Before running the Allo-Affinity module, unzip the files corresponding to your a
 ```
 
 <br/>
-
 If you want to run the cleaved peptide prediction, add the `--cleavage` switch:
 
 ```
