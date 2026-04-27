@@ -18,11 +18,11 @@ def validate_cleavage_imputation(args):
         )
 
 
-def _get_vep_indices_from_vcf(vcf_path):
+def _get_vep_indices_from_vcf(vcf_path, frameshift_mode):
     if vcf_path.endswith(".vcf"):
-        _, vep_indices = parsing_functions.vcf_vep_parser(vcf_path)
+        _, vep_indices = parsing_functions.vcf_vep_parser(vcf_path, frameshift_mode)
     elif vcf_path.endswith(".vcf.gz"):
-        _, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path)
+        _, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path, frameshift_mode)
     return vep_indices
 
 
@@ -54,7 +54,7 @@ def pickle_parsing(str_params, args, individual):
     pickle_df = pickle_df.explode("INFO", ignore_index=True)
 
     # Derive field indices from VCF header to avoid hard-coded positions
-    vep_indices = _get_vep_indices_from_vcf(vcf_path_indiv)
+    vep_indices = _get_vep_indices_from_vcf(vcf_path_indiv, frameshift_mode=False)
 
     # Function to extract ENSG, ENST and protein position from INFO string
     def extract_ensg_enst(info_str):
@@ -153,7 +153,9 @@ def run_netchop(chop_table, args, netchop_dir, sample_suffix=""):
     )
 
     # netChop command
-    os.system(f"netchop {chop_fasta} -verbose > {chop_output}")
+    netchop_command = "netchop"
+    aams_helpers.binary_check(netchop_command)
+    os.system(f"{netchop_command} {chop_fasta} -verbose > {chop_output}")
 
     return chop_output
 

@@ -75,6 +75,7 @@ def write_log(run_logs, args):
         f.write(f"Recipient: {args.recipient}\n")
         f.write(f"Orientation: {args.orientation}\n")
         f.write(f"Imputation: {args.imputation}\n")
+        f.write(f"Frameshift: {args.frameshift}\n")
         f.write(f"Command: {' '.join(sys.argv)}\n")
         f.write(f"Output_dir: {args.output_dir}\n")
         f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -451,9 +452,9 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, format
     """
     # check file extension to select the appropriate parsing function
     if vcf_path_indiv.split(".")[-1] == "vcf":
-        df_indiv, vep_indices = parsing_functions.vcf_vep_parser(vcf_path_indiv)
+        df_indiv, vep_indices = parsing_functions.vcf_vep_parser(vcf_path_indiv, args.frameshift)
     else:
-        df_indiv, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path_indiv)
+        df_indiv, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path_indiv, args.frameshift)
     # get read counts info from patient column
     df_indiv, subset = get_read_counts(
         df_indiv, vcf_path_indiv, args.min_ad, args.min_gq, args.base_length
