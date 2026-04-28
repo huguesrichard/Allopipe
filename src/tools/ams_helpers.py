@@ -77,7 +77,7 @@ def write_log(run_logs, args):
         f.write(f"Imputation: {args.imputation}\n")
         f.write(f"Frameshift: {args.frameshift}\n")
         f.write(f"Output_dir: {args.output_dir}\n")
-        f.write(f"AMS_command: {' '.join(sys.argv)}\n")
+        f.write(f"AMS_command: {' '.join([sys.executable] + sys.argv)}\n")
         f.write(f"AMS_timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
 

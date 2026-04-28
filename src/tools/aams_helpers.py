@@ -50,7 +50,7 @@ def append_log(args):
     with open(log_file, "r") as f:
         lines = [l for l in f if not l.startswith(("AAMS_command:", "AAMS_timestamp:"))]
     # AAMS lines written or modified
-    lines.append(f"AAMS_command: {' '.join(sys.argv)}\n")
+    lines.append(f"AAMS_command: {' '.join([sys.executable] + sys.argv)}\n")
     lines.append(f"AAMS_timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     with open(log_file, "w") as f:
         f.writelines(lines)
