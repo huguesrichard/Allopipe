@@ -12,13 +12,13 @@ def _get_vep_indices_from_vcf(vcf_path, frameshift_mode):
     return vep_indices
 
 
-def pickle_parsing(str_params, args):
+def pickle_parsing(str_params, args, log_file):
     # get donor or recipient vcf path from orientation in log file
-    orientation = aams_helpers.read_log_field(args, "Orientation")
+    orientation = aams_helpers.read_log_field(log_file, "Orientation")
     if orientation == "dr":
-        vcf_path_indiv = aams_helpers.read_log_field(args, "Donor")
+        vcf_path_indiv = aams_helpers.read_log_field(log_file, "Donor")
     elif orientation == "rd":
-        vcf_path_indiv = aams_helpers.read_log_field(args, "Recipient")
+        vcf_path_indiv = aams_helpers.read_log_field(log_file, "Recipient")
 
     sample = os.path.basename(vcf_path_indiv).split(".")[0]
 
