@@ -1,18 +1,27 @@
 process ALLOAFFINITY {
 	label 'allopipe'
-	//stageInMode 'copy'
+	publishDir "${output_dir}", mode: 'copy', overwrite: true
 
 	input:
-	run_name
-	ensembl_path
-	hla_typing
-	optional_args
+	path allocount_results
+	val  run_name
+	val  ensembl_path
+	val  hla_typing
+	val  optional_args
+	val  output_dir
 
-	//output:
+	output:
+    path "runs/${run_name}",  emit: affinity_results
 	
 	script:
 	"""
 	allopipe_src_dir=${projectDir}/src
-	python \${allopipe_src_dir}/aams_pipeline.py -n ${run_name} -d ${ensembl_path} -a ${hla_typing} ${optional_args} --dry_run
+	python \${allopipe_src_dir}/aams_pipeline.py \
+		-n ${run_name} \
+		-d ${projectDir}/${ensembl_path} \
+		-a ${hla_typing} \
+		-o ./ \
+		${optional_args} \
+		--dry_run
 	"""
 }

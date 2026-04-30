@@ -3,12 +3,13 @@ include { ALLOCOUNT } from './modules/allo-count'
 include { ALLOAFFINITY } from './modules/allo-affinity'
 
 log.info """
-    donor       : ${params.donor}
-    recipient   : ${params.recipient}
-    run_name    : ${params.run_name}
-    orientation : ${params.orientation}
-    imputation  : ${params.imputation}
+    donor         : ${params.donor}
+    recipient     : ${params.recipient}
+    run_name      : ${params.run_name}
+    orientation   : ${params.orientation}
+    imputation    : ${params.imputation}
     optional_args : ${params.optional_args}
+    output_dir    : ${params.output_dir}
 """.stripIndent()
 
 workflow AlloPipe {
@@ -47,13 +48,18 @@ workflow AlloPipe {
 		params.run_name,
 		params.orientation,
 		params.imputation,
-		params.optional_args
+		params.optional_args,
+		params.output_dir,
 	)
 
-	// ALLOAFFINITY(
-	// 	params.run_name,
-	// 	params.optional_args_
-	// )	
+	ALLOAFFINITY(
+		ALLOCOUNT.out.results_dir, 
+		params.run_name,
+		params.ensembl_path,
+		params.hla_typing,
+		params.optional_args,
+		params.output_dir,
+	)	
 }
 
 workflow {
