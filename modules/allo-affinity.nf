@@ -7,7 +7,7 @@ process ALLOAFFINITY {
 	val  run_name
 	val  ensembl_path
 	val  hla_typing
-	val  optional_args
+	val  alloaffinity_opts
 	val  output_dir
 
 	output:
@@ -20,8 +20,8 @@ process ALLOAFFINITY {
 		-n ${run_name} \
 		-d ${projectDir}/${ensembl_path} \
 		-a ${hla_typing} \
+		${alloaffinity_opts} \
 		-o ./ \
-		${optional_args} \
 		--dry_run
 	"""
 }

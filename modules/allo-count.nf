@@ -8,7 +8,7 @@ process ALLOCOUNT {
 	val  run_name
 	val  orientation
 	val  imputation
-	val  optional_args
+	val  allocount_opts
 	val  output_dir
 
 	output:
@@ -23,7 +23,7 @@ process ALLOCOUNT {
 		${recipient_input} \
 		${orientation} \
 		${imputation} \
-		${optional_args} \
+		${allocount_opts} \
 		-o ./
 	"""
 }

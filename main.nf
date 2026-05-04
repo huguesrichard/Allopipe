@@ -8,7 +8,7 @@ log.info """
     run_name      : ${params.run_name}
     orientation   : ${params.orientation}
     imputation    : ${params.imputation}
-    optional_args : ${params.optional_args}
+    optional_args : ${params.allocount_opts}
     output_dir    : ${params.output_dir}
 """.stripIndent()
 
@@ -48,7 +48,7 @@ workflow AlloPipe {
 		params.run_name,
 		params.orientation,
 		params.imputation,
-		params.optional_args,
+		params.allocount_opts,
 		params.output_dir,
 	)
 
@@ -57,7 +57,7 @@ workflow AlloPipe {
 		params.run_name,
 		params.ensembl_path,
 		params.hla_typing,
-		params.optional_args,
+		params.alloaffinity_opts,
 		params.output_dir,
 	)	
 }
