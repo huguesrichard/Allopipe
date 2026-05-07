@@ -17,13 +17,14 @@ def main():
     aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
         args.run_name, args.output_dir
     )
+    log_file = aams_helpers.append_log(args)
     fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file, pair_print = aams_helpers.build_peptides(
-        aams_run_tables, str_params, args, mismatches_path, cleavage_mode=False
+        aams_run_tables, str_params, args, log_file, mismatches_path, cleavage_mode=False
     )
     if args.cleavage == True:
-        pickle_df = cleavage.pickle_parsing(str_params, args)
+        pickle_df = cleavage.pickle_parsing(str_params, args, log_file)
         mismatches_df, transcripts_pair, peptides_ensembl, pair_print = aams_helpers.build_peptides(
-            aams_run_tables, str_params, args, mismatches_path, mismatches_df=pickle_df, cleavage_mode=args.cleavage,
+            aams_run_tables, str_params, args, log_file, mismatches_path, mismatches_df=pickle_df, cleavage_mode=args.cleavage,
             ens_transcripts=ens_transcripts, peptides_ensembl=peptides_ensembl, refseq_file=refseq_file
         )
         chop_table, chop_table_path = cleavage.netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir)

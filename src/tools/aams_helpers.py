@@ -7,6 +7,7 @@ import os
 import sys
 import shutil
 import glob
+import time
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -37,7 +38,7 @@ def create_aams_dependencies(ams_run_directory, output_dir):
     return aams_run_tables, netmhc_dir, aams_path, netchop_dir
 
 
-def read_log_field(args, field_name):
+def append_log(args):
     log_file = os.path.join(
         args.output_dir,
         "runs",
@@ -45,6 +46,18 @@ def read_log_field(args, field_name):
         "logs",
         f"{args.pair + '_' if args.pair else ''}run.log",
     )
+    # Keep AMS log part to (over)write only AAMS lines
+    with open(log_file, "r") as f:
+        lines = [l for l in f if not l.startswith(("AAMS_command:", "AAMS_timestamp:"))]
+    # AAMS lines written or modified
+    lines.append(f"AAMS_command: {' '.join([sys.executable] + sys.argv)}\n")
+    lines.append(f"AAMS_timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    with open(log_file, "w") as f:
+        f.writelines(lines)
+    return log_file
+
+
+def read_log_field(log_file, field_name):
     with open(log_file) as f:
         for line in f:
             if line.startswith(f"{field_name}:"):
@@ -563,7 +576,7 @@ def get_ams_params(run_name, output_dir):
     return str_params,mismatches_path
 
 
-def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_path=None, mismatches_df=None,
+def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=None, mismatches_path=None, mismatches_df=None,
                    cleavage_mode=False, ens_transcripts=None, peptides_ensembl=None, refseq_file=None):
     # pair ID for print in multiprocess mode
     pair_print = f"[{args.pair}] " if args.pair else ""
@@ -625,11 +638,11 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, mismatches_
 
     if not cleavage_mode:
         # get imputation mode in log file
-        imputation = read_log_field(args, "Imputation")
+        imputation = read_log_field(log_file, "Imputation")
         transcripts_pair = aa_ref(transcripts_pair, imputation)
 
         # get frameshift mode in log file
-        frameshift_mode = read_log_field(args, "Frameshift") == "True"
+        frameshift_mode = read_log_field(log_file, "Frameshift") == "True"
     else:
         # frameshift handling is disabled in cleavage mode
         frameshift_mode = False
