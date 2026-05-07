@@ -17,7 +17,7 @@ def requireParams(names) {
 def buildPairRows() {
 	if (params.mode == 'pair') {
 		requireParams(['donor', 'recipient'])
-		return [[pair_id: 'P1', donor: 'donor', recipient: 'recipient']]
+		return [[pair_id: '', donor: 'donor', recipient: 'recipient']]
 	}
 
 	requireParams(['multi_vcf', 'pairs'])
@@ -67,7 +67,7 @@ workflow AlloPipe {
 			.unique()
 			.sort()
 			.collect { sample -> tuple(sample, file(params.multi_vcf)) }
-		EXTRACT_SAMPLE(Channel.from(sampleRows))
+		EXTRACT_SAMPLE(Channel.from(sampleRows), params.run_name, params.output_dir)
 		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf
 	}
 
