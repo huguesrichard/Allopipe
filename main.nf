@@ -1,70 +1,119 @@
 include { VEP } from './modules/vep-annotation'
-include { ALLOCOUNT } from './modules/allo-count'
-include { ALLOAFFINITY } from './modules/allo-affinity'
+include { EXTRACT_SAMPLE } from './modules/extract-sample'
+include { ALLO_COUNT } from './modules/allo-count'
+include { ALLO_AFFINITY } from './modules/allo-affinity'
+include { FINALIZE_COHORT } from './modules/finalize-cohort'
 
-log.info """
-    donor         : ${params.donor}
-    recipient     : ${params.recipient}
-    run_name      : ${params.run_name}
-    orientation   : ${params.orientation}
-    imputation    : ${params.imputation}
-    optional_args : ${params.allocount_opts}
-    output_dir    : ${params.output_dir}
-""".stripIndent()
+
+def requireParams(names) {
+	names.each { name ->
+		if (!params[name]) {
+			error "ERROR: --${name} is required"
+		}
+	}
+}
+
+
+def buildPairRows() {
+	if (params.mode == 'pair') {
+		requireParams(['donor', 'recipient'])
+		return [[pair_id: 'P1', donor: 'donor', recipient: 'recipient']]
+	}
+
+	requireParams(['multi_vcf', 'pairs'])
+	def lines = file(params.pairs).readLines().findAll { it.trim() }
+	if (lines.size() < 2) {
+		error "ERROR: --pairs must contain a header and at least one donor/recipient row"
+	}
+
+	def header = lines[0].split(',').collect { it.trim() }
+	def donorIdx = header.indexOf('donor')
+	def recipientIdx = header.indexOf('recipient')
+	if (donorIdx < 0 || recipientIdx < 0) {
+		error "ERROR: --pairs must contain donor and recipient columns"
+	}
+
+	def body = lines.drop(1)
+	def width = body.size().toString().size()
+	return body.withIndex().collect { line, index ->
+		def cols = line.split(',').collect { it.trim() }
+		[
+			pair_id: "P${String.format('%0' + width + 'd', index + 1)}",
+			donor: cols[donorIdx],
+			recipient: cols[recipientIdx],
+		]
+	}
+}
+
 
 workflow AlloPipe {
-
-	take:
-	donor_file
-	recipient_file
-
 	main:
-	// Make VEP annotation optional (--skip_vep_annotation)
-	if (!params.skip_vep_annotation) {
-		VEP(
-			donor_file,
-			recipient_file
+	requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
+	if (!(params.mode in ['pair', 'cohort'])) {
+		error "ERROR: --mode must be either 'pair' or 'cohort'"
+	}
+
+	def pairRows = buildPairRows()
+	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient) }
+
+	if (params.mode == 'pair') {
+		raw_samples_ch = Channel.of(
+			tuple('donor', file(params.donor)),
+			tuple('recipient', file(params.recipient)),
 		)
-
-		// VEP-annotated files as input for ALLOCOUNT
-		donor_input     = VEP.out.donor_vep
-		recipient_input = VEP.out.recipient_vep
-
 	} else {
-		donor_input     = donor_file
-		recipient_input = recipient_file
+		def sampleRows = pairRows
+			.collectMany { row -> [row.donor, row.recipient] }
+			.unique()
+			.sort()
+			.collect { sample -> tuple(sample, file(params.multi_vcf)) }
+		EXTRACT_SAMPLE(Channel.from(sampleRows))
+		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf
 	}
 
-
-	// Required arguments
-	def required = ["donor", "recipient", "run_name", "orientation", "imputation"]
-	required.each { p ->
-    if (!params[p]) error "ERROR: --${p} is required"
+	if (!params.skip_vep_annotation) {
+		VEP(raw_samples_ch)
+		samples_ch = VEP.out.annotated_vcf
+	} else {
+		samples_ch = raw_samples_ch
 	}
 
-	ALLOCOUNT(
-		donor_input,
-		recipient_input,
+	donor_join_ch = pairs_ch
+		.map { pair_id, donor, recipient -> tuple(donor, pair_id, donor, recipient) }
+		.join(samples_ch)
+	recipient_join_ch = donor_join_ch
+		.map { donor_key, pair_id, donor, recipient, donor_vcf -> tuple(recipient, pair_id, donor, recipient, donor_vcf) }
+		.join(samples_ch)
+	pair_inputs_ch = recipient_join_ch
+		.map { recipient_key, pair_id, donor, recipient, donor_vcf, recipient_vcf -> tuple(pair_id, donor_vcf, recipient_vcf) }
+
+	ALLO_COUNT(
+		pair_inputs_ch,
 		params.run_name,
 		params.orientation,
 		params.imputation,
-		params.allocount_opts,
+		params.allo_count_opts,
 		params.output_dir,
 	)
 
-	ALLOAFFINITY(
-		ALLOCOUNT.out.results_dir, 
-		params.run_name,
+	ALLO_AFFINITY(
+		ALLO_COUNT.out.results_dir,
 		params.ensembl_path,
 		params.hla_typing,
-		params.alloaffinity_opts,
+		params.allo_affinity_opts,
 		params.output_dir,
-	)	
+	)
+
+	if (params.mode == 'cohort') {
+		FINALIZE_COHORT(
+			ALLO_AFFINITY.out.results_dir.map { pair_id, run_name, run_dir -> run_dir }.collect(),
+			params.run_name,
+			params.output_dir,
+		)
+	}
 }
 
+
 workflow {
-    AlloPipe(
-        Channel.fromPath(params.donor),
-        Channel.fromPath(params.recipient)
-    )
+	AlloPipe()
 }
