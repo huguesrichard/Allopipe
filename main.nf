@@ -2,7 +2,7 @@ include { VEP } from './modules/vep-annotation'
 include { EXTRACT_SAMPLE } from './modules/extract-sample'
 include { ALLO_COUNT } from './modules/allo-count'
 include { ALLO_AFFINITY } from './modules/allo-affinity'
-include { FINALIZE_COHORT } from './modules/finalize-cohort'
+include { NORMALIZE_COHORT } from './modules/normalize-cohort'
 
 
 def requireParams(names) {
@@ -68,7 +68,7 @@ workflow AlloPipe {
 			.sort()
 			.collect { sample -> tuple(sample, file(params.multi_vcf)) }
 		EXTRACT_SAMPLE(Channel.from(sampleRows), params.run_name, params.output_dir)
-		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf
+		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf, sample_vcf_index -> tuple(sample_id, sample_vcf) }
 	}
 
 	if (!params.skip_vep_annotation) {
@@ -97,6 +97,7 @@ workflow AlloPipe {
 	)
 
 	ALLO_AFFINITY(
+		pair_inputs_ch,
 		ALLO_COUNT.out.results_dir,
 		params.ensembl_path,
 		params.hla_typing,
@@ -105,8 +106,9 @@ workflow AlloPipe {
 	)
 
 	if (params.mode == 'cohort') {
-		FINALIZE_COHORT(
+		NORMALIZE_COHORT(
 			ALLO_AFFINITY.out.results_dir.map { pair_id, run_name, run_dir -> run_dir }.collect(),
+			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf, sample_vcf_index -> [sample_vcf, sample_vcf_index] }.collect(),
 			params.run_name,
 			params.output_dir,
 		)

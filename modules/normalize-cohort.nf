@@ -1,9 +1,10 @@
-process FINALIZE_COHORT {
+process NORMALIZE_COHORT {
 	label 'allopipe'
 	publishDir "${output_dir}", mode: 'copy', overwrite: true
 
 	input:
 	path run_dirs, stageAs: "pair_runs/??/*"
+	path extracted_vcfs, stageAs: "runs/${params.run_name}/vcf_indiv/*"
 	val  run_name
 	val  output_dir
 
@@ -13,7 +14,7 @@ process FINALIZE_COHORT {
 	script:
 	"""
 	allopipe_src_dir=${projectDir}/src
-	python \${allopipe_src_dir}/finalize_cohort.py \
+	python \${allopipe_src_dir}/tools/normalize_cohort.py \
 		--run-name ${run_name} \
 		--output-dir ./ \
 		--run-dir pair_runs/*/*

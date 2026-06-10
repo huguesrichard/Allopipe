@@ -1,10 +1,10 @@
 process ALLO_AFFINITY {
 	label 'allopipe'
 	tag "$pair_id"
-	stageInMode 'copy'
 	publishDir "${output_dir}", mode: 'copy', overwrite: true, enabled: params.mode == 'pair'
 
 	input:
+	tuple val(pair_id), path(donor_input), path(recipient_input)
 	tuple val(pair_id), val(run_name), path(allo_count_results)
 	val  ensembl_path
 	val  hla_typing
@@ -17,7 +17,7 @@ process ALLO_AFFINITY {
 	script:
 	"""
 	mkdir -p runs
-	cp -R ${allo_count_results} runs/${run_name}
+	ln -s \$(realpath ${allo_count_results}) runs/${run_name}
 
 	allopipe_src_dir=${projectDir}/src
 	python \${allopipe_src_dir}/aams_pipeline.py \

@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn import linear_model as lm
 
-from tools.table_operations import get_ref_ratio_pair
+from table_operations import get_ref_ratio_pair
 
 
 def pair_sort_key(pair):
