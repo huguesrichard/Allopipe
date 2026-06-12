@@ -80,10 +80,10 @@ workflow AlloPipe {
 
 	donor_join_ch = pairs_ch
 		.map { pair_id, donor, recipient -> tuple(donor, pair_id, donor, recipient) }
-		.join(samples_ch)
+		.combine(samples_ch, by: 0)
 	recipient_join_ch = donor_join_ch
 		.map { donor_key, pair_id, donor, recipient, donor_vcf -> tuple(recipient, pair_id, donor, recipient, donor_vcf) }
-		.join(samples_ch)
+		.combine(samples_ch, by: 0)
 	pair_inputs_ch = recipient_join_ch
 		.map { recipient_key, pair_id, donor, recipient, donor_vcf, recipient_vcf -> tuple(pair_id, donor_vcf, recipient_vcf) }
 
