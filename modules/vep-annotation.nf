@@ -1,33 +1,42 @@
-process VEP {
+process VEP_ANNOTATION {
 	label 'allopipe'
+	tag "$sample_id"
 	stageInMode 'copy'
 
+	container 'ensemblorg/ensembl-vep:latest'							// specify version (+ cache)
+
 	input:
-	path donor_file
-	path recipient_file
+	tuple val(sample_id), path(sample_file)
 	
 
     output:
-    path "${donor_file.simpleName}_VEP.vcf.gz", emit: donor_vep
-    path "${recipient_file.simpleName}_VEP.vcf.gz", emit: recipient_vep
+    tuple val(sample_id), path("${sample_file.simpleName}_VEP.vcf.gz"), emit: annotated_vcf
 
 	
 	script:
-	"""	
-	module load singularity
-	
-	# Donor
-	singularity exec ${params.sif_dir}/vep.sif \
-    vep --dir ${HOME}/vep_data --cache --assembly GRCh38 --offline --af_gnomade \
-        --fork 4 --coding_only --pick_allele --use_given_ref --vcf --compress_output gzip \
-   	 	-i ${donor_file} \
-		-o ${donor_file.simpleName}_VEP.vcf.gz
-
-	# Recipient
-	singularity exec ${params.sif_dir}/vep.sif \
-    vep --dir $HOME/vep_data --cache --assembly GRCh38 --offline --af_gnomade \
-        --fork 4 --coding_only --pick_allele --use_given_ref --vcf --compress_output gzip \
-		-i ${recipient_file} \
-		-o ${recipient_file.simpleName}_VEP.vcf.gz
 	"""
+	# Docker (local)
+	vep \
+		-i ${sample_file} \
+		-o ${sample_file.simpleName}_VEP.vcf.gz \
+		--vcf \
+		--fork 4 \
+		--cache \
+		--offline \
+		--compress_output gzip \
+		--force_overwrite \
+		--assembly GRCh38 \
+		--af_gnomade \
+		--coding_only \
+		--pick_allele \
+		--use_given_ref	\
+		--dir_cache /cache	
+	"""
+	// ###################################################
+	// ## Singularity (Slurm)
+	// #module load singularity
+	
+	// #singularity exec ${params.sif_dir}/vep.sif \
+	// #vep --dir ${HOME}/vep_data \
+	// ###################################################
 }

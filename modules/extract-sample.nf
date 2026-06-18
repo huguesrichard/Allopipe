@@ -5,13 +5,11 @@ process EXTRACT_SAMPLE {
 
 	input:
 	tuple val(sample_id), path(multi_vcf)
-	val  run_name
-	val  output_dir
+	val   run_name
+	val   output_dir
 
 	output:
-	tuple val(sample_id),
-		path("${sample_id}.vcf.gz"),
-		path("${sample_id}.vcf.gz.tbi"),  emit: sample_vcf
+	tuple val(sample_id), path("${sample_id}.vcf.gz"), emit: sample_vcf
 
 	script:
 	"""

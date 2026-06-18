@@ -1,4 +1,4 @@
-include { VEP } from './modules/vep-annotation'
+include { VEP_ANNOTATION } from './modules/vep-annotation'
 include { EXTRACT_SAMPLE } from './modules/extract-sample'
 include { ALLO_COUNT } from './modules/allo-count'
 include { ALLO_AFFINITY } from './modules/allo-affinity'
@@ -61,20 +61,34 @@ workflow AlloPipe {
 			tuple('donor', file(params.donor)),
 			tuple('recipient', file(params.recipient)),
 		)
+		if (!params.skip_vep_annotation) {
+			VEP_ANNOTATION(raw_samples_ch)
+			samples_ch = VEP_ANNOTATION.out.annotated_vcf
+		} else {
+			samples_ch = raw_samples_ch
+		}
 	} else {
 		def sampleRows = pairRows
 			.collectMany { row -> [row.donor, row.recipient] }
 			.unique()
 			.sort()
 			.collect { sample -> tuple(sample, file(params.multi_vcf)) }
-		EXTRACT_SAMPLE(Channel.from(sampleRows), params.run_name, params.output_dir)
-		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf, sample_vcf_index -> tuple(sample_id, sample_vcf) }
-	}
+		cohort_samples_ch = Channel.from(sampleRows)
 
-	if (!params.skip_vep_annotation) {
-		VEP(raw_samples_ch)
-		samples_ch = VEP.out.annotated_vcf
-	} else {
+		if (!params.skip_vep_annotation) {
+			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf))))
+			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
+			EXTRACT_SAMPLE(
+				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->
+					tuple(sample_id, annotated_multi_vcf)
+				},
+				params.run_name,
+				params.output_dir,
+			)
+		} else {
+			EXTRACT_SAMPLE(cohort_samples_ch, params.run_name, params.output_dir)
+		}
+		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf -> tuple(sample_id, sample_vcf) }
 		samples_ch = raw_samples_ch
 	}
 
@@ -108,7 +122,7 @@ workflow AlloPipe {
 	if (params.mode == 'cohort') {
 		NORMALIZE_COHORT(
 			ALLO_AFFINITY.out.results_dir.map { pair_id, run_name, run_dir -> run_dir }.collect(),
-			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf, sample_vcf_index -> [sample_vcf, sample_vcf_index] }.collect(),
+			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf -> [sample_vcf] }.collect(),
 			params.run_name,
 			params.output_dir,
 		)
