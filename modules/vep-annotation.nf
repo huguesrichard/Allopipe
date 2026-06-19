@@ -2,20 +2,16 @@ process VEP_ANNOTATION {
 	label 'allopipe'
 	tag "$sample_id"
 	stageInMode 'copy'
-
-	container 'ensemblorg/ensembl-vep:latest'							// specify version (+ cache)
+	container "ensemblorg/ensembl-vep:${params.vep_version}"
 
 	input:
 	tuple val(sample_id), path(sample_file)
 	
-
     output:
     tuple val(sample_id), path("${sample_file.simpleName}_VEP.vcf.gz"), emit: annotated_vcf
-
 	
 	script:
 	"""
-	# Docker (local)
 	vep \
 		-i ${sample_file} \
 		-o ${sample_file.simpleName}_VEP.vcf.gz \
@@ -30,13 +26,6 @@ process VEP_ANNOTATION {
 		--coding_only \
 		--pick_allele \
 		--use_given_ref	\
-		--dir_cache /cache	
+		--dir_cache ${params.vep_cache}
 	"""
-	// ###################################################
-	// ## Singularity (Slurm)
-	// #module load singularity
-	
-	// #singularity exec ${params.sif_dir}/vep.sif \
-	// #vep --dir ${HOME}/vep_data \
-	// ###################################################
 }
