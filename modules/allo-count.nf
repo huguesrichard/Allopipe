@@ -5,14 +5,14 @@ process ALLO_COUNT {
 
 	input:
 	tuple val(pair_id), path(donor_input), path(recipient_input)
-	val  run_name
-	val  orientation
-	val  imputation
-	val  allo_count_opts
-	val  output_dir
+	val   run_name
+	val   orientation
+	val   imputation
+	val   allo_count_opts
+	val   output_dir
 
 	output:
-	tuple val(pair_id), val(run_name), path("runs/${run_name}"), emit: results_dir
+	tuple val(pair_id),	val(run_name), path("runs/${run_name}"), emit: results_dir
 	
 	script:
 	"""

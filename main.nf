@@ -13,11 +13,10 @@ def requireParams(names) {
 	}
 }
 
-
 def buildPairRows() {
 	if (params.mode == 'pair') {
-		requireParams(['donor', 'recipient'])
-		return [[pair_id: '', donor: 'donor', recipient: 'recipient']]
+		requireParams(['donor', 'recipient', 'hla_typing'])
+		return [[pair_id: '', donor: 'donor', recipient: 'recipient', hla_typing: params.hla_typing]]
 	}
 
 	requireParams(['multi_vcf', 'pairs'])
@@ -26,21 +25,36 @@ def buildPairRows() {
 		error "ERROR: --pairs must contain a header and at least one donor/recipient row"
 	}
 
-	def header = lines[0].split(',').collect { it.trim() }
+	def header = lines[0].split(',', -1).collect { it.trim() }
 	def donorIdx = header.indexOf('donor')
 	def recipientIdx = header.indexOf('recipient')
+	def hlaIdx = header.indexOf('hla')
 	if (donorIdx < 0 || recipientIdx < 0) {
 		error "ERROR: --pairs must contain donor and recipient columns"
+	}
+	if (hlaIdx < 0) {
+		error "ERROR: --pairs must contain an hla column"
+	}
+	if (hlaIdx != header.size() - 1) {
+		error "ERROR: --pairs must place hla as the last column"
 	}
 
 	def body = lines.drop(1)
 	def width = body.size().toString().size()
 	return body.withIndex().collect { line, index ->
-		def cols = line.split(',').collect { it.trim() }
+		def cols = line.split(',', 3).collect { it.trim().replaceAll(/^"|"$/, '') }
+		if (cols.size() <= Math.max(donorIdx, recipientIdx)) {
+			error "ERROR: --pairs row ${index + 2} is missing donor/recipient values"
+		}
+		def hlaTyping = cols.size() > hlaIdx ? cols[hlaIdx] : null
+		if (!hlaTyping?.trim()) {
+			error "ERROR: --pairs row ${index + 2} has an empty hla value"
+		}
 		[
 			pair_id: "P${String.format('%0' + width + 'd', index + 1)}",
 			donor: cols[donorIdx],
 			recipient: cols[recipientIdx],
+			hla_typing: hlaTyping,
 		]
 	}
 }
@@ -48,13 +62,17 @@ def buildPairRows() {
 
 workflow AlloPipe {
 	main:
-	requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
 	if (!(params.mode in ['pair', 'cohort'])) {
 		error "ERROR: --mode must be either 'pair' or 'cohort'"
 	}
+	if (params.mode == 'pair') {
+		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
+	} else {
+		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
+	}
 
 	def pairRows = buildPairRows()
-	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient) }
+	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
 
 	if (params.mode == 'pair') {
 		raw_samples_ch = Channel.of(
@@ -93,13 +111,14 @@ workflow AlloPipe {
 	}
 
 	donor_join_ch = pairs_ch
-		.map { pair_id, donor, recipient -> tuple(donor, pair_id, donor, recipient) }
+		.map { pair_id, donor, recipient, hla_typing -> tuple(donor, pair_id, donor, recipient, hla_typing) }
 		.combine(samples_ch, by: 0)
 	recipient_join_ch = donor_join_ch
-		.map { donor_key, pair_id, donor, recipient, donor_vcf -> tuple(recipient, pair_id, donor, recipient, donor_vcf) }
+		.map { donor_key, pair_id, donor, recipient, hla_typing, donor_vcf -> tuple(recipient, pair_id, donor, recipient, hla_typing, donor_vcf) }
 		.combine(samples_ch, by: 0)
-	pair_inputs_ch = recipient_join_ch
-		.map { recipient_key, pair_id, donor, recipient, donor_vcf, recipient_vcf -> tuple(pair_id, donor_vcf, recipient_vcf) }
+	pair_data_ch = recipient_join_ch
+		.map { recipient_key, pair_id, donor, recipient, hla_typing, donor_vcf, recipient_vcf -> tuple(pair_id, donor_vcf, recipient_vcf, hla_typing) }
+	pair_inputs_ch = pair_data_ch.map { pair_id, donor_vcf, recipient_vcf, hla_typing -> tuple(pair_id, donor_vcf, recipient_vcf) }
 
 	ALLO_COUNT(
 		pair_inputs_ch,
@@ -111,10 +130,9 @@ workflow AlloPipe {
 	)
 
 	ALLO_AFFINITY(
-		pair_inputs_ch,
+		pair_data_ch,
 		ALLO_COUNT.out.results_dir,
 		params.ensembl_path,
-		params.hla_typing,
 		params.allo_affinity_opts,
 		params.output_dir,
 	)
