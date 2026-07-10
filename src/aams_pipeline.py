@@ -22,8 +22,9 @@ def main():
     aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
         args.run_name, args.output_dir
     )
+    log_file = aams_helpers.append_log(args)
     fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file, pair_print = aams_helpers.build_peptides(
-        aams_run_tables, str_params, args, mismatches_path, cleavage_mode=False
+        aams_run_tables, str_params, args, log_file, mismatches_path, cleavage_mode=False
     )
     if args.cleavage == True:
         print(f"{pair_print}Entering NetChop handler: running NetChop may last a few minutes...")
@@ -32,7 +33,7 @@ def main():
             sample_suffix = f"_{sample}"
             pickle_df = cleavage.pickle_parsing(str_params, args, sample)
             mismatches_df, transcripts_pair, peptides_ensembl, pair_print = aams_helpers.build_peptides(
-                aams_run_tables, str_params, args, mismatches_path, mismatches_df=pickle_df, cleavage_mode=args.cleavage,
+                aams_run_tables, str_params, args, log_file, mismatches_path, mismatches_df=pickle_df, cleavage_mode=args.cleavage,
                 ens_transcripts=ens_transcripts, peptides_ensembl=peptides_ensembl, refseq_file=refseq_file
             )
             chop_table, chop_table_path = cleavage.netchop_table_prep(
@@ -42,7 +43,7 @@ def main():
             pep_paths[sample] = cleavage.postprocess_netchop(chop_output, chop_table_path, args, netchop_dir, sample_suffix)
         deduced_pep_path = cleavage.deduce_cleaved_peptides(pep_paths["donor"], pep_paths["recipient"], netchop_dir, args, pair_print)
         fasta_path, pep_indiv_path = cleavage.prepare_cleavage_netmhcpan_inputs(
-            aams_run_tables, args, pep_indiv_path, deduced_pep_path,
+            aams_run_tables, args, pep_indiv_path, deduced_pep_path
         )
     if args.dry_run == False:
         netmhc_out = aams_helpers.run_netmhcpan(fasta_path, netmhc_dir, args, pair_print)
