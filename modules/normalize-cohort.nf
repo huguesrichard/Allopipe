@@ -1,5 +1,6 @@
 process NORMALIZE_COHORT {
 	label 'allopipe'
+	tag { params.mode == 'cohort' ? "${run_dirs.size()} PAIRS" : null }
 	publishDir "${output_dir}", mode: 'copy', overwrite: true
 
 	input:

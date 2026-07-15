@@ -1,6 +1,6 @@
 process VEP_ANNOTATION {
 	label 'allopipe'
-	tag "$sample_id"
+	tag { params.mode == 'cohort' ? sample_id : "${sample_id.toUpperCase()}: ${sample_file.simpleName}" }
 	stageInMode 'copy'
 	container "ensemblorg/ensembl-vep:${params.vep_version}"
 

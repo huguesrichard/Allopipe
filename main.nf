@@ -51,7 +51,7 @@ def buildPairRows() {
 			error "ERROR: --pairs row ${index + 2} has an empty hla value"
 		}
 		[
-			pair_id: "P${String.format('%0' + width + 'd', index + 1)}",
+			pair_id: "PAIR_${String.format('%0' + width + 'd', index + 1)}",
 			donor: cols[donorIdx],
 			recipient: cols[recipientIdx],
 			hla_typing: hlaTyping,

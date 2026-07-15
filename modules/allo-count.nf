@@ -1,6 +1,6 @@
 process ALLO_COUNT {
 	label 'allopipe'
-	tag "$pair_id"
+	tag { params.mode == 'cohort' ? pair_id : "PAIR: ${donor_input.simpleName} | ${recipient_input.simpleName}" }
 	publishDir "${output_dir}", mode: 'copy', overwrite: false, enabled: params.mode == 'pair'
 
 	input:

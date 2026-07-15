@@ -1,6 +1,6 @@
 process ALLO_AFFINITY {
 	label 'allopipe'
-	tag "$pair_id"
+	tag { params.mode == 'cohort' ? pair_id : "PAIR: ${donor_input.simpleName} | ${recipient_input.simpleName}" }
 	publishDir "${output_dir}", mode: 'copy', overwrite: true, enabled: params.mode == 'pair'
 
 	input:
