@@ -5,12 +5,12 @@ import csv
 from tools import aams_helpers, parsing_functions
 
 
-def validate_cleavage_imputation(args):
+def validate_cleavage_imputation(log_file):
     """
     Cleavage mode is incompatible with no-imputation mode.
     Raises ValueError when this invalid combination is detected.
     """
-    imputation_mode = aams_helpers.read_log_field(args, "Imputation")
+    imputation_mode = aams_helpers.read_log_field(log_file, "Imputation")
     if imputation_mode == "no-imputation":
         raise ValueError(
             f"Cleavage mode cannot be run with 'no-imputation' mode. "
@@ -26,11 +26,11 @@ def _get_vep_indices_from_vcf(vcf_path, frameshift_mode):
     return vep_indices
 
 
-def pickle_parsing(str_params, args, individual):
+def pickle_parsing(str_params, args, log_file, individual):
     if individual == "donor":
-        vcf_path_indiv = aams_helpers.read_log_field(args, "Donor")
+        vcf_path_indiv = aams_helpers.read_log_field(log_file, "Donor")
     elif individual == "recipient":
-        vcf_path_indiv = aams_helpers.read_log_field(args, "Recipient")
+        vcf_path_indiv = aams_helpers.read_log_field(log_file, "Recipient")
     else:
         raise ValueError("individual must be 'donor' or 'recipient'")
 
@@ -296,13 +296,13 @@ def load_peptides(path):
     return peptides
 
 
-def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netchop_dir, args, pair_print):
+def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netchop_dir, args, log_file, pair_print):
     donor_peptides = load_peptides(donor_peptides_path)
     recipient_peptides = load_peptides(recipient_peptides_path)
     donor_pairs = {(peptide_id, hla_peptide) for peptide_id, _, hla_peptide, _, _ in donor_peptides}
     recipient_pairs = {(peptide_id, hla_peptide) for peptide_id, _, hla_peptide, _, _ in recipient_peptides}
 
-    orientation = aams_helpers.read_log_field(args, "Orientation")
+    orientation = aams_helpers.read_log_field(log_file, "Orientation")
     if orientation == "dr":
         total_source = len(donor_pairs)
         kept_pairs = donor_pairs - recipient_pairs
@@ -344,6 +344,26 @@ def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netcho
 def prepare_cleavage_netmhcpan_inputs(aams_run_tables, args, pep_indiv_path, deduced_pep_path):
     deduced_df = pd.read_csv(deduced_pep_path)
     peptide_length = int(args.length)
+    pep_df_original = pd.read_pickle(pep_indiv_path).copy()
+    filtered_pep_path = os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_cleavage_filtered.pkl"
+    )
+    filtered_pep_tsv_path = os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_cleavage_filtered.tsv"
+    )
+    filtered_fasta_path = os.path.join(
+        aams_run_tables,
+        f"{args.pair + '_' if args.pair else ''}{args.run_name}_cleavage_deduced_fasta.fa"
+    )
+
+    def write_empty_outputs():
+        pep_df_original.iloc[0:0].to_pickle(filtered_pep_path)
+        pep_df_original.iloc[0:0].to_csv(filtered_pep_tsv_path, sep="\t", index=False)
+        open(filtered_fasta_path, "w", encoding="utf-8").close()
+        return filtered_fasta_path, filtered_pep_path
+
     deduced_df = deduced_df.dropna(subset=["Peptide_id", "hla_peptides"]).copy()
     deduced_df["Peptide_id"] = deduced_df["Peptide_id"].astype(str)
     deduced_df["hla_peptides"] = deduced_df["hla_peptides"].astype(str)
@@ -378,13 +398,10 @@ def prepare_cleavage_netmhcpan_inputs(aams_run_tables, args, pep_indiv_path, ded
         )
 
     if not expanded_rows:
-        raise ValueError(
-            f"No hla peptides of length {peptide_length} found in deduced cleavage peptides."
-        )
+        return write_empty_outputs()
     deduced_expanded = pd.DataFrame(expanded_rows)
 
     # Recover non-cleavage metadata (e.g., Gene_id/Transcript_id) by Peptide_id
-    pep_df_original = pd.read_pickle(pep_indiv_path).copy()
     metadata_cols = [
         col for col in pep_df_original.columns
         if col not in ["CHROM", "POS", "peptide", "peptide_REF", "hla_peptides", "hla_peptides_REF"]
@@ -400,9 +417,7 @@ def prepare_cleavage_netmhcpan_inputs(aams_run_tables, args, pep_indiv_path, ded
     deduced_expanded = deduced_expanded.dropna(subset=["Gene_id"]).copy()
     deduced_expanded = deduced_expanded.sort_values("input_order", kind="stable")
     if deduced_expanded.empty:
-        raise ValueError(
-            "No deduced peptides could be mapped to Gene_id using the original peptide table."
-        )
+        return write_empty_outputs()
 
     # Rebuild peptide-level rows with the same column order as pep_df_original
     deduced_expanded["peptide_REF"] = None
@@ -419,19 +434,6 @@ def prepare_cleavage_netmhcpan_inputs(aams_run_tables, args, pep_indiv_path, ded
     pep_df = pep_df[pep_df["hla_peptides"].map(len) > 0].copy()
     pep_df = pep_df.reindex(columns=pep_df_original.columns)
 
-    filtered_pep_path = os.path.join(
-        aams_run_tables,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_cleavage_filtered.pkl"
-    )
-    filtered_pep_tsv_path = os.path.join(
-        aams_run_tables,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_cleavage_filtered.tsv"
-    )
-
-    filtered_fasta_path = os.path.join(
-        aams_run_tables,
-        f"{args.pair + '_' if args.pair else ''}{args.run_name}_cleavage_deduced_fasta.fa"
-    )
     # Build NetMHCpan FASTA from deduced k-mers with per-gene peptide indexing
     fasta_df = pep_df[["Gene_id", "hla_peptides"]].explode("hla_peptides").dropna(subset=["hla_peptides"])
     fasta_df = fasta_df.drop_duplicates(subset=["Gene_id", "hla_peptides"]).reset_index(drop=True)
@@ -447,3 +449,8 @@ def prepare_cleavage_netmhcpan_inputs(aams_run_tables, args, pep_indiv_path, ded
     pep_df.to_csv(filtered_pep_tsv_path, sep="\t", index=False)
     
     return filtered_fasta_path, filtered_pep_path
+
+
+def fasta_is_empty(fasta_path):
+    with open(fasta_path, "r", encoding="utf-8") as handle:
+        return not any(line.startswith(">") for line in handle)
