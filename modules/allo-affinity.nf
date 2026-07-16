@@ -4,8 +4,7 @@ process ALLO_AFFINITY {
 	publishDir "${output_dir}", mode: 'copy', overwrite: true, enabled: params.mode == 'pair'
 
 	input:
-	tuple val(pair_id), path(donor_input), path(recipient_input), val(hla_typing)
-	tuple val(pair_id), val(run_name), path(allo_count_results)
+	tuple val(pair_id), path(donor_input), path(recipient_input), val(hla_typing), val(run_name), path(allo_count_results)
 	val   ensembl_path
 	val   allo_affinity_opts
 	val   output_dir

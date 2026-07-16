@@ -129,9 +129,10 @@ workflow AlloPipe {
 		params.output_dir,
 	)
 
+	affinity_inputs_ch = pair_data_ch.join(ALLO_COUNT.out.results_dir, by: 0)
+
 	ALLO_AFFINITY(
-		pair_data_ch,
-		ALLO_COUNT.out.results_dir,
+		affinity_inputs_ch,
 		params.ensembl_path,
 		params.allo_affinity_opts,
 		params.output_dir,
