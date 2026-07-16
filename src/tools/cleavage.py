@@ -5,16 +5,23 @@ import csv
 from tools import aams_helpers, parsing_functions
 
 
-def validate_cleavage_imputation(log_file):
+def validate_cleavage_compatibility(log_file):
     """
-    Cleavage mode is incompatible with no-imputation mode.
-    Raises ValueError when this invalid combination is detected.
+    Cleavage mode is incompatible with no-imputation and frameshift modes.
+    Raises ValueError when an invalid combination is detected.
     """
     imputation_mode = aams_helpers.read_log_field(log_file, "Imputation")
     if imputation_mode == "no-imputation":
         raise ValueError(
             f"Cleavage mode cannot be run with 'no-imputation' mode. "
             "Please rerun Allo-Count with 'imputation' mode or disable `--cleavage`."
+        )
+
+    frameshift_mode = aams_helpers.read_log_field(log_file, "Frameshift") == "True"
+    if frameshift_mode:
+        raise ValueError(
+            "Cleavage mode cannot be run with frameshift mode. "
+            "Please rerun Allo-Count without `--frameshift` or disable `--cleavage`."
         )
 
 

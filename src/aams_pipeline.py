@@ -20,7 +20,7 @@ def main():
     log_file = aams_helpers.append_log(args)
     if args.cleavage == True:
         try:
-            cleavage.validate_cleavage_imputation(log_file)
+            cleavage.validate_cleavage_compatibility(log_file)
         except ValueError as err:
             print(err)
             return 1
