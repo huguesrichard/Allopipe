@@ -211,7 +211,9 @@ def netmhc_arguments():
     # netMHCpan arg
     parser.add_argument("-e", "--el_rank",
         help=r"%%EL-rank filtration, all values above the given value are filtered out",
-        default=100,
+        nargs="?",
+        default=2 if initial_args.class_type == 1 else 10,
+        const=  2 if initial_args.class_type == 1 else 10,
         type=lambda x: check_if_valid_float(parser,x)
         )
     args = parser.parse_args()
