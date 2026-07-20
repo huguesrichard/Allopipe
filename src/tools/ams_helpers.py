@@ -70,6 +70,7 @@ def handle_overwrite(args):
 def write_log(run_logs, args):
     log_file = f"{args.pair + '_' if args.pair else ''}run.log"
     with open(os.path.join(run_logs, log_file), "w") as f:
+        f.write(f"AlloPipe_version: {get_pipeline_version()}\n")
         f.write(f"Run_name: {args.run_name}\n")
         f.write(f"Donor: {args.donor}\n")
         f.write(f"Recipient: {args.recipient}\n")
@@ -80,6 +81,23 @@ def write_log(run_logs, args):
         f.write(f"AMS_command: {' '.join([sys.executable] + sys.argv)}\n")
         f.write(f"AMS_timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
+
+def get_pipeline_version():
+    """
+    Return the latest reachable Git tag for the current AlloPipe checkout.
+    """
+    env_version = os.environ.get("ALLOPIPE_VERSION")
+    if env_version:
+        return env_version
+
+    repo_root = Path(__file__).resolve().parents[2]
+    version = os.popen(
+        f"git -C {repo_root} describe --tags --abbrev=0 2>/dev/null"
+    ).read().strip()
+    if version:
+        return version
+    return "unknown"
+
 
 #############
 # giab v1.3 #
