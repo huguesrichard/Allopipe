@@ -1,0 +1,15 @@
+[semantic_release]
+commit_message = "chore(release): v{version}"
+commit_parser = "conventional"
+tag_format = "v{version}"
+
+[semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[semantic_release.remote]
+name = "origin"
+type = "github"
+
+[semantic_release.remote.token]
+env = "GH_TOKEN"
