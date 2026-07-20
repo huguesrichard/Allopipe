@@ -8,6 +8,7 @@ process ALLO_COUNT {
 	val   run_name
 	val   orientation
 	val   imputation
+	val   frameshift
 	val   allo_count_opts
 	val   output_dir
 
@@ -23,6 +24,7 @@ process ALLO_COUNT {
 		${recipient_input} \
 		${orientation} \
 		${imputation} \
+		${frameshift ? '--frameshift' : ''} \
 		--pair ${pair_id} \
 		${allo_count_opts} \
 		-o ./

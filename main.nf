@@ -70,6 +70,9 @@ workflow AlloPipe {
 	} else {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
 	}
+	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
+		file(params.frameshift_plugin_path, checkIfExists: true) :
+		file("${projectDir}/modules/vep-annotation.nf")
 
 	def pairRows = buildPairRows()
 	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
@@ -80,7 +83,7 @@ workflow AlloPipe {
 			tuple('recipient', file(params.recipient)),
 		)
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(raw_samples_ch)
+			VEP_ANNOTATION(raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin) })
 			samples_ch = VEP_ANNOTATION.out.annotated_vcf
 		} else {
 			samples_ch = raw_samples_ch
@@ -94,7 +97,7 @@ workflow AlloPipe {
 		cohort_samples_ch = Channel.from(sampleRows)
 
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf))))
+			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin)))
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
 			EXTRACT_SAMPLE(
 				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->
@@ -125,6 +128,7 @@ workflow AlloPipe {
 		params.run_name,
 		params.orientation,
 		params.imputation,
+		params.frameshift,
 		params.allo_count_opts,
 		params.output_dir,
 	)
