@@ -59,6 +59,15 @@ def buildPairRows() {
 	}
 }
 
+def inferVepAssemblyFromEnsemblPath(ensemblPath) {
+	def matcher = ensemblPath.toString() =~ /(?i)(GRCh3[78])/
+	if (!matcher.find()) {
+		error "ERROR: --ensembl_path must contain GRCh37 or GRCh38 to select the VEP assembly"
+	}
+	def assembly = matcher.group(1).toUpperCase()
+	return assembly == 'GRCH37' ? 'GRCh37' : 'GRCh38'
+}
+
 
 workflow AlloPipe {
 	main:
@@ -73,6 +82,7 @@ workflow AlloPipe {
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")
+	def vepAssembly = inferVepAssemblyFromEnsemblPath(params.ensembl_path)
 
 	def pairRows = buildPairRows()
 	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
@@ -83,7 +93,7 @@ workflow AlloPipe {
 			tuple('recipient', file(params.recipient)),
 		)
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin) })
+			VEP_ANNOTATION(raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin, vepAssembly) })
 			samples_ch = VEP_ANNOTATION.out.annotated_vcf
 		} else {
 			samples_ch = raw_samples_ch
@@ -97,7 +107,7 @@ workflow AlloPipe {
 		cohort_samples_ch = Channel.from(sampleRows)
 
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin)))
+			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin, vepAssembly)))
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
 			EXTRACT_SAMPLE(
 				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->

@@ -5,7 +5,7 @@ process VEP_ANNOTATION {
 	container "ensemblorg/ensembl-vep:${params.vep_version}"
 
 	input:
-	tuple val(sample_id), path(sample_file), path(frameshift_plugin_path)
+	tuple val(sample_id), path(sample_file), path(frameshift_plugin_path), val(vep_assembly)
 	
     output:
     tuple val(sample_id), path("${sample_file.simpleName}_VEP.vcf.gz"), emit: annotated_vcf
@@ -27,7 +27,7 @@ process VEP_ANNOTATION {
 		--offline \
 		--compress_output gzip \
 		--force_overwrite \
-		--assembly GRCh38 \
+		--assembly ${vep_assembly} \
 		--af_gnomade \
 		--coding_only \
 		--pick_allele \
