@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn import linear_model as lm
 
-from table_operations import get_ref_ratio_pair
+from table_operations import create_AAMS_df, get_ref_ratio_pair
 
 
 def pair_sort_key(pair):
@@ -82,6 +82,15 @@ def write_normalized_ams_tables(ams_pkls, donor_tables, recipient_tables):
         ams_df.to_csv(ams_dir / "AMS_df.tsv", sep="\t", index=False)
 
 
+def write_aams_tables(aams_pkls):
+    by_aams_dir = {}
+    for aams_pkl in aams_pkls:
+        by_aams_dir.setdefault(Path(aams_pkl).parent, []).append(aams_pkl)
+
+    for aams_dir in by_aams_dir:
+        create_AAMS_df(aams_dir)
+
+
 def find_run_path(run_dir, run_name):
     run_dir = Path(run_dir)
     candidates = [
@@ -107,6 +116,7 @@ def find_run_path(run_dir, run_name):
 
 def collect_run_files(run_dirs, run_name):
     ams_pkls = []
+    aams_pkls = []
     donor_tables = []
     recipient_tables = []
 
@@ -114,6 +124,7 @@ def collect_run_files(run_dirs, run_name):
         run_path = find_run_path(run_dir, run_name)
 
         ams_pkls.extend(str(path) for path in run_path.glob("AMS/**/*.pkl"))
+        aams_pkls.extend(str(path) for path in run_path.glob("AAMS/**/*AAMS_df*.pkl"))
         donor_tables.extend(str(path) for path in run_path.glob("run_tables/*_D0_*.tsv"))
         recipient_tables.extend(str(path) for path in run_path.glob("run_tables/*_R0_*.tsv"))
 
@@ -127,7 +138,7 @@ def collect_run_files(run_dirs, run_name):
     if missing:
         raise FileNotFoundError("Missing expected output files: " + ", ".join(missing))
 
-    return ams_pkls, donor_tables, recipient_tables
+    return ams_pkls, aams_pkls, donor_tables, recipient_tables
 
 
 def merge_run_dirs(run_dirs, run_name, output_dir):
@@ -149,8 +160,9 @@ def main():
     args = parser.parse_args()
 
     run_dir = merge_run_dirs(args.run_dir, args.run_name, args.output_dir)
-    ams_pkls, donor_tables, recipient_tables = collect_run_files(["runs"], args.run_name)
+    ams_pkls, aams_pkls, donor_tables, recipient_tables = collect_run_files([run_dir], args.run_name)
     write_normalized_ams_tables(ams_pkls, donor_tables, recipient_tables)
+    write_aams_tables(aams_pkls)
 
 
 if __name__ == "__main__":

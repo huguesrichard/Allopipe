@@ -5,6 +5,7 @@ This script contains functions to help handling tables
 import pandas as pd
 import os
 import glob
+import re
 from pathlib import Path
 import sklearn.linear_model as lm
 
@@ -75,19 +76,35 @@ def save_mismatch(run_ams, args, mismatch, formatted_datetime, df_donor_file, df
     return ams_exp_path
 
 
+def pair_sort_value(pair):
+    match = re.search(r"\d+$", str(pair))
+    if match:
+        return (0, int(match.group()))
+    return (1, str(pair))
+
+
+def create_score_df(score_exp_path, pickle_pattern, output_name):
+    lines = [
+        pd.read_pickle(file)
+        for file in glob.glob(os.path.join(score_exp_path, pickle_pattern))
+    ]
+    if not lines:
+        return None
+
+    df = pd.concat(lines, ignore_index=True)
+    df = df.sort_values("pair", key=lambda col: col.map(pair_sort_value))
+    output_path = os.path.join(score_exp_path, output_name)
+    df.to_csv(output_path, sep="\t", index=False)
+    return output_path
+
+
 # create dataframe of mismatch in given directory
 def create_AMS_df(ams_exp_path):
-    lines = [
-        pd.read_pickle(file) for file in glob.glob(os.path.join(ams_exp_path, "*"))
-        if ".csv" not in file
-    ]
-    print(lines)
-    df = pd.concat(lines)
-    print(df)
-    df["value"] = df["pair"].str.split("R|P").str.join("").astype(int)
-    df = df.sort_values(by=["value"])
-    df = df.drop(["value"], axis=1)
-    df.to_csv(os.path.join(ams_exp_path, "AMS_df.tsv"), sep="\t", index=False)
+    return create_score_df(ams_exp_path, "*.pkl", "AMS_df.tsv")
+
+
+def create_AAMS_df(aams_exp_path):
+    return create_score_df(aams_exp_path, "*AAMS_df*.pkl", "AAMS_df.tsv")
 
 
 ####################################################################
