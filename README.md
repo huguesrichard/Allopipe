@@ -493,21 +493,11 @@ Before running the Allo-Affinity module, unzip the files corresponding to your a
 	-d ../data/Ensembl/GRCh38 \ 
 	-n test-run \
 	-l 9 \
-	-e 2 \
 	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
 ```
 
 <br/>
-If you want to run the cleaved peptide prediction, add the `--cleavage` switch:
 
-```
-	python aams_pipeline.py \
-	--cleavage \
-	-d ../data/Ensembl/GRCh38 \ 
-	-n test-run \
-	-l 9 \
-	-e 2 \
-	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
-```
+If you want to run the cleaved peptide prediction, add the `--cleavage` switch:
 
 You can now enjoy AlloPipe. If you have any feedback, please get in touch, we will be happy to help!
