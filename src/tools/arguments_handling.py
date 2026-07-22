@@ -299,12 +299,6 @@ def arguments(from_filePair : bool = False):
         const="",
     )
     parser.add_argument(
-        "-ns",
-        "--norm_score",
-        help=argparse.SUPPRESS,
-        action="store_true",
-    )
-    parser.add_argument(
         "-wc",
         help="toggle worst consequence annotations from Variant Effect Predictor",
         action="store_true",

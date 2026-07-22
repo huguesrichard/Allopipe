@@ -106,13 +106,6 @@ def main():
           f"{args.recipient.split('/')[-1].split('.')[0]}"
           )
 
-    # score normalization (multiprocess_ams only)
-    if args.norm_score:
-        ams_df, ams_exp_path, ref_ratio = table_operations.get_ref_ratio(
-            run_path, ams_exp_path, args.donor, args.recipient,
-        )
-        table_operations.add_norm(ams_df, ams_exp_path, ref_ratio)
-
     # plots
     plot_hist.hist(ams_exp_path, run_plots)
     plot_pie.pie(run_tables, run_plots, args.pair, args.run_name)
