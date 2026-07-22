@@ -78,6 +78,9 @@ workflow AlloPipe {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
 	} else {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
+		if (params.hla_typing) {
+			log.warn "WARNING: --hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
+		}
 	}
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
