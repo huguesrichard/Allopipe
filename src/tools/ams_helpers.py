@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from tools import parsing_functions
+from tools import parsing_functions, version
 
 
 def create_run_directory(run_name, output_dir):
@@ -84,19 +84,13 @@ def write_log(run_logs, args):
 
 def get_pipeline_version():
     """
-    Return the latest reachable Git tag for the current AlloPipe checkout.
+    Return the AlloPipe version used in run logs.
     """
     env_version = os.environ.get("ALLOPIPE_VERSION")
     if env_version:
         return env_version
 
-    repo_root = Path(__file__).resolve().parents[2]
-    version = os.popen(
-        f"git -C {repo_root} describe --tags --abbrev=0 2>/dev/null"
-    ).read().strip()
-    if version:
-        return version
-    return "unknown"
+    return f"v{version.__version__}"
 
 
 #############

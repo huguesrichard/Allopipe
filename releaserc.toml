@@ -2,6 +2,7 @@
 commit_message = "chore(release): v{version}"
 commit_parser = "conventional"
 tag_format = "v{version}"
+version_variables = ["src/tools/version.py:__version__"]
 
 [semantic_release.branches.main]
 match = "main"
