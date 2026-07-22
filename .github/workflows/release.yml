@@ -33,7 +33,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           config_file: releaserc.toml
           changelog: false
-          commit: false
 
       - name: Log release version
         run: |
