@@ -27,9 +27,9 @@ def main():
     
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
-        run_tables, args.donor, args, args.wc_donor
+        run_tables, args.donor, args
     )
-    # output : filtered donor file
+
     df_donor_file = (
         f"{run_tables}/"
         f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"
@@ -40,10 +40,12 @@ def main():
         f"bl_{args.base_length}.tsv"
     )
     df_donor.to_csv(df_donor_file, sep="\t", index=False)
+
     # same for recipient
     df_recipient, vep_recipient, vep_indices_recipient = ams_helpers.prepare_indiv_df(
-        run_tables, args.recipient, args, args.wc_recipient
+        run_tables, args.recipient, args
     )
+
     df_recipient_file = (
         f"{run_tables}/"
         f"{args.pair + '_' if args.pair else ''}" # avoid file starts with "_"

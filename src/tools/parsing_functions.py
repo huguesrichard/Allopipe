@@ -298,60 +298,6 @@ def vep_infos_parser(run_tables, df_indiv, vep_indices, vcf_path_indiv, args):
     )
 
 
-def worst_consequences_parser(consequences_path):
-    """
-    Returns the VEP dataframe with the worst consequences per position only
-    Parameters :
-                    consequences_path (str): path to the worst consequences VEP file
-    Returns :
-                    vep_infos (pd.DataFrame): dataframe containing the VEP information with the worst consequences
-    """
-    with open(consequences_path, "r", encoding="utf-8") as file:
-        count = 0
-        for line in file:
-            if "#Uploaded_variation" in line:
-                header_index = count
-                break
-            count += 1
-    # read the file using the found header_index to get the column names
-    df_conseq = pd.read_csv(
-        consequences_path, header=header_index, dtype="str", sep="\t"
-    )
-    df_conseq = df_conseq.replace("-", np.nan)
-    df_conseq = df_conseq.dropna(subset=["Amino_acids"])
-    df_conseq[["CHROM", "POS", "nt"]] = df_conseq["#Uploaded_variation"].str.split(
-        "_", expand=True
-    )
-    # check if filter on LOW IMPACT
-    df_conseq = df_conseq[df_conseq["Consequence"] != "synonymous_variant"].copy()
-    vep_infos = (
-        df_conseq.groupby(["CHROM", "POS", "nt"])["Amino_acids"]
-        .apply(lambda x: ",".join(x.unique()))
-        .reset_index()
-    )
-    vep_subset = vep_infos["Amino_acids"].str.split(",", expand=True).fillna(np.nan)
-    vep_subset_ref = vep_subset[list(range(len(list(vep_subset.columns))))].apply(
-        lambda x: x.str.split("/").str[0]
-    )
-    vep_subset_ref = (
-        vep_subset_ref.stack()
-        .groupby(level=0)
-        .apply(lambda x: x.dropna().unique().tolist())
-    )
-    vep_subset_alt = vep_subset[list(range(len(list(vep_subset.columns))))].apply(
-        lambda x: x.str.split("/").str[1]
-    )
-    vep_subset_alt = (
-        vep_subset_alt.stack()
-        .groupby(level=0)
-        .apply(lambda x: x.dropna().unique().tolist())
-    )
-    vep_infos["aa_REF_vep"] = vep_subset_ref.str.join(",")
-    vep_infos["aa_ALT_vep"] = vep_subset_alt.str.join(",")
-    # print(df_conseq["Location","CHROM","POS","Amino_acids"])
-    return vep_infos
-
-
 #############################################
 #################### AAMS ###################
 #############################################

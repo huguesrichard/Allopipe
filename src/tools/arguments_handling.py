@@ -43,14 +43,13 @@ class UniqueStore(argparse.Action):
 
 
 # Error Handling
-def check_file(parser, arg, wc=False, csv=False):
+def check_file(parser, arg, csv=False):
     """
     Returns the file name after checking if it exists and if the format is accepted
 
     Parameters:
                     parser (CustomParser Object): parser object
                     arg (str): file name
-                    wc (bool): boolean that is True if the worst consequences are toggled
                     csv (bool): boolean that is True if the expected arg is a CSV file
     Returns:
                     arg (str): file name
@@ -63,14 +62,14 @@ def check_file(parser, arg, wc=False, csv=False):
     else:
         # check file extension
         if csv:
-            if not arg.endswith("csv") and not wc:
-             parser.error(
+            if not arg.endswith("csv"):
+                parser.error(
                     f"{arg} has an invalid extension :\nsupported file extension : csv"
                 )
             else:
                 return arg
         else:
-            if not arg.endswith("vcf") and not arg.endswith("vcf.gz") and not wc:
+            if not arg.endswith("vcf") and not arg.endswith("vcf.gz"):
                 parser.error(
                     f"{arg} has an invalid extension :\nsupported file extensions : vcf, vcf.gz"
                 )
@@ -297,29 +296,6 @@ def arguments(from_filePair : bool = False):
         nargs="?",
         default="",
         const="",
-    )
-    parser.add_argument(
-        "-wc",
-        help="toggle worst consequence annotations from Variant Effect Predictor",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-wcd",
-        "--wc_donor",
-        help="donor file of the worst consequences per position predicted by Variant Effect Predictor",
-        metavar="<wc_donor>",
-        action=UniqueStore,
-        required="-wc" in sys.argv,
-        type=lambda x: check_file(parser, x, True),
-    )
-    parser.add_argument(
-        "-wcr",
-        "--wc_recipient",
-        help="recipient file of the worst consequences per position predicted by Variant Effect Predictor",
-        metavar="<wc_recipient>",
-        action=UniqueStore,
-        required="-wc" in sys.argv,
-        type=lambda x: check_file(parser, x, True),
     )
     parser.add_argument(
         "-w",
