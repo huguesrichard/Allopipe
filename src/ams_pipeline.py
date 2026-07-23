@@ -22,8 +22,7 @@ def main():
     ams_helpers.write_log(run_logs, args)
     
     # avoids long time with no print
-    pair_print = f"[{args.pair}] " if args.pair else ""
-    print(f"{pair_print}Preparing donor and recipient tables...")
+    print("Preparing donor and recipient tables...")
     
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(

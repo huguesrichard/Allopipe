@@ -143,44 +143,27 @@ def parse_output_dir(arg):
     return str(Path(arg).expanduser().resolve(strict=False))
 
 
-def arguments(from_filePair : bool = False):
+def arguments():
     """
     Returns the parsed arguments of the ams pipeline
     Returns:
                     args (argparse.Namespace): object containing all parameters
     """
-    if from_filePair:
-        parser = CustomParser(
-            prog="multiprocess_ams.py",
-            usage="python %(prog)s [options] file_pairs.csv orientation",
-            description="Compute the AMS for a list of pairs of individuals",
-            )
-        parser.add_argument(
-            "multi_vcf",
-            help="multi-sample VCF file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x)
-            )
-        parser.add_argument(
-            "file_pairs",
-            help="file with pairs of donors and recipients, accepted format is csv",
-            type=lambda x: check_file(parser, x, False, True)
-        ) 
-    else:
-        parser = CustomParser(
-            prog="ams_pipeline.py",
-            usage="python %(prog)s [options] donor recipient orientation",
-            description="Compute the AMS for a pair of individuals",
-        )
-        parser.add_argument(
-            "donor",
-            help="donor file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x),
-        )
-        parser.add_argument(
-            "recipient",
-            help="recipient file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x),
-        )
+    parser = CustomParser(
+        prog="ams_pipeline.py",
+        usage="python %(prog)s [options] donor recipient orientation",
+        description="Compute the AMS for a pair of individuals",
+    )
+    parser.add_argument(
+        "donor",
+        help="donor file, accepted formats are vcf and vcf.gz",
+        type=lambda x: check_file(parser, x),
+    )
+    parser.add_argument(
+        "recipient",
+        help="recipient file, accepted formats are vcf and vcf.gz",
+        type=lambda x: check_file(parser, x),
+    )
     parser.add_argument(
         "orientation",
         help="choose the orientation of the comparison of the pair",
@@ -276,7 +259,7 @@ def arguments(from_filePair : bool = False):
     )
     parser.add_argument(
         "-p",
-        "--pair", # automated pair naming for multiprocess 
+        "--pair", # internal pair identifier set by Nextflow
         help=argparse.SUPPRESS,
         action=UniqueStore,
         nargs="?",
