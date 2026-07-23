@@ -9,8 +9,10 @@ The AlloPipe tool is a computational workflow designed to compute, given a pair 
 The product is provided free of charge, and, therefore, on an "as is" basis, without warranty of any kind. <br/>
 AlloPipe is also available as a [web application](https://www.allogenomics.com).
 
-### Allopipe is now published in HLA: 
-A. Dhuyser, P. Delaugère, P. Laville, et al., [AlloPipe and Its Web Server Allogenomics: From Genomic Data to Candidate Minor Histocompatibility Antigens](https://doi.org/10.1111/tan.70590), HLA 107, no. 2 (2026): e70590, https://doi.org/10.1111/tan.70590. 
+### AlloPipe is now published in HLA:
+A. Dhuyser, P. Delaugère, P. Laville, et al., AlloPipe and Its Web Server Allogenomics: From Genomic Data to Candidate Minor Histocompatibility Antigens, HLA 107, no. 2 (2026): e70590.
+
+Full text: https://doi.org/10.1111/tan.70590. 
 
 ---
 ## In a nutshell
@@ -63,12 +65,13 @@ The affinity of those peptides towards the HLA molecules can then be assessed us
 There are two modes of operation for each module: as single pair or as multiple pairs
 	
 - **Single pair**: 
-Run as 'single pair mode' if you aim to compute AMS and/or affinity-AMS (af-AMS) for one pair at a time. \
+Run as 'single pair mode' if you aim to compute Allo-Count and/or Allo-Affinity for one pair at a time. \
 You need to provide one variant-annotated `.VCF` file per individual.
  
 - **Cohort** (Multiple pairs): 
-Run as 'multiple pairs mode' if you aim to compute AMS and/or af-AMS for more than one pair at a time.\
+Run through the Nextflow cohort workflow if you aim to compute Allo-Count and/or Allo-Affinity for more than one pair at a time.\
 You need to provide one unique variant-annotated `.VCF` file containing the genotypes of all individuals you want to analyse - i.e. a joint `.VCF` file - and the [`.csv` formatted list](./tutorial/example.csv) of the pairs you want to process.
+For cohort mode, the pair list can also carry a per-pair `hla` column with a comma-separated HLA typing string.
 
 <br/>
 
@@ -84,6 +87,7 @@ You need to provide one unique variant-annotated `.VCF` file containing the geno
 <br/>
 
 2. [Running the AlloPipe workflow](#run)
+	1. [Nextflow workflow: pair or cohort mode](#nextflow_run)
 	1. [Running Allo-Count](#ams_run)
 		1. [Single pair](#single_ams)
 		2. [Multiple pairs](#multi_ams)
@@ -105,9 +109,9 @@ You need to provide one unique variant-annotated `.VCF` file containing the geno
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) Requirements<a name="requirements"></a>
 
 For installing AlloPipe you will specifically require the following softwares:
-1. [Python](https://www.python.org/downloads/) ≥ 3.6 (AlloPipe was developed on v3.9)
+1. [Nextflow](https://www.nextflow.io/) 24.10.9 installed to run the AlloPipe workflow.
 
-2. [Conda](https://docs.anaconda.com/free/working-with-conda/) installed for your operating system and python version. Verify that you have a suitable version of Conda, as we recommend installing the [dependencies](https://github.com/huguesrichard/Allopipe/blob/main/requirements.txt) in a dedicated environment.
+2. [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed for your operating system. The Nextflow workflow uses Conda to create its execution environment from [`recipes/conda/allopipe.yml`](recipes/conda/allopipe.yml). AlloPipe is currently developed on Python v3.10.
 
 3. To run Allo-Affinity, you need to assess the affinity of the reconstructed peptides towards the HLA molecules. We recommend two groups of software suites for that (only NetMHCpan is supported in command line for now):
 	- [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
@@ -124,16 +128,13 @@ For installing AlloPipe you will specifically require the following softwares:
 1) Clone the repository from git\
 *You might be requested to create a token for you to log in. See the [GitHub tutorial](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)*
 
-2) Create a conda environment dedicated to the AlloPipe workflow
-3) Install the AlloPipe requirements within the conda environment
+2) Run AlloPipe through the Nextflow workflow
    
-The following command lines will perform steps 1 to 3:
+The following command lines will clone the repository and show the workflow help:
 ```
 	git clone https://github.com/huguesrichard/Allopipe.git
 	cd Allopipe
-	conda create --name Allopipe python=3.9
-	conda activate Allopipe
-	python -m pip install -r requirements.txt
+	nextflow run main.nf --help
 ```
 1) Remember that to run prediction of affinity for the peptides you will also need NetMHCpan installed (NetChop to account for proteasomal cleavage).
 
@@ -155,19 +156,21 @@ To install the VEP command line tool, follow the installation tutorial available
 	Download the VEP cache files which correspond to your Ensembl VEP installation and genome reference!
    - We **recommend downloading the FASTA files** for the assembly of your `.VCF` files to be able to run VEP offline.\
 	Download the FASTA files which correspond to your Ensembl VEP installation and genome reference!
-   - We **do not recommend downloading any plugin**
+   - In default mode, we **do not recommend downloading any plugin**, except the Frameshift plugin when frameshift neoantigen handling is required. See the [Frameshift plugin section](#frameshift_plugin).
       
  We then recommend **adding VEP to your PATH** by adding the following line to your `~/.profile` or `~/.bash_profile`:
 ```
-	export PATH=%%PATH/TO/VEP%%:${PATH}
+export PATH=%%PATH/TO/VEP%%:${PATH}
 ```
 
 
 Run the following command to annotate your `.VCF` file(s) with VEP.
 
 **All specified options are mandatory, with the exception of the assembly if you only downloaded one cache file.**  
+
+
 ```
-	vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf 
+vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf
 ```
 
 Where:
@@ -178,13 +181,115 @@ Where:
 This command line works for individual `.VCF` files or joint `.VCF` files, whether compressed (`.vcf.gz`) or not (`.vcf`). 
 Run this command for every file you want to input in AlloPipe.
 
+When using the Nextflow workflow with automatic VEP annotation enabled, AlloPipe selects the VEP assembly from `--ensembl_path`. The path must contain `GRCh37` or `GRCh38`; for example, `--ensembl_path data/Ensembl/GRCh38` uses `GRCh38` for VEP annotation.
+
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to run your first AlloPipe run!**
+
+<br/>
+
+#### Frameshift plugin <a name="frameshift_plugin"></a>
+
+If you want to take into account frameshift neoantigens peptide generation in the af-AMS, you need to add the [Frameshift plugin](https://github.com/griffithlab/pVACtools/blob/0c05768b7b9b317eebdeeb2a7a178b8a12c880d6/pvactools/tools/pvacseq/VEP_plugins/Frameshift.pm) from the [pVACtools](https://github.com/griffithlab/pVACtools) software to your VEP installation.
+
+```
+mv Frameshift.pm ~/.vep/Plugins
+```
+
+You should then add these options to the VEP command:
+
+```
+--plugin Frameshift --dir_plugins <PLUGIN-PATH>
+```
+
+with ```<PLUGIN-PATH>``` being the path to your VEP plugins directory.
+
 
 <br/>
 
 ---
 
 ## Running the AlloPipe workflow <a name="run"></a>
+
+### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Nextflow workflow: pair or cohort mode <a name="nextflow_run"></a>
+
+The Nextflow workflow runs the two AlloPipe modules in sequence: Allo-Count, then Allo-Affinity. It can process either one donor/recipient pair (`--mode pair`) or several pairs from a cohort/joint VCF (`--mode cohort`).
+
+Run commands from the root of the AlloPipe directory.
+
+Each run must use a unique output destination. The directory formed by `--output_dir` and `--run_name` (`<output_dir>/runs/<run_name>`) must not already exist; if it does, AlloPipe stops before launching the workflow. Use a new `--run_name` or a different `--output_dir` for a new run.
+
+#### Required arguments in pair mode
+
+Use pair mode when you have one VCF file for the donor and one VCF file for the recipient. Because `pair` is the default value of `--mode`, passing `--mode pair` is optional.
+
+| Argument | Required | Description |
+| -------- | -------- | ----------- |
+| `--mode pair` | no | Selects single-pair mode. Default: `pair`. |
+| `--donor <VCF>` | yes | Donor VCF file (`.vcf` or `.vcf.gz`). |
+| `--recipient <VCF>` | yes | Recipient VCF file (`.vcf` or `.vcf.gz`). |
+| `--run_name <NAME>` | yes | Unique name used for the output run directory. `<output_dir>/runs/<NAME>` must not already exist. |
+| `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison: `dr` for donor-to-recipient, `rd` for recipient-to-donor. |
+| `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Individual VCFs usually use `imputation`. |
+| `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can automatically select the VEP assembly. |
+| `--hla_typing <HLA_LIST>` | yes | Comma-separated HLA typing used by Allo-Affinity. |
+
+Example:
+
+```
+nextflow run main.nf -profile conda \
+	--mode pair \
+	--donor tutorial/HG002-VEPannotated.vcf \
+	--recipient tutorial/HG007-VEPannotated.vcf \
+	--run_name test_pair \
+	--orientation dr \
+	--imputation imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
+	--skip_vep_annotation true
+```
+
+#### Required arguments in cohort mode
+
+Use `--mode cohort` when several donor/recipient pairs must be extracted from one joint multi-sample VCF.
+
+| Argument | Required | Description |
+| -------- | -------- | ----------- |
+| `--mode cohort` | yes | Selects cohort mode. Required when running a cohort, because the default mode is `pair`. |
+| `--multi_vcf <VCF>` | yes | Joint multi-sample VCF containing all donors and recipients. |
+| `--pairs <CSV>` | yes | CSV file describing the donor/recipient pairs and per-pair HLA typing. |
+| `--run_name <NAME>` | yes | Unique name used for the output run directory. `<output_dir>/runs/<NAME>` must not already exist. |
+| `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison for all pairs in the run. |
+| `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Joint VCF cohort runs usually use `no-imputation`. |
+| `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can select the VEP assembly. |
+
+The cohort CSV must contain at least the columns `donor`, `recipient`, and `hla`. The `hla` column is mandatory and must be the last column because HLA values are comma-separated.
+
+Example:
+
+```
+nextflow run main.nf -profile conda \
+	--mode cohort \
+	--multi_vcf tutorial/HG002-HG007-VEPannotated.vcf \
+	--pairs tutorial/example.csv \
+	--run_name test_cohort \
+	--orientation dr \
+	--imputation no-imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--skip_vep_annotation true
+```
+
+#### Common optional arguments
+
+| Argument | Description |
+| -------- | ----------- |
+| `--output_dir <DIR>` | Base output directory. Default: `output`. |
+| `--skip_vep_annotation true` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
+| `--vep_cache <DIR>` | VEP cache path inside the execution environment. Default: `/cache`. |
+| `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_113.4`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |
+| `--frameshift true` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
+| `--frameshift_plugin_path <PATH>` | Path to the VEP `Frameshift.pm` plugin or plugin directory. |
+| `--allo_count_opts "<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
+| `--allo_affinity_opts "<OPTIONS>"` | Extra options passed to the Allo-Affinity step, for example `--length`, `--el_rank`, `--class_type`, `--cleavage`, or `--dry_run` to skip the long NetMHCpan computation. |
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Running Allo-Count  <a name="ams_run"></a>
 
@@ -219,31 +324,29 @@ The curated data frames are then queried to assess the **directional mismatches*
 We provide the possibility to impute genotype missing data as being ref/ref (e.g. `0/0` or homozygous on the nucleotide of reference.
  - If you are using individual `.VCF` files as input ('single pair mode'), you most probably want to run with the `imputation` argument as ref/ref variants are omitted in those files.
 
- - If you are using joint `.VCF` ('multiple pairs mode'), running with the `no-imputation` argument will only keep variants sequenced in the two datasets of each pair.
+ - If you are using a joint `.VCF` through the Nextflow cohort workflow, running with the `no-imputation` argument will only keep variants sequenced in the two datasets of each pair.
 <br/>
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Running Allo-Count for a single pair <a name="single_ams"></a>
 
-Once the variant-annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal
-
-*Do not forget to activate your conda environment with `conda activate Allopipe`!*  
-```
-	cd src/
-	python ams_pipeline.py -n <NAME-RUN> <DONOR-ANNOTATED-FILE>.vcf <RECIPIENT-ANNOTATED-FILE>.vcf <MISMATCH-DIRECTION> <IMPUTATION-MODE>
-```
-
-Where:
-- ```<NAME-RUN>``` is the name of the run
-- ```<DONOR-ANNOTATED-FILE>.vcf``` is the path to the donor's annotated `.VCF` 
-- ```<RECIPIENT-ANNOTATED-FILE>.vcf``` is the path to the recipient's annotated `.VCF`
-- ```<MISMATCH-DIRECTION>```: `dr`, present in the donor but absent in the recipient ; `rd`, present in the recipient but absent in the donor
-- ```<IMPUTATION-MODE>``` is the imputation mode. We recommend to use the imputation mode (`imputation`) when running AlloPipe from individual `.VCF` files.
-
-More detailed help can be obtained with the ``--help`` switch:
+Once variant annotation is complete, run Allo-Count through the Nextflow pair workflow from the root of the AlloPipe directory. The workflow also launches the Allo-Affinity step, so `--hla_typing` and `--ensembl_path` are required.
 
 ```
-python ams_pipeline.py --help
-```  
+nextflow run main.nf -profile conda \
+	--mode pair \
+	--donor tutorial/HG002-VEPannotated.vcf \
+	--recipient tutorial/HG007-VEPannotated.vcf \
+	--run_name test_pair \
+	--orientation dr \
+	--imputation imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
+	--skip_vep_annotation true
+```
+
+More detailed help can be obtained with `nextflow run main.nf --help`.
+
+For instance, you can generate frameshift neoantigen candidates by adding `--frameshift true` to the Nextflow command. Note: you need to have installed the VEP `Frameshift` plugin.
 
 <br/>
 
@@ -251,28 +354,23 @@ python ams_pipeline.py --help
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (b) Running Allo-Count for multiple pairs <a name="multi_ams"></a>
 
-It is possible to run Allo-Count from an annotated joint `.VCF` file containing the genomic data of interest.
-In that case, you need to provide an [example.csv](./tutorial/example.csv) specifying the donor/recipient pairs.
-```
-	cd src/
-	python multiprocess_ams.py -n <NAME-RUN> <JOINT-ANNOTATED-FILE>.vcf <PAIR-LIST>.csv <MISMATCH-DIRECTION> <IMPUTATION-MODE>
-```
-
-Where:
-- ```<NAME-RUN>``` is the name of the run
-- ```<JOINT-ANNOTATED-FILE>.vcf``` is the path to the annotated joint `.VCF` file
-- ```<PAIR-LIST>.csv``` is the path to the list pairing the samples [example.csv](./tutorial/example.csv)
-- ```<MISMATCH-DIRECTION>``` is the direction of the mismatch as previously described
-- ```<IMPUTATION-MODE>``` is the imputation mode. Running with no-imputation mode (`no-imputation`) will explicitly rule out from the analysis variants that were not genotyped in both sample.
+Multiple-pair execution is handled by the Nextflow cohort workflow. Use an annotated or unannotated joint `.VCF` file containing the genomic data of interest and provide a CSV file specifying donor/recipient pairs.
 
 *Only one directional comparison is accepted within the same command line.*
 
-<br/>
+```
+nextflow run main.nf -profile conda \
+	--mode cohort \
+	--multi_vcf tutorial/HG002-HG007-VEPannotated.vcf \
+	--pairs tutorial/example.csv \
+	--run_name test_cohort \
+	--orientation dr \
+	--imputation no-imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--skip_vep_annotation true
+```
 
-Again, more detailed help can be obtained with the ``--help`` switch:
-```
-	python multiprocess_ams.py --help
-```
+Again, more detailed help can be obtained with `nextflow run main.nf --help`.
 
 
 
@@ -319,11 +417,12 @@ This table gives you information on the mismatched positions. For each type of i
 - **TYPE_{x, y} (str):** type of genotype (homozygous, heterozygous)
 
 3. **VEP information**: 
-- **consequences_{x, y} (int)**: Count of each consequence type (i.e. framshift indel, missense variant, ...)
+- **consequences_{x, y} (int)**: Count of each consequence type (i.e. frameshift indel, missense variant, ...)
 - **transcripts_{x, y} (str)**: Transcripts recorded for the variant
 - **genes_{x, y} (str)**: Genes recorded for the variant
 - **aa_REF, aa_ALT (str)**: Amino-acid for REF and ALT alleles for the variant
 - **gnomADe_AF_{x, y} (float)**: Frequency of existing variant in gnomAD exomes combined population
+- **Frameshift_sequence_{x, y} (str):** Frameshift sequences annotated by VEP (if `--frameshift` is activated, empty otherwise)
 - **aa_ref_indiv_{x, y}, aa_alt_indiv_{x, y} (str)**: REF and ALT amino acids recorded for the sample (x and y)
 - **aa_indiv_{x, y} (str)**: REF and ALT amino acids combined in one column
 
@@ -364,6 +463,12 @@ From previously generated files that are the `MISMATCHES-TABLE` and the `TRANSCR
 > Do not forget to select the reference genome used to perform the alignment.
 > We provide the v111 of those files for GRCh37 and GRCh38 [here](./data/Ensembl).
 
+Before running a Nextflow command that launches Allo-Affinity, unzip the files corresponding to your assembly (GRCh37 or GRCh38):
+
+```
+gzip -d data/Ensembl/GRCh38/*
+```
+
 <br/>
 
 Allo-Affinity output those peptides in a fasta file that can be processed by the following third party softwares:
@@ -382,41 +487,56 @@ Each of these tool imputes the affinity of the reconstructed peptides towards th
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. Simple pair <a name="single_aams"></a>
 
-Once the Allo-Count run is complete, go back to the AlloPipe root directory and run this second set of commands:  
+Allo-Affinity is run automatically after Allo-Count by the Nextflow workflow. Some parameters are handled directly by Nextflow, while others are still passed to the Python Allo-Affinity step through `--allo_affinity_opts`.
+
 ```
-		cd src
-		gzip -d <ENSEMBL-PATH>/*
-		python aams_pipeline.py 
-		-d <ENSEMBL-PATH>
-		-n <TEST-RUN> -l <PEP-LENGTH> -e <EL-THR> 
-		-a <HLA-TYPING> 
+nextflow run main.nf -profile conda \
+	--mode pair \
+	--donor tutorial/HG002-VEPannotated.vcf \
+	--recipient tutorial/HG007-VEPannotated.vcf \
+	--run_name test_pair_affinity \
+	--orientation dr \
+	--imputation imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
+	--skip_vep_annotation true \
 ```
 
-Where:
-  - ```<ENSEMBL>/``` is the path to the Ensembl compressed gzip files previously downloaded of the different information: `.cdna.fa`,  `.pep.fa` and `.refseq.tsv`
-  - ```<NAME-RUN>``` is the name of the run. **It has to be consistent with the value of ```<NAME-RUN>``` used in the Allo-Count part** 
-  - ```<PEP-LENGTH>``` is the length of peptides to be imputed (recommended value of 9 for class I)
-  - ```<EL-THR>``` is the elution threshold (recommended value: 2)
-  - ```<HLA-TYPING>``` is the HLA typing e.g. ```HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01```
+Nextflow arguments:
+  - `--run_name` is the unique name of the run
+  - `--ensembl_path` is the path to the Ensembl files previously downloaded: `.cdna.fa`, `.pep.fa` and `.refseq.tsv`
+  - `--hla_typing` is the HLA typing, e.g. `HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01`
+
+Python Allo-Affinity arguments passed through `--allo_affinity_opts`:
+  - `--length` is the length of peptides to be imputed (default: 9 for class I)
+  - `--el_rank` is the elution threshold (default: 2 for class I)
+  - `--dry_run` skips the long NetMHCpan computation
+
+For example:
+
+```
+--allo_affinity_opts "--length --el_rank"
+```
 
  
 <br/>
 
 > **Note on providing HLA typing**
 > 
-> Allo-Affinity let you be flexible in providing the HLA alleles used for typing, as long as they can be set as parameter for the affinity prediction program (NetMHCPan for the moment). 
-> In most of the scenario you should provide both HLA alleles to compute affinity, but it is perfectly possible to provide for instance only one allele (as could be the case for bone marrow transplantation). 
+> Allo-Affinity lets you be flexible in providing the HLA alleles used for typing, as long as they can be set as parameters for the affinity prediction program (NetMHCpan for the moment).
+> In pair mode, pass them with `--hla_typing`. In cohort mode, provide them per pair in the mandatory `hla` column of the cohort CSV.
+> In most scenarios you should provide both HLA alleles to compute affinity, but it is perfectly possible to provide for instance only one allele (as could be the case for bone marrow transplantation).
 
 
 #### Multiple pairs <a name="multi_aams"></a>
 
-This functionality is in development, please get in touch if you would like to use it.
+Multiple-pair Allo-Affinity execution is also handled by the Nextflow cohort workflow. Provide the same pair list as the Allo-Count step, with a per-pair `hla` column containing the HLA typing to use for each donor/recipient pair.
 
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. Getting your affinity-AMS (af-AMS) <a name="aams_results"></a>
 
 This second step of AlloPipe uses the AMS information of the first step.  
-You will find 3 new subdirectories in the **`test-run/`** directory :  
+You will find 3 new subdirectories in the **`output/runs/<run_name>/`** directory:  
 1.	the **`AAMS/`** directory contains a subdirectory created for these run parameters specifically, the AAMS value contained in a `.csv` file.
 2.	the **`netMHCpan_out/`** subdirectory contains all tables generated during the NetMHCpan step.
 3.	the **`aams_run_tables/`** subdirectory contains all the other tables created during the run
@@ -441,20 +561,27 @@ It contains the mismatches information from the AMS run along with information p
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4. Predicting cleaved peptides <a name="cleavage"></a>
 
-AlloPipe can also run [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) to predict proteasomal cleavage on proteins containing mismatches and keep only a set of deduced peptides before affinity scoring.
+AlloPipe can also run the [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool to annotate the potential proteasomal cleavage sites on the proteins that contain mismatch. This then give you a reduced set of candidate peptides that you can compare with their affinity values.
 
-Cleavage predictions are generated for both donor and recipient reconstructed proteins, then filtered by run directionality:
-- `dr`: keep donor-only peptides (`D - R`).
-- `rd`: keep recipient-only peptides (`R - D`).
+The cleaved sites are predicted on a protein sequence which depends of the directionality of the run:
+- `dr` direction: Proteins reconstructed from the genotype of the *donor*.
+- `rd` direction: Proteins reconstructed from the genotype of the *recipient*.
 
-Generated cleavage-related tables are written in **`/netChop`** directory:
+2. **Cleaved peptide information**
 
-| File | Description |
-| ---- | ----------- |
-| `*_donor_netchop_table.csv` / `*_recipient_netchop_table.csv` | NetChop input tables built from mismatch mutated proteins for each sample. |
-| `*_donor_netchop_peptides.csv` / `*_recipient_netchop_peptides.csv` | Cleavage peptides extracted from NetChop outputs for each sample. |
-| `*_netchop_peptides.csv` | Directional deduced cleavage peptide table after donor/recipient subtraction (`dr` or `rd`). |
-| `*_pep_df_cleavage_filtered.tsv` / `*_pep_df_cleavage_filtered.pkl` | Filtered peptide table |
+More information about the cleaved peptide is available in the **`netChop/`** directory in the `netchop_table.csv` file, which contains the following information.
+ - **CHROM** (str): Chromosome of the variant
+ - **POS** (int): Position on the chromosome
+ - **Protein_position** (str): Position on the protein
+ - **Gene_id** (str): Ensembl Gene ID
+ - **Transcript_id** (str): Ensembl Transcript ID
+ - **Peptide_id** (str): Ensembl Peptide ID
+ - **Sequence_aa** (str): Amino acid sequence of the peptide
+ - **aa_REF** (str): Amino acid for REF
+ - **aa_ALT** (str): Amino acid for ALT
+ - **peptide_ALT** (str): Amino acid sequence of the peptide with mutation(s)
+
+Each row of the table corresponds to a cleaved peptide on a protein that contributes to a mismatch in the AMS.
 
 ## Tutorial <a name="tuto"></a>
 
@@ -467,10 +594,19 @@ To test your VEP installation (`v111` in this tutorial), run the following comma
 	vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
 ```
 
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the following commands in the terminal :  
+Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the workflow:
+
 ```
-	cd src/
-	python ams_pipeline.py -n test-run ../tutorial/HG002-VEPannotated.vcf ../tutorial/HG007-VEPannotated.vcf rd no-imputation
+nextflow run main.nf -profile conda \
+	--mode pair \
+	--donor tutorial/HG002-VEPannotated.vcf \
+	--recipient tutorial/HG007-VEPannotated.vcf \
+	--run_name test-run \
+	--orientation rd \
+	--imputation no-imputation \
+	--ensembl_path data/Ensembl/GRCh38 \
+	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
+	--skip_vep_annotation true
 ```
 
 The expected AMS are:
@@ -480,24 +616,10 @@ The expected AMS are:
 |  HSCT = `rd`   |       2812      |      42       | 
 |  SOT = `dr`    |       1155      |      34       | 
 
-<br/>
- 
-Before running the Allo-Affinity module, unzip the files corresponding to your assembly (GRCh37 or GRCh38):
-```
-  	gzip -d ../data/Ensembl/GRCh38/*
-```	
-
- Finally, to get your af-AMS and related table, run:
-```
-	python aams_pipeline.py \
-	-d ../data/Ensembl/GRCh38 \ 
-	-n test-run \
-	-l 9 \
-	-a HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01
-```
+The same Nextflow command also runs Allo-Affinity and writes the af-AMS and related tables in the output run directory.
 
 <br/>
 
-If you want to run the cleaved peptide prediction, add the `--cleavage` switch:
+If you want to run the cleaved peptide prediction, add `--allo_affinity_opts="--cleavage"` to the Nextflow command.
 
 You can now enjoy AlloPipe. If you have any feedback, please get in touch, we will be happy to help!
