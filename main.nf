@@ -68,6 +68,13 @@ def inferVepAssemblyFromEnsemblPath(ensemblPath) {
 	return assembly == 'GRCH37' ? 'GRCh37' : 'GRCh38'
 }
 
+def assertNewOutputRun(runName, outputDir) {
+	def outputRunPath = file("${outputDir}/runs/${runName}")
+	if (outputRunPath.exists()) {
+		error "ERROR: output run directory already exists: ${outputRunPath}. Choose a unique combination of --output_dir and --run_name."
+	}
+}
+
 
 workflow AlloPipe {
 	main:
@@ -78,7 +85,11 @@ workflow AlloPipe {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
 	} else {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
+		if (params.hla_typing) {
+			log.warn "WARNING: --hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
+		}
 	}
+	assertNewOutputRun(params.run_name, params.output_dir)
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")

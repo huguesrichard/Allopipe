@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import csv
 from tools import aams_helpers, parsing_functions
+from tools import arguments_handling
 
 
 def validate_cleavage_compatibility(log_file):
@@ -303,7 +304,7 @@ def load_peptides(path):
     return peptides
 
 
-def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netchop_dir, args, log_file, pair_print):
+def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netchop_dir, args, log_file):
     donor_peptides = load_peptides(donor_peptides_path)
     recipient_peptides = load_peptides(recipient_peptides_path)
     donor_pairs = {(peptide_id, hla_peptide) for peptide_id, _, hla_peptide, _, _ in donor_peptides}
@@ -323,8 +324,9 @@ def deduce_cleaved_peptides(donor_peptides_path, recipient_peptides_path, netcho
 
     removed_count = total_source - len(kept_pairs)
     removed_percentage = (removed_count / total_source * 100) if total_source else 0.0
+    pair_tag = arguments_handling.pair_tag(args)
     print(
-        f"{pair_print}Cleavage deduced k-mers: kept {len(kept_pairs)}/{total_source}, "
+        f"{pair_tag}Cleavage deduced k-mers: kept {len(kept_pairs)}/{total_source}, "
         f"removed {removed_count} ({removed_percentage:.2f}%)."
     )
 

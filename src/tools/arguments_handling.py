@@ -5,7 +5,6 @@ the ams pipeline command line easy to use and user friendly
 """
 import argparse
 import sys
-import os
 from pathlib import Path
 
 # Custom Parser
@@ -43,14 +42,13 @@ class UniqueStore(argparse.Action):
 
 
 # Error Handling
-def check_file(parser, arg, wc=False, csv=False):
+def check_file(parser, arg, csv=False):
     """
     Returns the file name after checking if it exists and if the format is accepted
 
     Parameters:
                     parser (CustomParser Object): parser object
                     arg (str): file name
-                    wc (bool): boolean that is True if the worst consequences are toggled
                     csv (bool): boolean that is True if the expected arg is a CSV file
     Returns:
                     arg (str): file name
@@ -63,14 +61,14 @@ def check_file(parser, arg, wc=False, csv=False):
     else:
         # check file extension
         if csv:
-            if not arg.endswith("csv") and not wc:
-             parser.error(
+            if not arg.endswith("csv"):
+                parser.error(
                     f"{arg} has an invalid extension :\nsupported file extension : csv"
                 )
             else:
                 return arg
         else:
-            if not arg.endswith("vcf") and not arg.endswith("vcf.gz") and not wc:
+            if not arg.endswith("vcf") and not arg.endswith("vcf.gz"):
                 parser.error(
                     f"{arg} has an invalid extension :\nsupported file extensions : vcf, vcf.gz"
                 )
@@ -139,63 +137,38 @@ def check_threshold_value(parser, arg, arg_name):
     if not condition:
             parser.error(error_message)
     return threshold
-    
-    
-def check_workers_count(parser,arg):
-    cpu_count = os.cpu_count()
-    if cpu_count is None:
-        raise ValueError("Failed to get CPU count!")
-    try:
-       workers = int(arg)
-    except ValueError as err:
-        raise argparse.ArgumentTypeError(f"{err}")
-    if not 1 <= workers <= cpu_count:
-        parser.error(f"{workers} is not in available number of cores (1-{cpu_count})")
-    return workers
 
 
 def parse_output_dir(arg):
     return str(Path(arg).expanduser().resolve(strict=False))
 
 
-def arguments(from_filePair : bool = False):
+def pair_tag(args):
+    pair_id = getattr(args, "pair", "")
+    return f"[{pair_id}] " if pair_id else ""
+
+
+def arguments():
     """
     Returns the parsed arguments of the ams pipeline
     Returns:
                     args (argparse.Namespace): object containing all parameters
     """
-    if from_filePair:
-        parser = CustomParser(
-            prog="multiprocess_ams.py",
-            usage="python %(prog)s [options] file_pairs.csv orientation",
-            description="Compute the AMS for a list of pairs of individuals",
-            )
-        parser.add_argument(
-            "multi_vcf",
-            help="multi-sample VCF file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x)
-            )
-        parser.add_argument(
-            "file_pairs",
-            help="file with pairs of donors and recipients, accepted format is csv",
-            type=lambda x: check_file(parser, x, False, True)
-        ) 
-    else:
-        parser = CustomParser(
-            prog="ams_pipeline.py",
-            usage="python %(prog)s [options] donor recipient orientation",
-            description="Compute the AMS for a pair of individuals",
-        )
-        parser.add_argument(
-            "donor",
-            help="donor file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x),
-        )
-        parser.add_argument(
-            "recipient",
-            help="recipient file, accepted formats are vcf and vcf.gz",
-            type=lambda x: check_file(parser, x),
-        )
+    parser = CustomParser(
+        prog="ams_pipeline.py",
+        usage="python %(prog)s [options] donor recipient orientation",
+        description="Compute the AMS for a pair of individuals",
+    )
+    parser.add_argument(
+        "donor",
+        help="donor file, accepted formats are vcf and vcf.gz",
+        type=lambda x: check_file(parser, x),
+    )
+    parser.add_argument(
+        "recipient",
+        help="recipient file, accepted formats are vcf and vcf.gz",
+        type=lambda x: check_file(parser, x),
+    )
     parser.add_argument(
         "orientation",
         help="choose the orientation of the comparison of the pair",
@@ -291,48 +264,12 @@ def arguments(from_filePair : bool = False):
     )
     parser.add_argument(
         "-p",
-        "--pair", # automated pair naming for multiprocess 
+        "--pair", # internal pair identifier set by Nextflow
         help=argparse.SUPPRESS,
         action=UniqueStore,
         nargs="?",
         default="",
         const="",
-    )
-    parser.add_argument(
-        "-ns",
-        "--norm_score",
-        help=argparse.SUPPRESS,
-        action="store_true",
-    )
-    parser.add_argument(
-        "-wc",
-        help="toggle worst consequence annotations from Variant Effect Predictor",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-wcd",
-        "--wc_donor",
-        help="donor file of the worst consequences per position predicted by Variant Effect Predictor",
-        metavar="<wc_donor>",
-        action=UniqueStore,
-        required="-wc" in sys.argv,
-        type=lambda x: check_file(parser, x, True),
-    )
-    parser.add_argument(
-        "-wcr",
-        "--wc_recipient",
-        help="recipient file of the worst consequences per position predicted by Variant Effect Predictor",
-        metavar="<wc_recipient>",
-        action=UniqueStore,
-        required="-wc" in sys.argv,
-        type=lambda x: check_file(parser, x, True),
-    )
-    parser.add_argument(
-        "-w",
-        "--workers",
-        help="number of workers (cores) for multiprocessing",
-        default=os.cpu_count() // 2,
-        type=lambda x: check_workers_count(parser, x)
     )
     args = parser.parse_args()
     if args.min_dp > args.max_dp:

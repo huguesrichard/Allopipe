@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn import linear_model as lm
 
-from table_operations import create_AAMS_df, get_ref_ratio_pair
+from table_operations import create_AAMS_df
 
 
 def pair_sort_key(pair):
@@ -34,6 +34,16 @@ def first_for_pair(paths, pair, marker):
     if not candidates:
         raise FileNotFoundError(f"No {marker} table found for pair {pair}")
     return sorted(candidates)[0]
+
+
+def get_ref_ratio_pair(donor_df, recipient_df):
+    merged = pd.merge(donor_df, recipient_df, how="outer", on=["CHROM", "POS"])
+    common_ref = len(merged[(merged["GT_x"] == "0/0") & (merged["GT_y"] == merged["GT_x"])])
+    total_ref = len(merged[(merged["GT_x"] == "0/0") | (merged["GT_y"] == "0/0")])
+    if total_ref == 0:
+        print("Warning: Normalization cannot be computed - division by 0")
+        return common_ref, total_ref, None
+    return common_ref, total_ref, common_ref / total_ref
 
 
 def normalize_ams(ams_pkls, donor_tables, recipient_tables):

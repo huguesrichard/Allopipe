@@ -45,28 +45,6 @@ def create_run_directory(run_name, output_dir):
     return run_path, run_tables, run_plots, run_ams, run_logs
 
 
-def handle_overwrite(args):
-    """
-    Returns a boolean after checking if the .csv file already exists
-    Parameters:
-            run_name (str): string containing the name of the run
-    Returns:
-            overwrite (bool): True if the .csv file exists, False otherwise
-    """
-    run_path = os.path.join(args.output_dir, "runs", args.run_name)
-    if os.path.isdir(run_path) and os.listdir(run_path)!=[]:
-        if Path(os.path.join(run_path),f"AMS/{args.run_name}_AMS_{args.min_dp}"
-            f"_{args.max_dp}_{args.min_ad}_{args.homozygosity_thr}_{args.min_gq}"
-            f"_{args.orientation}_{args.base_length}/AMS_{args.run_name}_"
-            f"{args.pair + '_' if args.pair else ''}"
-            f"{args.min_dp}_{args.max_dp}"
-            f"_{args.min_ad}_{args.homozygosity_thr}_{args.min_gq}"
-            f"_{args.orientation}_{args.base_length}.csv").is_file():
-            overwrite = True
-            return overwrite
-    return False
-
-
 def write_log(run_logs, args):
     log_file = f"{args.pair + '_' if args.pair else ''}run.log"
     with open(os.path.join(run_logs, log_file), "w") as f:
@@ -449,14 +427,13 @@ def clean_df(df_indiv, vcf_path_indiv):
 
 # build DataFrame from vcf file
 # str,int,int -> pandas.DataFrame
-def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, formatted_datetime):
+def prepare_indiv_df(run_tables, vcf_path_indiv, args):
     """
     Returns a dataframe containing all important information, the VEP table and all relevant indices
                     Parameters :
                                     run_tables (str): directory to save the run tables
                                     vcf_path_indiv (str): path of the individual's VCF
                                     args (argparse.Namespace): object containing filtering parameters
-                                    consequences_path (str): path of the worst consequences file (WIP)
                     Returns:
                                     df_indiv (pd.DataFrame): dataframe of the individual
                                     vep_table_indiv (pd.DataFrame): dataframe of the VEP information
@@ -477,26 +454,8 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args, consequences_path, format
     df_indiv = convert(df_indiv, subset, args.homozygosity_thr)
     # parse VEP information and add to dataframe
     df_indiv, vep_table_indiv = parsing_functions.vep_infos_parser(
-        run_tables, df_indiv, vep_indices, vcf_path_indiv, args, formatted_datetime
+        run_tables, df_indiv, vep_indices, vcf_path_indiv, args
     )
-    if args.wc:
-        vep_conseq_infos = parsing_functions.worst_consequences_parser(
-            consequences_path
-        )
-        # same chr format for merge
-        vep_conseq_infos["CHROM"] = vep_conseq_infos["CHROM"].str.replace("chr", "")
-        vep_conseq_infos["POS"] = vep_conseq_infos["POS"].astype(int)
-        df_indiv = pd.merge(
-            df_indiv, vep_conseq_infos, how="inner", on=["CHROM", "POS"]
-        )
-        df_indiv["aa_vcf"] = df_indiv["aa_REF"] + "/" + df_indiv["aa_ALT"]
-        df_indiv[["aa_REF", "aa_ALT"]] = df_indiv[["aa_REF_vep", "aa_ALT_vep"]]
-        print("Running with XXX consequences")
-    else:
-        # remove above vep_infos_parser ?
-        # parse all consequences VEP information and add to dataframe
-        # df_indiv = parsing_functions.vep_infos_parser(df_indiv,aa_vep_index)
-        print(f"Running with all consequences: {vcf_path_indiv.split('/')[-1]}")
     # update dataframe with aa ref and aa alt from VEP info
     df_indiv = get_aa_indiv(df_indiv)
     # filter on gnomADe_AF

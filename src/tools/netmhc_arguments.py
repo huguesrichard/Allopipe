@@ -3,7 +3,6 @@
 This script was developed with the argparse module to make 
 the aams pipeline command line easy to use and user friendly
 """
-import os
 import argparse
 import re
 from pathlib import Path
@@ -165,16 +164,12 @@ def netmhc_arguments():
         default="run",
         const="run",
         type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
-    parser.add_argument("-p", "--pair", # automated pair naming for multiprocess
+    parser.add_argument("-p", "--pair", # internal pair identifier set by Nextflow
         help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
         default="",
         const="",
         nargs="?")
-    parser.add_argument("-w", "--workers",
-        help="number of workers (cores) for multiprocessing",
-        default=os.cpu_count() // 2,
-        type=lambda x: arguments_handling.check_workers_count(parser, x))
     parser.add_argument("--cleavage",
         help="enables cleavage prediction with netChop",
         action="store_true",
