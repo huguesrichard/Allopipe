@@ -22,7 +22,8 @@ def main():
     ams_helpers.write_log(run_logs, args)
     
     # avoids long time with no print
-    print("Preparing donor and recipient tables...")
+    pair_tag = arguments_handling.pair_tag(args)
+    print(f"{pair_tag}Preparing donor and recipient tables...")
     
     # filter the donor file
     df_donor, vep_donor, vep_indices_donor = ams_helpers.prepare_indiv_df(
@@ -102,7 +103,7 @@ def main():
     ams_exp_path = table_operations.save_mismatch(
         run_ams, args, mismatch, df_donor_file, df_recipient_file, mismatches_file
     )
-    print(f"Mismatches: {mismatch} — pair "
+    print(f"{pair_tag}Mismatches: {mismatch} — pair "
           f"{args.donor.split('/')[-1].split('.')[0]} "
           f"{args.recipient.split('/')[-1].split('.')[0]}"
           )

@@ -143,6 +143,11 @@ def parse_output_dir(arg):
     return str(Path(arg).expanduser().resolve(strict=False))
 
 
+def pair_tag(args):
+    pair_id = getattr(args, "pair", "")
+    return f"[{pair_id}] " if pair_id else ""
+
+
 def arguments():
     """
     Returns the parsed arguments of the ams pipeline

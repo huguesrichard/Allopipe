@@ -4,7 +4,7 @@ The AAMS pipeline estimates the mismatch between a donor and a recipient after r
 command line help : python3 aams_pipeline.py [-h]
 """
 import sys
-from tools import netmhc_arguments, aams_helpers, netmhc_tables_handler, cleavage
+from tools import netmhc_arguments, aams_helpers, netmhc_tables_handler, cleavage, arguments_handling
 
 
 def main():
@@ -13,6 +13,7 @@ def main():
     command line help : python3 aams_pipeline.py [-h]
     """
     args = netmhc_arguments.netmhc_arguments()
+    pair_tag = arguments_handling.pair_tag(args)
     str_params, mismatches_path = aams_helpers.get_ams_params(args.run_name, args.output_dir)
     aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
         args.run_name, args.output_dir
@@ -28,7 +29,7 @@ def main():
         aams_run_tables, str_params, args, log_file, mismatches_path, cleavage_mode=False
     )
     if args.cleavage == True:
-        print("Entering NetChop handler: running NetChop may last a few minutes...")
+        print(f"{pair_tag}Entering NetChop handler: running NetChop may last a few minutes...")
         pep_paths = {}
         for sample in ("donor", "recipient"):
             sample_suffix = f"_{sample}"
@@ -47,7 +48,7 @@ def main():
             aams_run_tables, args, pep_indiv_path, deduced_pep_path
         )
         if cleavage.fasta_is_empty(fasta_path):
-            print("No cleaved peptides available for NetMHCpan; skipping affinity prediction.")
+            print(f"{pair_tag}No cleaved peptides available for NetMHCpan; skipping affinity prediction.")
             return 0
     if args.dry_run == False:
         netmhc_out = aams_helpers.run_netmhcpan(fasta_path, netmhc_dir, args)
