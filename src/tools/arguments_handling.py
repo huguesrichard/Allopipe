@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 
 # Custom Parser
-
-
 class CustomParser(argparse.ArgumentParser):
     """
     A class to handle the errors of the parser
@@ -25,8 +23,6 @@ class CustomParser(argparse.ArgumentParser):
 
 
 # Custom Actions
-
-
 class UniqueStore(argparse.Action):
     """
     A class used to make sure there is a unique use of the optional argument
@@ -217,7 +213,8 @@ def arguments():
         const=0.2,
         type=lambda x: check_threshold_value(parser, x, "homozygosity_thr"),
     )
-    parser.add_argument("--gnomad_af",
+    parser.add_argument(
+        "--gnomad_af",
         help="SNPs with AF in combined population below this value will be filtered",
         nargs="?",
         default=0.01,

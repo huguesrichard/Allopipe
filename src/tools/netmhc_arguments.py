@@ -4,6 +4,7 @@ This script was developed with the argparse module to make
 the aams pipeline command line easy to use and user friendly
 """
 import argparse
+import os
 import re
 from pathlib import Path
 from tools import arguments_handling
@@ -133,72 +134,94 @@ def netmhc_arguments():
         usage="python %(prog)s [options]",
         description="Compute the AAMS for a pair of individuals"
         )
-    parser.add_argument("-d", "--ensembl_path",
+    parser.add_argument(
+        "-d",
+        "--ensembl_path",
         help="path of directory of Ensembl files",
         action=arguments_handling.UniqueStore,
         required=True,
-        type=lambda x: check_if_existing_path(parser,x))
-    parser.add_argument("-o", "--output_dir",
-        help="output directory of the ams pipeline ran previously",
-        action=arguments_handling.UniqueStore,
-        default="../output",
-        const="../output",
-        nargs="?",
-        type=arguments_handling.parse_output_dir)
-    parser.add_argument("-n", "--run_name",
-        help="name of the ams pipeline ran previously",
-        action=arguments_handling.UniqueStore,
-        required=True,
-        default="run",
-        const="run",
-        type=lambda x: arguments_handling.check_if_accepted_str(parser,x))
-    parser.add_argument("-p", "--pair", # internal pair identifier set by Nextflow
+        type=lambda x: check_if_existing_path(parser,x)
+    )
+    parser.add_argument(
+        "-o",
+        "--output_dir",
         help=argparse.SUPPRESS,
         action=arguments_handling.UniqueStore,
+        nargs="?",
+        default="../output",
+        const="../output",
+        type=arguments_handling.parse_output_dir,
+    )
+    parser.add_argument(
+        "-n",
+        "--run_name",
+        help=argparse.SUPPRESS,
+        required=True,
+        action=arguments_handling.UniqueStore,
+        nargs="?",
+        default="run",
+        const="run",
+        type=lambda x: arguments_handling.check_if_accepted_str(parser,x),
+    )
+    # internal pair identifier set by Nextflow
+    parser.add_argument(
+        "-p",
+        "--pair",
+        help=argparse.SUPPRESS,
+        action=arguments_handling.UniqueStore,
+        nargs="?",
         default="",
         const="",
-        nargs="?")
-    parser.add_argument("--cleavage",
+    )
+    parser.add_argument(
+        "--cleavage",
         help="enables cleavage prediction with netChop",
         action="store_true",
     )
-    parser.add_argument("--dry_run",
-        help=argparse.SUPPRESS,
+    parser.add_argument(
+        "--dry_run",
+        help="skips NetMHCpan computation but generates peptides",
         action="store_true",
     )
-        
-    # netMHCpan class
-    parser.add_argument("-c", "--class_type",
+    parser.add_argument(
+        "-c",
+        "--class_type",
         help="class type: class 1 (netMHCpan); class 2 (netMHCIIpan)",
         choices=[1, 2],
         default=1,
         type=int,
-        )
+    )
     
     # intermediate arg parsing to consider classes 1 & 2
     initial_args, _ = parser.parse_known_args()
         
-    # netMHCpan arg
-    parser.add_argument("-l", "--length",
+    # netMHCpan args
+    parser.add_argument(
+        "-l",
+        "--length",
         help="peptide length, default is 9 (class 1) or 15 (class 2), a list of values separated by commas is accepted",
         nargs="?",
         default=9 if initial_args.class_type == 1 else 15,
         const=  9 if initial_args.class_type == 1 else 15,
-        type=lambda x: check_if_valid_k(initial_args, x))
-    # netMHCpan arg
-    parser.add_argument("-a", "--hla_typing",
+        type=lambda x: check_if_valid_k(initial_args, x)
+    )
+    parser.add_argument(
+        "-a",
+        "--hla_typing",
         help="comma separated list of HLA genes",
         required=True,
         type=lambda x: check_hla_format(initial_args, parser,x)
-        )
-    # netMHCpan arg
-    parser.add_argument("-e", "--el_rank",
+    )
+    parser.add_argument(
+        "-e",
+        "--el_rank",
         help=r"%%EL-rank filtration, all values above the given value are filtered out",
         nargs="?",
         default=2 if initial_args.class_type == 1 else 10,
         const=  2 if initial_args.class_type == 1 else 10,
         type=lambda x: check_if_valid_float(parser,x)
-        )
+    )
+
     args = parser.parse_args()
     check_if_existing_output_run_name(parser, args.run_name, args.output_dir)
     return args
