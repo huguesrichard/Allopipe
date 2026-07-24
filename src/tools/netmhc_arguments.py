@@ -133,18 +133,6 @@ def netmhc_arguments():
         usage="python %(prog)s [options]",
         description="Compute the AAMS for a pair of individuals"
         )
-    parser.add_argument("-M", "--mismatches",
-        help=argparse.SUPPRESS,
-        action=arguments_handling.UniqueStore,
-        default="",
-        const="",
-        required=False)
-    parser.add_argument("-T", "--transcripts",
-        help=argparse.SUPPRESS,
-        action=arguments_handling.UniqueStore,
-        default="",
-        const="",
-        required=False)
     parser.add_argument("-d", "--ensembl_path",
         help="path of directory of Ensembl files",
         action=arguments_handling.UniqueStore,
