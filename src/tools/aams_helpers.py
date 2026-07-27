@@ -4,6 +4,7 @@ This file contains all the helpers required to run the aams pipeline
 """
 
 import os
+import subprocess
 import sys
 import shutil
 import glob
@@ -83,12 +84,8 @@ def dict_to_df(peptides):
     return peptides_ensembl
 
 
-def read_mismatches(args, mismatches_path):
-    if args.mismatches == "":
-        mismatches_df = pd.read_csv(mismatches_path, sep="\t")
-    else:
-        mismatches_df = pd.read_csv(args.mismatches, sep="\t")
-    return mismatches_df
+def read_mismatches(mismatches_path):
+    return pd.read_csv(mismatches_path, sep="\t")
 
 
 def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair_tag=""):
@@ -604,7 +601,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
         # transcripts are collected from the mismatches table here
         ams_transcripts = mismatches_df
     else:
-        mismatches_df = read_mismatches(args, mismatches_path)
+        mismatches_df = read_mismatches(mismatches_path)
         ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, pair_tag)
         print(f"{pair_tag}Potentially contributing transcripts after Ensembl filtering: {len(ams_transcripts)}")
 
@@ -621,13 +618,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
                                 if "_D0_" in file and os.path.exists(file)), None)
     if transcripts_path is None:
         raise FileNotFoundError(f"No such file or directory matching the expected pattern found.")
-    if args.transcripts == "":
-        transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
-    else:
-        if cleavage_mode:
-            transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
-        else:
-            transcripts_pair = pd.read_csv(args.transcripts, sep="\t")
+    transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
 
     if cleavage_mode:
         transcripts_pair.rename(columns={'transcripts': 'Transcript_id'}, inplace=True)
@@ -678,7 +669,7 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
         return fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file
     else:
         transcripts_pair = get_peptides_ref(transcripts_pair, args.length, cleavage_mode, frameshift_mode)
-        mismatches_df = read_mismatches(args, mismatches_path)
+        mismatches_df = read_mismatches(mismatches_path)
         return mismatches_df, transcripts_pair, peptides_ensembl
 
 
@@ -711,8 +702,29 @@ def run_netmhcpan(fasta_path, netmhc_dir, args):
     
     # netMHCpan command
     binary_check(netmhc_command)
-    os.system(f"{netmhc_command} -BA -f {fasta_path} -inptype 0 {length_argname} {args.length} -xls -xlsfile {netmhc_out} -a {args.hla_typing} > {netmhc_run_output}")
-    
+    netmhc_cmd = [
+        netmhc_command,
+        "-BA",
+        "-f",
+        os.path.relpath(fasta_path),
+        "-inptype",
+        "0",
+        length_argname,
+        str(args.length),
+        "-xls",
+        "-xlsfile",
+        os.path.relpath(netmhc_out),
+        "-a",
+        args.hla_typing,
+    ]
+    with open(os.path.relpath(netmhc_run_output), "w", encoding="utf-8") as log_handle:
+        result = subprocess.run(netmhc_cmd, stdout=log_handle, stderr=subprocess.STDOUT)
+    if result.returncode != 0 or not os.path.exists(netmhc_out):
+        raise RuntimeError(
+            f"{netmhc_print} failed with exit status {result.returncode}. "
+            f"See {netmhc_run_output}"
+        )
+
     return netmhc_out
 
 
@@ -751,10 +763,7 @@ def merge_netmhc(netmhc_df, pep_df, mismatches_path, aams_path, aams_run_tables,
     merged = merged.groupby(["peptide"]).agg("first")
     # remove duplicate positions
     merged = merged.drop_duplicates(["CHROM", "POS"])
-    if args.mismatches == "":
-        ams_df = pd.read_csv(mismatches_path, sep="\t")
-    else:
-        ams_df = pd.read_csv(args.mismatches, sep="\t")
+    ams_df = pd.read_csv(mismatches_path, sep="\t")
     if (
         (
             "X" not in ams_df["CHROM"].unique().tolist()

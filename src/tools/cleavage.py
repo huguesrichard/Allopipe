@@ -1,5 +1,6 @@
 #coding:utf-8
 import os
+import subprocess
 import pandas as pd
 import csv
 from tools import aams_helpers, parsing_functions
@@ -163,7 +164,25 @@ def run_netchop(chop_table, args, netchop_dir, sample_suffix=""):
     # netChop command
     netchop_command = "netchop"
     aams_helpers.binary_check(netchop_command)
-    os.system(f"{netchop_command} {chop_fasta} -verbose > {chop_output}")
+    netchop_cmd = [
+        netchop_command,
+        os.path.relpath(chop_fasta),
+        "-verbose",
+    ]
+    with open(os.path.relpath(chop_output), "w", encoding="utf-8") as log_handle:
+        result = subprocess.run(netchop_cmd, stdout=log_handle, stderr=subprocess.STDOUT)
+    output_text = ""
+    if os.path.exists(chop_output):
+        with open(chop_output, encoding="utf-8") as output_handle:
+            output_text = output_handle.read()
+    if (
+        result.returncode != 0
+        or not output_text
+        or "no binaries found" in output_text.lower()
+    ):
+        raise RuntimeError(
+            f"NetChop failed with exit status {result.returncode}. See {chop_output}"
+        )
 
     return chop_output
 
