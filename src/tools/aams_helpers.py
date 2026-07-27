@@ -106,23 +106,16 @@ def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair_tag=""):
     return ams_transcripts
 
 
-def filter_on_refseq(ams_transcripts, refseq_transcripts_path, cleavage_mode=False):
+def filter_on_refseq(transcript_candidates_df, refseq_transcripts_path):
     refseq_transcripts = pd.read_csv(refseq_transcripts_path, sep="\t")
     refseq_transcripts = refseq_transcripts.rename(columns={"transcript_stable_id": "Transcript_id"})
-    if cleavage_mode:
-        # Cleavage mode: ams_transcripts is already a DataFrame with Transcript_id
-        if "Transcript_id" not in ams_transcripts.columns:
-            raise ValueError("In cleavage mode, mismatches_df must contain 'Transcript_id' column.")
-        transcripts_df = ams_transcripts[
-            ams_transcripts["Transcript_id"].isin(refseq_transcripts["Transcript_id"])
-        ].drop_duplicates()
-    else:
-        # Non-cleavage mode: ams_transcripts is a dictionary {Transcript_id: Sequence_nt}
-        transcripts_df = pd.DataFrame(ams_transcripts.items(), columns=["Transcript_id", "Sequence_nt"])
-        transcripts_df = transcripts_df[
-            transcripts_df["Transcript_id"].isin(refseq_transcripts["Transcript_id"])
-        ].drop_duplicates()
-    return transcripts_df
+    if "Transcript_id" not in transcript_candidates_df.columns:
+        raise ValueError("Transcript candidates must contain a 'Transcript_id' column.")
+    return transcript_candidates_df[
+        transcript_candidates_df["Transcript_id"].isin(
+            refseq_transcripts["Transcript_id"]
+        )
+    ].drop_duplicates()
 
 
 def intersect_positions(transcripts_pair, transcripts_df, cleavage_mode=False):
@@ -192,6 +185,10 @@ def add_pep_seq(transcripts_pair, peptides_ensembl, cleavage_mode=False):
                 "Sequence_aa",
                 "aa_REF",
                 "aa_ALT",
+                "aa_ref_indiv",
+                "aa_alt_indiv",
+                "aa_indiv",
+                "GT",
             ]
         ]
     else:
@@ -397,10 +394,10 @@ def get_frameshift_peptides(transcripts_frameshift, pep_size):
 
 
 def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False, frameshift_mode=False):
-    transcripts_pair["aa_REF"] = transcripts_pair["aa_REF"].str.split(",")
-    transcripts_pair = transcripts_pair.explode("aa_REF")
-
     if not cleavage_mode:
+        transcripts_pair["aa_REF"] = transcripts_pair["aa_REF"].str.split(",")
+        transcripts_pair = transcripts_pair.explode("aa_REF")
+
         # split diff and explode
         transcripts_pair["diff"] = transcripts_pair["diff"].str.split(",")
         transcripts_pair = transcripts_pair.explode("diff")
@@ -434,34 +431,68 @@ def get_peptides_ref(transcripts_pair, pep_size=None, cleavage_mode=False, frame
     transcripts_pair["Protein_position"] = transcripts_pair["Protein_position"].astype(float)
 
     if cleavage_mode:
-        # Collapse and compute ALT peptide
-        transcripts_pair = transcripts_pair.groupby(
+        required_columns = {"aa_REF", "aa_alt_indiv"}
+        missing_columns = required_columns - set(transcripts_pair.columns)
+        if missing_columns:
+            raise ValueError(
+                "Cleavage reconstruction requires individual amino-acid "
+                f"columns; missing: {sorted(missing_columns)}"
+            )
+
+        # aa_ALT describes the possible VEP ALT independently of the sample
+        # genotype. aa_alt_indiv is populated by get_aa_indiv() only when the
+        # individual carries an ALT allele. Consequently, 0/0 rows and
+        # untranslatable ALT annotations do not mutate the Ensembl protein.
+        mutation_rows = transcripts_pair.dropna(
+            subset=["aa_REF", "aa_alt_indiv"]
+        ).copy()
+        mutation_rows = mutation_rows[
+            mutation_rows["aa_alt_indiv"].astype(str).str.strip().ne("")
+        ]
+
+        col_order = [
+            "CHROM",
+            "POS",
+            "Protein_position",
+            "Gene_id",
+            "Transcript_id",
+            "Peptide_id",
+            "Sequence_aa",
+            "aa_REF",
+            "aa_alt_indiv",
+        ]
+        if mutation_rows.empty:
+            return pd.DataFrame(columns=col_order + ["peptide_ALT"])
+
+        mutation_rows["aa_REF"] = mutation_rows["aa_REF"].astype(str)
+        mutation_rows["aa_alt_indiv"] = mutation_rows["aa_alt_indiv"].astype(str)
+
+        # Collapse all ALT substitutions carried by the individual for a
+        # protein, then apply them to the Ensembl reference sequence.
+        individual_proteins = mutation_rows.groupby(
             ["Gene_id", "Transcript_id", "Peptide_id"], as_index=False
         ).agg({
             "CHROM": lambda x: ",".join(x),
             "POS": lambda x: ",".join(x),
             "Protein_position": lambda x: ",".join(map(str, x)),
             "aa_REF": lambda x: ",".join(x),
-            "aa_ALT": lambda x: ",".join(x),
+            "aa_alt_indiv": lambda x: ",".join(x),
             "Sequence_aa": "first"
         })
-        col_order = ["CHROM", "POS", "Protein_position", "Gene_id", "Transcript_id",
-                     "Peptide_id", "Sequence_aa", "aa_REF", "aa_ALT"]
-        transcripts_pair = transcripts_pair[col_order]
+        individual_proteins = individual_proteins[col_order]
 
-        transcripts_pair["peptide_ALT"] = transcripts_pair.apply(
+        individual_proteins["peptide_ALT"] = individual_proteins.apply(
             lambda x: mutation_process(
                 x["Sequence_aa"],
                 base = None,
                 cleavage_mode = True,
                 ref_base = x["aa_REF"],
-                alt_base = x["aa_ALT"],
+                alt_base = x["aa_alt_indiv"],
                 position = x["Protein_position"]
             ),
             axis=1,
         )
-        transcripts_pair = transcripts_pair.dropna(subset=["peptide_ALT"])
-        return transcripts_pair
+        return individual_proteins.dropna(subset=["peptide_ALT"])
     else:
         transcripts_pair["peptide_REF"] = transcripts_pair.apply(
             lambda x: mutation_process(
@@ -555,16 +586,28 @@ def is_float(element):
         return False
 
 
+def find_single_run_table(run_tables_dir, marker):
+    """Return the only TSV whose name contains marker."""
+    matches = sorted(
+        file
+        for file in glob.glob(os.path.join(run_tables_dir, f"*{marker}*.tsv"))
+        if os.path.isfile(file)
+    )
+    if not matches:
+        raise FileNotFoundError(
+            f"No run table matching marker '{marker}' found in {run_tables_dir}."
+        )
+    if len(matches) > 1:
+        raise RuntimeError(
+            f"Expected one run table matching marker '{marker}' in "
+            f"{run_tables_dir}, found {len(matches)}: {matches}"
+        )
+    return matches[0]
+
+
 def get_ams_params(run_name, output_dir):
     run_tables_dir = os.path.join(output_dir, "runs", run_name, "run_tables")
-    # get from first element if several
-    mismatches_path = next(
-    (file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
-     if "_mismatches_" in file and os.path.exists(file)),
-    None  # Default to None if no match is found
-    )
-    if mismatches_path is None:
-        raise FileNotFoundError(f"No such file or directory matching '_mismatches_' found.")
+    mismatches_path = find_single_run_table(run_tables_dir, "_mismatches_")
     min_dp, max_dp, min_ad, gq, homozygosity_threshold, base_length = list(
         filter(lambda x: is_float(x), str(Path(mismatches_path).stem).split("mismatches")[1].split("_"))
     )
@@ -574,8 +617,19 @@ def get_ams_params(run_name, output_dir):
     return str_params,mismatches_path
 
 
-def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=None, mismatches_path=None, mismatches_df=None,
-                   cleavage_mode=False, ens_transcripts=None, peptides_ensembl=None, refseq_file=None):
+def build_peptides(
+    aams_run_tables=None,
+    str_params=None,
+    args=None,
+    log_file=None,
+    mismatches_path=None,
+    individual_vep_df=None,
+    cleavage_mode=False,
+    ens_transcripts=None,
+    peptides_ensembl=None,
+    refseq_file=None,
+    individual=None,
+):
     pair_tag = arguments_handling.pair_tag(args)
     # Read only once at firt call (without cleavage mode)
     if ens_transcripts is None and peptides_ensembl is None and refseq_file is None:
@@ -598,39 +652,71 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
         print(f"{pair_tag}RefSeq file found: {refseq_file}")
 
     if cleavage_mode:
-        # transcripts are collected from the mismatches table here
-        ams_transcripts = mismatches_df
+        if individual not in {"donor", "recipient"}:
+            raise ValueError(
+                "Cleavage mode requires individual='donor' or "
+                "individual='recipient'."
+            )
+        if individual_vep_df is None:
+            raise ValueError("Cleavage mode requires individual_vep_df.")
+        transcript_candidates_df = individual_vep_df
     else:
-        mismatches_df = read_mismatches(mismatches_path)
-        ams_transcripts = contributing_ams_transcripts(mismatches_df, ens_transcripts, pair_tag)
-        print(f"{pair_tag}Potentially contributing transcripts after Ensembl filtering: {len(ams_transcripts)}")
+        pair_mismatches_df = read_mismatches(mismatches_path)
+        candidate_transcript_sequences = contributing_ams_transcripts(
+            pair_mismatches_df,
+            ens_transcripts,
+            pair_tag,
+        )
+        transcript_candidates_df = pd.DataFrame(
+            candidate_transcript_sequences.items(),
+            columns=["Transcript_id", "Sequence_nt"],
+        )
+        print(
+            f"{pair_tag}Potentially contributing transcripts after Ensembl "
+            f"filtering: {len(candidate_transcript_sequences)}"
+        )
 
     # filtering to keep transcripts present in refseq table
-    transcripts_df = filter_on_refseq(ams_transcripts, refseq_file, cleavage_mode)
+    refseq_transcripts_df = filter_on_refseq(
+        transcript_candidates_df,
+        refseq_file,
+    )
     
     run_tables_dir = os.path.join(args.output_dir, "runs", args.run_name, "run_tables")
-    if not cleavage_mode:
-        # get from first element if several
-        transcripts_path = next((file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv")) 
-                                if "_transcripts_" in file and os.path.exists(file)), None)
-    else:
-        transcripts_path = next((file for file in glob.glob(os.path.join(run_tables_dir, "*.tsv"))
-                                if "_D0_" in file and os.path.exists(file)), None)
-    if transcripts_path is None:
-        raise FileNotFoundError(f"No such file or directory matching the expected pattern found.")
-    transcripts_pair = pd.read_csv(transcripts_path, sep="\t")
-
     if cleavage_mode:
-        transcripts_pair.rename(columns={'transcripts': 'Transcript_id'}, inplace=True)
-        transcripts_pair.rename(columns={'genes': 'Gene_id'}, inplace=True)
+        individual_marker = {
+            "donor": "_D0_",
+            "recipient": "_R0_",
+        }[individual]
+        individual_variant_path = find_single_run_table(
+            run_tables_dir,
+            individual_marker,
+        )
+        transcript_variants_df = pd.read_csv(individual_variant_path, sep="\t")
+        transcript_variants_df = transcript_variants_df.rename(
+            columns={
+                "transcripts": "Transcript_id",
+                "genes": "Gene_id",
+            }
+        )
+    else:
+        pair_transcripts_path = find_single_run_table(
+            run_tables_dir,
+            "_transcripts_",
+        )
+        transcript_variants_df = pd.read_csv(pair_transcripts_path, sep="\t")
 
     # intersect filtered transcripts and long format to get a long format with all info
-    transcripts_pair = intersect_positions(transcripts_pair, transcripts_df, cleavage_mode)
+    transcript_variants_df = intersect_positions(
+        transcript_variants_df,
+        refseq_transcripts_df,
+        cleavage_mode,
+    )
 
     if not cleavage_mode:
         # get imputation mode in log file
         imputation = read_log_field(log_file, "Imputation")
-        transcripts_pair = aa_ref(transcripts_pair, imputation)
+        transcript_variants_df = aa_ref(transcript_variants_df, imputation)
 
         # get frameshift mode in log file
         frameshift_mode = read_log_field(log_file, "Frameshift") == "True"
@@ -639,14 +725,23 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
         frameshift_mode = False
 
     # get pep seq on long format table
-    transcripts_pair = add_pep_seq(transcripts_pair, peptides_ensembl, cleavage_mode)
+    transcript_variants_df = add_pep_seq(
+        transcript_variants_df,
+        peptides_ensembl,
+        cleavage_mode,
+    )
 
     if not cleavage_mode:
-        transcripts_pair.to_csv(os.path.join(
+        transcript_variants_df.to_csv(os.path.join(
             aams_run_tables,
             f"{args.pair + '_' if args.pair else ''}{args.run_name}_full.tsv"), sep="\t", index=False)
 
-        transcripts_reduced = get_peptides_ref(transcripts_pair, args.length, cleavage_mode, frameshift_mode)
+        transcripts_reduced = get_peptides_ref(
+            transcript_variants_df,
+            args.length,
+            cleavage_mode,
+            frameshift_mode,
+        )
 
         pep_base_name = f"{args.pair + '_' if args.pair else ''}{args.run_name}_pep_df_{str_params}"
         # duplicate with .pkl below
@@ -668,9 +763,14 @@ def build_peptides(aams_run_tables=None, str_params=None, args=None, log_file=No
                 f"{args.pair + '_' if args.pair else ''}{args.run_name}_fasta.fa")
         return fasta_path, pep_indiv_path, ens_transcripts, peptides_ensembl, refseq_file
     else:
-        transcripts_pair = get_peptides_ref(transcripts_pair, args.length, cleavage_mode, frameshift_mode)
-        mismatches_df = read_mismatches(mismatches_path)
-        return mismatches_df, transcripts_pair, peptides_ensembl
+        individual_proteins_df = get_peptides_ref(
+            transcript_variants_df,
+            args.length,
+            cleavage_mode,
+            frameshift_mode,
+        )
+        pair_mismatches_df = read_mismatches(mismatches_path)
+        return pair_mismatches_df, individual_proteins_df, peptides_ensembl
 
 
 def binary_check(binary):

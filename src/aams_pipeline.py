@@ -33,13 +33,34 @@ def main():
         pep_paths = {}
         for sample in ("donor", "recipient"):
             sample_suffix = f"_{sample}"
-            pickle_df = cleavage.pickle_parsing(str_params, args, log_file, sample)
-            mismatches_df, transcripts_pair, peptides_ensembl = aams_helpers.build_peptides(
-                aams_run_tables, str_params, args, log_file, mismatches_path, mismatches_df=pickle_df, cleavage_mode=args.cleavage,
-                ens_transcripts=ens_transcripts, peptides_ensembl=peptides_ensembl, refseq_file=refseq_file
+            individual_vep_df = cleavage.pickle_parsing(
+                str_params,
+                args,
+                log_file,
+                sample,
+            )
+            pair_mismatches_df, individual_proteins_df, peptides_ensembl = (
+                aams_helpers.build_peptides(
+                    aams_run_tables,
+                    str_params,
+                    args,
+                    log_file,
+                    mismatches_path,
+                    individual_vep_df=individual_vep_df,
+                    cleavage_mode=args.cleavage,
+                    ens_transcripts=ens_transcripts,
+                    peptides_ensembl=peptides_ensembl,
+                    refseq_file=refseq_file,
+                    individual=sample,
+                )
             )
             chop_table, chop_table_path = cleavage.netchop_table_prep(
-                mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir, sample_suffix
+                pair_mismatches_df,
+                individual_proteins_df,
+                peptides_ensembl,
+                args,
+                netchop_dir,
+                sample_suffix,
             )
             chop_output = cleavage.run_netchop(chop_table, args, netchop_dir, sample_suffix)
             pep_paths[sample] = cleavage.postprocess_netchop(chop_output, chop_table_path, args, netchop_dir, sample_suffix)

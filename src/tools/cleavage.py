@@ -82,37 +82,44 @@ def pickle_parsing(str_params, args, log_file, individual):
     return pickle_df
 
 
-def mm_intersect(mismatches_df, transcripts_pair):
+def mm_intersect(pair_mismatches_df, individual_proteins_df):
     # Merge on ENSG
-    mismatches_df["CHROM"] = mismatches_df["CHROM"].astype(str)
-    mismatches_df["POS"] = mismatches_df["POS"].astype(str)
-    mismatches_df["Transcript_id"] = mismatches_df["transcripts_x"]
-    mismatches_df["Gene_id"] = mismatches_df["genes_x"]
+    pair_mismatches_df["CHROM"] = pair_mismatches_df["CHROM"].astype(str)
+    pair_mismatches_df["POS"] = pair_mismatches_df["POS"].astype(str)
+    pair_mismatches_df["Transcript_id"] = pair_mismatches_df["transcripts_x"]
+    pair_mismatches_df["Gene_id"] = pair_mismatches_df["genes_x"]
     merged = pd.merge(
-        mismatches_df,
-        transcripts_pair,
+        pair_mismatches_df,
+        individual_proteins_df,
         on=["CHROM", "POS", "Transcript_id", "Gene_id"],
         how="outer"
     )
-    # Keep only columns present in transcripts_pair
-    merged = merged.reindex(columns=transcripts_pair.columns)
+    # Keep only columns present in the reconstructed individual proteins
+    merged = merged.reindex(columns=individual_proteins_df.columns)
     return merged
 
 
-def add_pep_seq_chop(transcripts_pair, peptides_ensembl):
-    transcripts_pair["CHROM"] = transcripts_pair["CHROM"].astype(str)
+def add_pep_seq_chop(individual_proteins_df, peptides_ensembl):
+    individual_proteins_df["CHROM"] = individual_proteins_df["CHROM"].astype(str)
     peptides_ensembl["CHROM"] = peptides_ensembl["CHROM"].astype(str)
-    transcripts_pair = pd.merge(
-        transcripts_pair,
+    individual_proteins_df = pd.merge(
+        individual_proteins_df,
         peptides_ensembl,
         how="inner",
         on=["Gene_id", "Transcript_id", "CHROM"],
     )
-    return transcripts_pair
+    return individual_proteins_df
 
 
-def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, netchop_dir, sample_suffix=""):
-    chop_table = mm_intersect(mismatches_df, transcripts_pair)
+def netchop_table_prep(
+    pair_mismatches_df,
+    individual_proteins_df,
+    peptides_ensembl,
+    args,
+    netchop_dir,
+    sample_suffix="",
+):
+    chop_table = mm_intersect(pair_mismatches_df, individual_proteins_df)
     # Get the rows with missing peptide_ALT
     missing_mask = chop_table["peptide_ALT"].isna()
     missing_rows = chop_table[missing_mask].copy()
@@ -133,7 +140,7 @@ def netchop_table_prep(mismatches_df, transcripts_pair, peptides_ensembl, args, 
         subset=["Gene_id", "Transcript_id", "Peptide_id", "peptide_ALT"]
     )
     chop_table = chop_table.dropna(subset=["peptide_ALT"])
-    chop_table = chop_table.drop(columns=["aa_REF", "aa_ALT"])
+    chop_table = chop_table.drop(columns=["aa_REF", "aa_alt_indiv"])
     
     # save table
     chop_table_path = os.path.join(
