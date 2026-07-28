@@ -216,7 +216,7 @@ The Nextflow workflow runs the two AlloPipe modules in sequence: Allo-Count, the
 
 Run commands from the root of the AlloPipe directory.
 
-Each run must use a unique output destination. The directory formed by `--output_dir` and `--run_name` (`<output_dir>/runs/<run_name>`) must not already exist; if it does, AlloPipe stops before launching the workflow. Use a new `--run_name` or a different `--output_dir` for a new run.
+By default, each new run must use a unique output destination. The directory formed by `--output_dir` and `--run_name` (`<output_dir>/runs/<run_name>`) must not already exist; if it does, AlloPipe stops before launching the workflow. To continue an interrupted run, launch the same command with Nextflow `-resume`. To start over instead, use a different `--run_name` or `--output_dir`, or pass `--force_overwrite` to remove and replace that run directory explicitly.
 
 #### Required arguments in pair mode
 
@@ -227,7 +227,7 @@ Use pair mode when you have one VCF file for the donor and one VCF file for the 
 | `--mode pair` | no | Selects single-pair mode. Default: `pair`. |
 | `--donor <VCF>` | yes | Donor VCF file (`.vcf` or `.vcf.gz`). |
 | `--recipient <VCF>` | yes | Recipient VCF file (`.vcf` or `.vcf.gz`). |
-| `--run_name <NAME>` | yes | Unique name used for the output run directory. `<output_dir>/runs/<NAME>` must not already exist. |
+| `--run_name <NAME>` | yes | Name used for the output run directory. An existing directory is accepted with Nextflow `-resume`, or replaced when `--force_overwrite` is passed. |
 | `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison: `dr` for donor-to-recipient, `rd` for recipient-to-donor. |
 | `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Individual VCFs usually use `imputation`. |
 | `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can automatically select the VEP assembly. |
@@ -257,7 +257,7 @@ Use `--mode cohort` when several donor/recipient pairs must be extracted from on
 | `--mode cohort` | yes | Selects cohort mode. Required when running a cohort, because the default mode is `pair`. |
 | `--multi_vcf <VCF>` | yes | Joint multi-sample VCF containing all donors and recipients. |
 | `--pairs <CSV>` | yes | CSV file describing the donor/recipient pairs and per-pair HLA typing. |
-| `--run_name <NAME>` | yes | Unique name used for the output run directory. `<output_dir>/runs/<NAME>` must not already exist. |
+| `--run_name <NAME>` | yes | Name used for the output run directory. An existing directory is accepted with Nextflow `-resume`, or replaced when `--force_overwrite` is passed. |
 | `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison for all pairs in the run. |
 | `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Joint VCF cohort runs usually use `no-imputation`. |
 | `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can select the VEP assembly. |
@@ -283,6 +283,7 @@ nextflow run main.nf -profile conda \
 | Argument | Description |
 | -------- | ----------- |
 | `--output_dir <DIR>` | Base output directory. Default: `output`. |
+| `--force_overwrite` | Remove `<output_dir>/runs/<run_name>` before launching when it already exists. When combined with `-resume`, the published run directory is removed while Nextflow's cached tasks remain available. |
 | `--skip_vep_annotation true` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
 | `--vep_cache <DIR>` | VEP cache path inside the execution environment. Default: `/cache`. |
 | `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_113.4`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |

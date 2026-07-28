@@ -68,10 +68,34 @@ def inferVepAssemblyFromEnsemblPath(ensemblPath) {
 	return assembly == 'GRCH37' ? 'GRCh37' : 'GRCh38'
 }
 
-def assertNewOutputRun(runName, outputDir) {
-	def outputRunPath = file("${outputDir}/runs/${runName}")
-	if (outputRunPath.exists()) {
-		error "ERROR: output run directory already exists: ${outputRunPath}. Choose a unique combination of --output_dir and --run_name."
+def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
+	def runsPath = file("${outputDir}/runs").toAbsolutePath().normalize()
+	def outputRunPath = runsPath.resolve(runName.toString()).normalize()
+
+	if (outputRunPath.parent != runsPath) {
+		error "ERROR: --run_name must identify a direct child of the runs directory:\n${runsPath}"
+	}
+	if (!outputRunPath.exists()) {
+		return
+	}
+	if (resumeRun && !forceOverwrite) {
+		log.info "RESUME: keeping existing output run directory:\n${outputRunPath}"
+		return
+	}
+	if (!forceOverwrite) {
+		error "ERROR: output run directory already exists:\n${outputRunPath}\n\n" +
+			"Solutions:\n" +
+			"  - Replace it: pass --force_overwrite\n" +
+			"  - Continue it: use Nextflow -resume\n" +
+			"  - Keep it: choose a unique combination of --output_dir and --run_name"
+	}
+	if (java.nio.file.Files.isSymbolicLink(outputRunPath) || !outputRunPath.toFile().isDirectory()) {
+		error "ERROR: refusing to overwrite output run path because it is not a regular directory:\n${outputRunPath}"
+	}
+
+	log.warn "--force_overwrite is removing existing output run directory:\n${outputRunPath}"
+	if (!outputRunPath.toFile().deleteDir() || outputRunPath.exists()) {
+		error "ERROR: failed to remove existing output run directory:\n${outputRunPath}"
 	}
 }
 
@@ -83,13 +107,13 @@ workflow AlloPipe {
 	}
 	if (params.mode == 'pair') {
 		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
-	} else {
-		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
-		if (params.hla_typing) {
-			log.warn "WARNING: --hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
+		} else {
+			requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
+			if (params.hla_typing) {
+				log.warn "--hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
+			}
 		}
-	}
-	assertNewOutputRun(params.run_name, params.output_dir)
+	prepareOutputRun(params.run_name, params.output_dir, params.force_overwrite, workflow.resume)
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")
