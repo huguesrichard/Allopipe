@@ -264,7 +264,7 @@ Use `--mode cohort` when several donor/recipient pairs must be extracted from on
 
 The cohort CSV must contain at least the columns `donor`, `recipient`, and `hla`. The `hla` column is mandatory and must be the last column because HLA values are comma-separated.
 
-Pairs are identified as `P1`, `P01`, `P001`, etc., with zero-padding adapted to the cohort size.
+Pairs are identified as `P1`, `P01`, `P001`, etc., with zero-padding adapted to the cohort size, and displayed in process tags as `PAIR 1`, `PAIR 01`, `PAIR 001`, etc.
 
 Example:
 
