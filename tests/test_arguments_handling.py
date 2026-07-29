@@ -69,6 +69,27 @@ def test_check_threshold_value_bounds_homozygosity():
         arguments_handling.check_threshold_value(parser, "0", "homozygosity_thr")
 
 
+@pytest.mark.parametrize(
+    "run_name",
+    ["run", "test-run", "test--run", "test_pair-01"],
+)
+def test_check_if_accepted_str_accepts_safe_run_names(run_name):
+    parser = arguments_handling.CustomParser(prog="prog")
+
+    assert arguments_handling.check_if_accepted_str(parser, run_name) == run_name
+
+
+@pytest.mark.parametrize(
+    "run_name",
+    ["test run", "test/run", "../test-run", "test-run;echo"],
+)
+def test_check_if_accepted_str_rejects_unsafe_run_names(run_name):
+    parser = arguments_handling.CustomParser(prog="prog")
+
+    with pytest.raises(SystemExit):
+        arguments_handling.check_if_accepted_str(parser, run_name)
+
+
 def test_check_workers_count_bounds(monkeypatch):
     parser = arguments_handling.CustomParser(prog="prog")
     monkeypatch.setattr(arguments_handling.os, "cpu_count", lambda: 4)

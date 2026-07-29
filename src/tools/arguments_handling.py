@@ -81,17 +81,17 @@ def check_file(parser, arg, wc=False, csv=False):
 
 def check_if_accepted_str(parser, arg):
     """
-    Returns the run name after checking if it is valid
+    Returns the run name after checking if it is valid.
 
     Parameters:
                     parser (CustomParser Object): parser object
                     arg (str): run name
     Returns:
-                    arg (str): file name
+                    arg (str): run name
     """
     if arg == "":
         return arg
-    if not arg.isalnum() and not ("-" in arg):
+    if not all(character.isalnum() or character in "-_" for character in arg):
         parser.error(f"{arg} contains non accepted characters")
     return arg
 
