@@ -73,7 +73,10 @@ def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
 	def outputRunPath = runsPath.resolve(runName.toString()).normalize()
 
 	if (outputRunPath.parent != runsPath) {
-		error "ERROR: --run_name must identify a direct child of the runs directory:\n${runsPath}"
+		error "ERROR: --run_name must be a single directory name, not a path:\n${runName}\n\n" +
+			"AlloPipe automatically creates the run directory at:\n" +
+			"${runsPath}/<run_name>\n\n" +
+			"Use --output_dir to choose a different parent output directory."
 	}
 	if (!outputRunPath.exists()) {
 		return
