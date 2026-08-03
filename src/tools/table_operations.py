@@ -24,14 +24,23 @@ def save_mismatch(run_ams, args, mismatch, df_donor_file, df_recipient_file, mis
                     Returns :
                                     ams_exp_path (str): path of AMS table
     """
+    work_output_dir = Path(args.output_dir)
+    published_output_dir = Path(
+        os.environ.get("ALLOPIPE_PUBLISHED_OUTPUT_DIR", args.output_dir)
+    )
+
+    def published_path(path):
+        relative_path = Path(path).relative_to(work_output_dir)
+        return str(published_output_dir / relative_path)
+
     save_ams = pd.DataFrame([[args.pair if args.pair else "-",
                               args.donor.split('/')[-1].split('.')[0],
                               args.recipient.split('/')[-1].split('.')[0],
                               args.orientation,
                               mismatch,
-                              df_donor_file,
-                              df_recipient_file,
-                              mismatches_file]],
+                              published_path(df_donor_file),
+                              published_path(df_recipient_file),
+                              published_path(mismatches_file)]],
                             columns=["pair", "donor", "recipient", "orientation", "ams",
                                      "donor_table", "recipient_table", "mismatches_table"])
     

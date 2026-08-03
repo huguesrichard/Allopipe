@@ -13,6 +13,7 @@ process ALLO_COUNT {
 	val   frameshift
 	val   allo_count_opts
 	val   output_dir
+	val   nextflow_command_base64
 
 	output:
 	tuple val(pair_id),	val(run_name), path("runs/${run_name}"), emit: results_dir
@@ -21,6 +22,9 @@ process ALLO_COUNT {
 	script:
 	"""
 	allopipe_src_dir=${projectDir}/src
+	export ALLOPIPE_PUBLISHED_OUTPUT_DIR=${output_dir}
+	export ALLOPIPE_NEXTFLOW_COMMAND_BASE64=${nextflow_command_base64}
+	
 	python \${allopipe_src_dir}/ams_pipeline.py \
 		-n ${run_name} \
 		${donor_input} \

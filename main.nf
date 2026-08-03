@@ -116,7 +116,9 @@ workflow AlloPipe {
 				log.warn "--hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
 			}
 		}
-	prepareOutputRun(params.run_name, params.output_dir, params.force_overwrite, workflow.resume)
+	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
+	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
+	prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")
@@ -134,7 +136,7 @@ workflow AlloPipe {
 			VEP_ANNOTATION(
 				raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin, vepAssembly) },
 				params.run_name,
-				params.output_dir,
+				publishedOutputDir,
 			)
 			samples_ch = VEP_ANNOTATION.out.annotated_vcf
 		} else {
@@ -152,7 +154,7 @@ workflow AlloPipe {
 			VEP_ANNOTATION(
 				Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin, vepAssembly)),
 				params.run_name,
-				params.output_dir,
+				publishedOutputDir,
 			)
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
 			cohort_vep_vcfs = annotated_multi_vcf_ch.collect()
@@ -161,11 +163,11 @@ workflow AlloPipe {
 					tuple(sample_id, annotated_multi_vcf)
 				},
 				params.run_name,
-				params.output_dir,
+				publishedOutputDir,
 			)
 		} else {
 			cohort_vep_vcfs = Channel.value([])
-			EXTRACT_SAMPLE(cohort_samples_ch, params.run_name, params.output_dir)
+			EXTRACT_SAMPLE(cohort_samples_ch, params.run_name, publishedOutputDir)
 		}
 		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf, sample_tbi -> tuple(sample_id, sample_vcf) }
 		samples_ch = raw_samples_ch
@@ -188,7 +190,8 @@ workflow AlloPipe {
 		params.imputation,
 		params.frameshift,
 		params.allo_count_opts,
-		params.output_dir,
+		publishedOutputDir,
+		nextflowCommandBase64,
 	)
 
 	affinity_inputs_ch = pair_data_ch.join(ALLO_COUNT.out.results_dir, by: 0)
@@ -197,7 +200,7 @@ workflow AlloPipe {
 		affinity_inputs_ch,
 		params.ensembl_path,
 		params.allo_affinity_opts,
-		params.output_dir,
+		publishedOutputDir,
 	)
 
 	if (params.mode == 'cohort') {
@@ -206,7 +209,7 @@ workflow AlloPipe {
 			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf, sample_tbi -> [sample_vcf, sample_tbi] }.collect(),
 			cohort_vep_vcfs,
 			params.run_name,
-			params.output_dir,
+			publishedOutputDir,
 		)
 	}
 }

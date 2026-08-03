@@ -3,6 +3,7 @@
 This file contains all the helpers required to run the ams pipeline
 """
 
+import base64
 import os
 import sys
 import time
@@ -47,6 +48,11 @@ def create_run_directory(run_name, output_dir):
 
 def write_log(run_logs, args):
     log_file = f"{args.pair + '_' if args.pair else ''}run.log"
+    published_output_dir = os.environ["ALLOPIPE_PUBLISHED_OUTPUT_DIR"]
+    nextflow_command = base64.b64decode(
+        os.environ["ALLOPIPE_NEXTFLOW_COMMAND_BASE64"]
+    ).decode("utf-8")
+
     with open(os.path.join(run_logs, log_file), "w") as f:
         f.write(f"AlloPipe_version: {get_pipeline_version()}\n")
         f.write(f"Run_name: {args.run_name}\n")
@@ -55,7 +61,8 @@ def write_log(run_logs, args):
         f.write(f"Orientation: {args.orientation}\n")
         f.write(f"Imputation: {args.imputation}\n")
         f.write(f"Frameshift: {args.frameshift}\n")
-        f.write(f"Output_dir: {args.output_dir}\n")
+        f.write(f"Output_dir: {published_output_dir}\n")
+        f.write(f"Nextflow_command: {nextflow_command}\n")
         f.write(f"AMS_command: {' '.join([sys.executable] + sys.argv)}\n")
         f.write(f"AMS_timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     
