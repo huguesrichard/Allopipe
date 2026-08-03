@@ -3,9 +3,12 @@ process VEP_ANNOTATION {
 	tag { params.mode == 'cohort' ? sample_id : "${sample_id.toUpperCase()}: ${sample_file.simpleName}" }
 	stageInMode 'copy'
 	container "ensemblorg/ensembl-vep:${params.vep_version}"
+	publishDir "${output_dir}/runs/${run_name}/vcf_vep", mode: 'copy', overwrite: true
 
 	input:
 	tuple val(sample_id), path(sample_file), path(frameshift_plugin_path), val(vep_assembly)
+	val   run_name
+	val   output_dir
 	
     output:
     tuple val(sample_id), path("${sample_file.simpleName}_VEP.vcf.gz"), emit: annotated_vcf

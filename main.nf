@@ -131,7 +131,11 @@ workflow AlloPipe {
 			tuple('recipient', file(params.recipient)),
 		)
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin, vepAssembly) })
+			VEP_ANNOTATION(
+				raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin, vepAssembly) },
+				params.run_name,
+				params.output_dir,
+			)
 			samples_ch = VEP_ANNOTATION.out.annotated_vcf
 		} else {
 			samples_ch = raw_samples_ch
@@ -145,8 +149,13 @@ workflow AlloPipe {
 		cohort_samples_ch = Channel.from(sampleRows)
 
 		if (!params.skip_vep_annotation) {
-			VEP_ANNOTATION(Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin, vepAssembly)))
+			VEP_ANNOTATION(
+				Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin, vepAssembly)),
+				params.run_name,
+				params.output_dir,
+			)
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
+			cohort_vep_vcfs = annotated_multi_vcf_ch.collect()
 			EXTRACT_SAMPLE(
 				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->
 					tuple(sample_id, annotated_multi_vcf)
@@ -155,9 +164,10 @@ workflow AlloPipe {
 				params.output_dir,
 			)
 		} else {
+			cohort_vep_vcfs = Channel.value([])
 			EXTRACT_SAMPLE(cohort_samples_ch, params.run_name, params.output_dir)
 		}
-		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf -> tuple(sample_id, sample_vcf) }
+		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf, sample_tbi -> tuple(sample_id, sample_vcf) }
 		samples_ch = raw_samples_ch
 	}
 
@@ -193,7 +203,8 @@ workflow AlloPipe {
 	if (params.mode == 'cohort') {
 		NORMALIZE_COHORT(
 			ALLO_AFFINITY.out.results_dir.map { pair_id, run_name, run_dir -> run_dir }.collect(),
-			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf -> [sample_vcf] }.collect(),
+			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf, sample_tbi -> [sample_vcf, sample_tbi] }.collect(),
+			cohort_vep_vcfs,
 			params.run_name,
 			params.output_dir,
 		)

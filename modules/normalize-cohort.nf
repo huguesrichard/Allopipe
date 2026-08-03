@@ -6,6 +6,7 @@ process NORMALIZE_COHORT {
 	input:
 	path run_dirs, stageAs: "pair_runs/??/*"
 	path extracted_vcfs, stageAs: "runs/${params.run_name}/vcf_indiv/*"
+	path annotated_vcfs, stageAs: "runs/${params.run_name}/vcf_vep/*", arity: '0..*'
 	val  run_name
 	val  output_dir
 

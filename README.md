@@ -218,6 +218,8 @@ Run commands from the root of the AlloPipe directory.
 
 By default, each new run must use a unique output destination. The directory formed by `--output_dir` and `--run_name` (`<output_dir>/runs/<run_name>`) must not already exist; if it does, AlloPipe stops before launching the workflow. To continue an interrupted run, launch the same command with Nextflow `-resume`. To start over instead, use a different `--run_name` or `--output_dir`, or pass `--force_overwrite` to remove and replace that run directory explicitly.
 
+VEP-annotated VCFs are published under `<output_dir>/runs/<run_name>/vcf_vep`. In cohort mode, extracted VCFs and their `.tbi` indexes are published under `<output_dir>/runs/<run_name>/vcf_indiv`. Each completed Allo-Count and Allo-Affinity task also publishes its files progressively into the same run directory, so completed upstream and per-pair results remain available if a downstream task fails or the workflow is interrupted.
+
 #### Required arguments in pair mode
 
 Use pair mode when you have one VCF file for the donor and one VCF file for the recipient. Because `pair` is the default value of `--mode`, passing `--mode pair` is optional.
