@@ -14,6 +14,15 @@ from pathlib import Path
 ################################################################################
 
 
+def vcf_sample_name(vcf_path):
+    """Return a VCF filename without truncating dots in the sample name."""
+    filename = Path(vcf_path).name
+    for suffix in (".vcf.gz", ".vcf"):
+        if filename.endswith(suffix):
+            return filename[: -len(suffix)]
+    return filename
+
+
 def save_mismatch(run_ams, args, mismatch, df_donor_file, df_recipient_file, mismatches_file):
     """
     Returns the path of the saved file containing the AMS value and related pair
@@ -34,8 +43,8 @@ def save_mismatch(run_ams, args, mismatch, df_donor_file, df_recipient_file, mis
         return str(published_output_dir / relative_path)
 
     save_ams = pd.DataFrame([[args.pair if args.pair else "-",
-                              args.donor.split('/')[-1].split('.')[0],
-                              args.recipient.split('/')[-1].split('.')[0],
+                              vcf_sample_name(args.donor),
+                              vcf_sample_name(args.recipient),
                               args.orientation,
                               mismatch,
                               published_path(df_donor_file),
