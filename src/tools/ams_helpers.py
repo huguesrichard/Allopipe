@@ -118,14 +118,37 @@ def explode_gt_ad(df_indiv):
 
 
 # helper function to parse the FORMAT field of the VCF based on indices (useful if FORMAT field is not consistent)
-def parse_format(line):
+def parse_format(line, vcf_file=None, sample_name=None, chrom=None, pos=None):
     """
     Returns the indices of the FORMAT field in a line of VCF
                     Parameters :
                                     line (list): list containing the FORMAT fields
+                                    vcf_file (str): path of the source VCF file
+                                    sample_name (str): name of the parsed sample
+                                    chrom (str): chromosome of the VCF record
+                                    pos (str): position of the VCF record
                     Returns :
                                     format_indices (list): list containing the indices of interest
+                    Raises :
+                                    ValueError: when a required FORMAT field is missing
     """
+    required_fields = ("GT", "GQ", "AD", "DP")
+    missing_fields = [field for field in required_fields if field not in line]
+    if missing_fields:
+        context = []
+        if vcf_file is not None:
+            context.append(f"file '{Path(vcf_file).name}'")
+        if sample_name is not None:
+            context.append(f"sample '{sample_name}'")
+        if chrom is not None and pos is not None:
+            context.append(f"record {chrom}:{pos}")
+        context_message = f" in {', '.join(context)}" if context else ""
+        raise ValueError(
+            f"Invalid VCF FORMAT{context_message}: missing required field(s): "
+            f"{', '.join(missing_fields)}. "
+            f"Observed FORMAT: {':'.join(line)}."
+        )
+
     if "FT" in line:
         format_indices = [
             line.index("GT"),
@@ -201,7 +224,20 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     # split and expand the indiv field using FORMAT
     df_indiv["FORMAT"] = df_indiv["FORMAT"].str.split(":")
     df_indiv["select"] = df_indiv[indiv_name].str.split(":")
-    df_indiv["split_indices"] = df_indiv["FORMAT"].apply(lambda x: parse_format(x))
+    df_indiv["split_indices"] = [
+        parse_format(
+            format_fields,
+            vcf_file=indiv_file,
+            sample_name=indiv_name,
+            chrom=chrom,
+            pos=pos,
+        )
+        for format_fields, chrom, pos in zip(
+            df_indiv["FORMAT"],
+            df_indiv["CHROM"],
+            df_indiv["POS"],
+        )
+    ]
     df_indiv["select"] = df_indiv.apply(
         lambda x: apply_format(x["select"], x["split_indices"]), axis=1
     )
