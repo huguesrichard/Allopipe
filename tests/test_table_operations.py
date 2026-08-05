@@ -2,6 +2,7 @@
 """
 Tests for table_operations.py module (Transcript & mismatch merging)
 """
+import inspect
 from pathlib import Path
 import pandas as pd
 
@@ -10,6 +11,42 @@ from tools import table_operations
 
 class TestSaveMismatch:
     """Tests for save_mismatch() - saving mismatch summary"""
+
+    def test_preserves_dotted_sample_names_in_final_table(self, tmp_path):
+        run_ams = tmp_path / "AMS"
+        run_ams.mkdir()
+        args = type("Args", (), {
+            "donor": "/input/test.1.vcf.gz",
+            "recipient": "/input/test.2.vcf.gz",
+            "pair": "P1",
+            "run_name": "dotted_samples",
+            "orientation": "dr",
+            "min_dp": 20,
+            "max_dp": 400,
+            "min_ad": 5,
+            "min_gq": 0,
+            "homozygosity_thr": 0.2,
+            "base_length": 3,
+            "output_dir": str(tmp_path),
+        })()
+
+        save_args = [str(run_ams), args, 4]
+        if "formatted_datetime" in inspect.signature(
+            table_operations.save_mismatch
+        ).parameters:
+            save_args.append("")
+        save_args.extend([
+            str(tmp_path / "donor.tsv"),
+            str(tmp_path / "recipient.tsv"),
+            str(tmp_path / "mismatches.tsv"),
+        ])
+
+        ams_exp_path = table_operations.save_mismatch(*save_args)
+        table_operations.create_AMS_df(ams_exp_path)
+
+        result = pd.read_csv(Path(ams_exp_path) / "AMS_df.tsv", sep="\t", dtype=str)
+        assert result.loc[0, "donor"] == "test.1"
+        assert result.loc[0, "recipient"] == "test.2"
     
     def test_creates_ams_file(self, tmp_path):
         """Test creation of AMS output file"""
