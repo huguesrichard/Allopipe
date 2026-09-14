@@ -264,6 +264,7 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     # giab v1.3 #
     # #############
     # filter genotype quality
+    df_indiv = df_indiv[df_indiv["GQ"] != "."].copy()
     df_indiv = df_indiv[df_indiv["GQ"].astype(float) > min_gq]
     # filter REF calls
     ###############
