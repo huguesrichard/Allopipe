@@ -40,13 +40,15 @@ class VepIndices:
         self.frameshift = frameshift
 
 
-def vcf_vep_parser(vcf_path, frameshift_mode):
+def vcf_vep_parser(vcf_path, frameshift_mode, chunksize=None):
     """
     Returns a dataframe of the parsed VCF file containing VEP information and the VepIndices object containing the indices
     Parameters :
                     vcf_path (str): path of the VCF file of the individual
+                    chunksize (int, optional): number of VCF records per dataframe chunk
     Returns :
-                    (pd.DataFrame): dataframe of the individual
+                    (pd.DataFrame or pd.io.parsers.TextFileReader): dataframe of
+                    the individual, or chunk iterator when chunksize is set
                     vep_indices (VepIndices object): object containing the indices for the VEP field parsing
     """
     with open(vcf_path, "r", encoding="utf-8") as file:
@@ -92,18 +94,26 @@ def vcf_vep_parser(vcf_path, frameshift_mode):
         frameshift_index,
     )
     return (
-        pd.read_csv(vcf_path, header=header_index, dtype="str", sep="\t"),
+        pd.read_csv(
+            vcf_path,
+            header=header_index,
+            dtype="str",
+            sep="\t",
+            chunksize=chunksize,
+        ),
         vep_indices,
     )
 
 
-def gzvcf_vep_parser(vcf_path, frameshift_mode):
+def gzvcf_vep_parser(vcf_path, frameshift_mode, chunksize=None):
     """
     Returns a dataframe of the parsed gzipped VCF file containing VEP information and the VepIndices object containing the indices
     Parameters :
                     vcf_path (str): path of the gzipped VCF file of the individual
+                    chunksize (int, optional): number of VCF records per dataframe chunk
     Returns :
-                    (pd.DataFrame): dataframe of the individual
+                    (pd.DataFrame or pd.io.parsers.TextFileReader): dataframe of
+                    the individual, or chunk iterator when chunksize is set
                     vep_indices (VepIndices object): object containing the indices for the VEP field parsing
     """
     file = gzip.open(vcf_path, "rb")
@@ -152,7 +162,13 @@ def gzvcf_vep_parser(vcf_path, frameshift_mode):
         frameshift_index,
     )
     return (
-        pd.read_csv(vcf_path, header=header_index, dtype="str", sep="\t"),
+        pd.read_csv(
+            vcf_path,
+            header=header_index,
+            dtype="str",
+            sep="\t",
+            chunksize=chunksize,
+        ),
         vep_indices,
     )
 

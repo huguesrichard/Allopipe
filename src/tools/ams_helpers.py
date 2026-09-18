@@ -13,6 +13,10 @@ import pandas as pd
 from tools import parsing_functions, version
 
 
+# Empirical chunk size chosen from observed input VCF sizes and memory usage.
+VCF_CHUNK_SIZE = 25_000
+
+
 def create_run_directory(run_name, output_dir):
     """
     Returns the paths created at the beginning of the run
@@ -220,7 +224,11 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     if indiv_name not in list(df_indiv.columns):
         indiv_name = list(df_indiv.columns)[-1]
     df_indiv = df_indiv[df_indiv[indiv_name] != "."].reset_index(drop=True).copy()
-    df_indiv = df_indiv
+    # A whole chunk may contain only missing sample calls. The former
+    # whole-file workflow never produced an empty dataframe at this point,
+    # while chunked processing legitimately can.
+    if df_indiv.empty:
+        return df_indiv, pd.DataFrame()
     # split and expand the indiv field using FORMAT
     df_indiv["FORMAT"] = df_indiv["FORMAT"].str.split(":")
     df_indiv["select"] = df_indiv[indiv_name].str.split(":")
@@ -295,6 +303,11 @@ def get_read_counts(df_indiv, indiv_file, min_ad, min_gq, base_length):
     # filter AD
     subset["AD"] = subset["AD"].astype(int)
     subset = subset[subset["AD"] >= min_ad]
+    # With chunked input, a chunk can have no allele passing min_ad.  Return
+    # an empty dataframe before the downstream per-row ALT computation; this
+    # is equivalent to filtering these records out in the whole-file path.
+    if subset.empty:
+        return df_indiv.iloc[0:0], subset
     # filter ALT
     subset["ALT_length"] = np.where(
         subset["GT"] == 0,
@@ -446,6 +459,96 @@ def filter_on_gnomad_af(df_indiv,min_af):
     df_indiv = df_indiv[df_indiv["gnomADe_AF"] > min_af]
     return df_indiv
 
+
+def _iter_complete_locus_chunks(chunks):
+    """Yield chunks without splitting a contiguous CHROM/POS locus."""
+    pending = None
+
+    for chunk in chunks:
+        if pending is not None:
+            chunk = pd.concat([pending, chunk], ignore_index=True, copy=False)
+
+        if chunk.empty:
+            continue
+
+        last_chrom = chunk.iloc[-1]["#CHROM"]
+        last_pos = chunk.iloc[-1]["POS"]
+        same_locus = (
+            (chunk["#CHROM"] == last_chrom) & (chunk["POS"] == last_pos)
+        ).to_numpy()
+        different_locus = np.flatnonzero(~same_locus)
+        split_at = different_locus[-1] + 1 if len(different_locus) else 0
+
+        complete = chunk.iloc[:split_at]
+        pending = chunk.iloc[split_at:].copy()
+        if not complete.empty:
+            yield complete
+
+    if pending is not None and not pending.empty:
+        yield pending
+
+
+def _filter_vcf_chunk(chunk, vcf_path_indiv, args):
+    """Apply read-count, depth and genotype filters to one VCF chunk."""
+    # get read counts info from patient column
+    df_indiv, subset = get_read_counts(
+        chunk,
+        vcf_path_indiv,
+        args.min_ad,
+        args.min_gq,
+        args.base_length,
+    )
+    if df_indiv.empty:
+        return None
+
+    # filter out rows based on DP min and max
+    df_indiv, subset = filter_on_depth(
+        df_indiv,
+        subset,
+        args.min_dp,
+        args.max_dp,
+    )
+    if df_indiv.empty:
+        return None
+
+    # convert heterozygote to homozygote if above threshold
+    return convert(df_indiv, subset, args.homozygosity_thr)
+
+
+def _read_and_filter_vcf(vcf_path_indiv, args):
+    """Read a VCF incrementally and retain only variants passing early filters."""
+    # check file extension to select the appropriate parsing function
+    parser = (
+        parsing_functions.vcf_vep_parser
+        if vcf_path_indiv.endswith(".vcf")
+        else parsing_functions.gzvcf_vep_parser
+    )
+    chunks, vep_indices = parser(
+        vcf_path_indiv,
+        args.frameshift,
+        chunksize=VCF_CHUNK_SIZE,
+    )
+
+    filtered_chunks = []
+    for chunk in _iter_complete_locus_chunks(chunks):
+        filtered_chunk = _filter_vcf_chunk(chunk, vcf_path_indiv, args)
+        if filtered_chunk is not None:
+            filtered_chunks.append(filtered_chunk)
+
+    if not filtered_chunks:
+        raise ValueError(
+            f"No variants remain after read-count and depth filtering for "
+            f"'{Path(vcf_path_indiv).name}'."
+        )
+
+    df_indiv = pd.concat(filtered_chunks, ignore_index=True, copy=False)
+    # Match the original whole-file drop_duplicates when identical records fall
+    # on opposite sides of a chunk boundary. FORMAT contains lists after parsing
+    # and is excluded from the hash key, while remaining present in the output.
+    duplicate_key = [column for column in df_indiv.columns if column != "FORMAT"]
+    df_indiv = df_indiv.drop_duplicates(subset=duplicate_key).reset_index(drop=True)
+    return df_indiv, vep_indices
+
 # pandas.DataFrame, str -> pandas.DataFrame
 def clean_df(df_indiv, vcf_path_indiv):
     """
@@ -483,19 +586,9 @@ def prepare_indiv_df(run_tables, vcf_path_indiv, args):
                                     vep_table_indiv (pd.DataFrame): dataframe of the VEP information
                                     vep_indices (object): object containing all relevant indices
     """
-    # check file extension to select the appropriate parsing function
-    if vcf_path_indiv.split(".")[-1] == "vcf":
-        df_indiv, vep_indices = parsing_functions.vcf_vep_parser(vcf_path_indiv, args.frameshift)
-    else:
-        df_indiv, vep_indices = parsing_functions.gzvcf_vep_parser(vcf_path_indiv, args.frameshift)
-    # get read counts info from patient column
-    df_indiv, subset = get_read_counts(
-        df_indiv, vcf_path_indiv, args.min_ad, args.min_gq, args.base_length
-    )
-    # filter out rows based on DP min and max
-    df_indiv, subset = filter_on_depth(df_indiv, subset, args.min_dp, args.max_dp)
-    # convert heterozygote to homozygote if above threshold
-    df_indiv = convert(df_indiv, subset, args.homozygosity_thr)
+    # Filter each VCF chunk before concatenation so the complete raw VCF and
+    # its exploded allelic-depth table are never resident at the same time.
+    df_indiv, vep_indices = _read_and_filter_vcf(vcf_path_indiv, args)
     # parse VEP information and add to dataframe
     df_indiv, vep_table_indiv = parsing_functions.vep_infos_parser(
         run_tables, df_indiv, vep_indices, vcf_path_indiv, args
@@ -565,7 +658,7 @@ def keep_alt(merged_df, side, opposite):
     # remove positions where REF/REF and NaN (we assume it is also REF/REF)
     merged_df = merged_df[
         ~((merged_df[f"GT_{side}"] == "0/0") & (merged_df[f"GT_{opposite}"].isna()))
-    ]
+    ].copy()
     return merged_df
 
 
