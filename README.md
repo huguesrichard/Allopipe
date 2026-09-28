@@ -10,7 +10,7 @@ The product is provided free of charge, and, therefore, on an "as is" basis, wit
 AlloPipe is also available as a [web application](https://www.allogenomics.com).
 
 ### AlloPipe is now published in HLA:
-A. Dhuyser, P. Delaugère, P. Laville, et al., AlloPipe and Its Web Server Allogenomics: From Genomic Data to Candidate Minor Histocompatibility Antigens, HLA 107, no. 2 (2026): e70590.
+A. Dhuyser, P. Delaugère, P. Laville, *et al.*, AlloPipe and Its Web Server Allogenomics: From Genomic Data to Candidate Minor Histocompatibility Antigens, HLA 107, no. 2 (2026): e70590.
 
 Full text: https://doi.org/10.1111/tan.70590. 
 
@@ -170,13 +170,13 @@ Run the following command to annotate your `.VCF` file(s) with VEP.
 
 
 ```
-vep --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade -i <FILE-TO-ANNOTATE>.vcf -o <ANNOTATED-FILE>.vcf --coding_only --pick_allele --use_given_ref --vcf
+vep -i <FILE-TO-ANNOTATE>.vcf.gz -o <ANNOTATED-FILE>.vcf.gz --fork 4 --cache --assembly <GRChXX> --offline --af_gnomade --coding_only --pick_allele --use_given_ref --vcf --compress_output gzip
 ```
 
 Where:
- - ```<GRChXX>``` is the version of the genome used to align the sequences.
  - ```<FILE-TO-ANNOTATE>.vcf``` is the path to your file to annotate.
  - ```<ANNOTATED-FILE>.vcf``` is the path to the output annotated file.
+ - ```<GRChXX>``` is the version of the genome used to align the sequences.
 
 This command line works for individual `.VCF` files or joint `.VCF` files, whether compressed (`.vcf.gz`) or not (`.vcf`). 
 Run this command for every file you want to input in AlloPipe.
@@ -240,8 +240,8 @@ Example:
 ```
 nextflow run main.nf -profile conda \
 	--mode pair \
-	--donor tutorial/HG002-VEPannotated.vcf \
-	--recipient tutorial/HG007-VEPannotated.vcf \
+	--donor tutorial/HG002_VEP.vcf.gz \
+	--recipient tutorial/HG007_VEP.vcf.gz \
 	--run_name test_pair \
 	--orientation dr \
 	--imputation imputation \
@@ -273,7 +273,7 @@ Example:
 ```
 nextflow run main.nf -profile conda \
 	--mode cohort \
-	--multi_vcf tutorial/HG002-HG007-VEPannotated.vcf \
+	--multi_vcf tutorial/HG002_HG003_HG005_HG007_VEP.vcf.gz \
 	--pairs tutorial/example.csv \
 	--run_name test_cohort \
 	--orientation dr \
@@ -339,8 +339,8 @@ Once variant annotation is complete, run Allo-Count through the Nextflow pair wo
 ```
 nextflow run main.nf -profile conda \
 	--mode pair \
-	--donor tutorial/HG002-VEPannotated.vcf \
-	--recipient tutorial/HG007-VEPannotated.vcf \
+	--donor tutorial/HG002_VEP.vcf.gz \
+	--recipient tutorial/HG007_VEP.vcf.gz \
 	--run_name test_pair \
 	--orientation dr \
 	--imputation imputation \
@@ -366,7 +366,7 @@ Multiple-pair execution is handled by the Nextflow cohort workflow. Use an annot
 ```
 nextflow run main.nf -profile conda \
 	--mode cohort \
-	--multi_vcf tutorial/HG002-HG007-VEPannotated.vcf \
+	--multi_vcf tutorial/HG002_HG003_HG005_HG007_VEP.vcf.gz \
 	--pairs tutorial/example.csv \
 	--run_name test_cohort \
 	--orientation dr \
@@ -497,8 +497,8 @@ Allo-Affinity is run automatically after Allo-Count by the Nextflow workflow. So
 ```
 nextflow run main.nf -profile conda \
 	--mode pair \
-	--donor tutorial/HG002-VEPannotated.vcf \
-	--recipient tutorial/HG007-VEPannotated.vcf \
+	--donor tutorial/HG002_VEP.vcf.gz \
+	--recipient tutorial/HG007_VEP.vcf.gz \
 	--run_name test_pair_affinity \
 	--orientation dr \
 	--imputation imputation \
@@ -590,24 +590,17 @@ Each row of the table corresponds to a cleaved peptide on a protein that contrib
 
 ## Tutorial <a name="tuto"></a>
 
-We provide a couple of example data in `/tutorial`, i.e. `tutorial/donor_to_annotate.vcf` and `tutorial/recipient_to_annotate.vcf` *(those files correspond to human chr6)*.
+The `tutorial/` directory contains GRCh38 VCFs for HG002 and HG007, an annotated joint VCF for HG002, HG003, HG005 and HG007, and the pair list in `tutorial/example.csv`. The files ending in `_VEP.vcf.gz` are already annotated with VEP (you can use the `--skip_vep_annotation true` option with these files).
 
-
-To test your VEP installation (`v111` in this tutorial), run the following commands:  
-```
-	vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/donor_to_annotate.vcf -o tutorial/donor_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf
-	vep --fork 4 --cache --assembly GRCh38 --offline --af_gnomade -i tutorial/recipient_to_annotate.vcf -o tutorial/recipient_annotated_vep111.vcf --coding_only --pick_allele --use_given_ref  --vcf 
-```
-
-Once the VEP annotation is complete, go to the root of the AlloPipe directory to run the workflow:
+From the root of the AlloPipe directory, run the pair example with the annotated files:
 
 ```
 nextflow run main.nf -profile conda \
 	--mode pair \
-	--donor tutorial/HG002-VEPannotated.vcf \
-	--recipient tutorial/HG007-VEPannotated.vcf \
+	--donor tutorial/HG002_VEP.vcf.gz \
+	--recipient tutorial/HG007_VEP.vcf.gz \
 	--run_name test-run \
-	--orientation rd \
+	--orientation dr \
 	--imputation no-imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
@@ -618,13 +611,11 @@ The expected AMS are:
 
 |  Orientation   |   Imputation    | No imputation |
 | ------------   | --------------- | ------------- |
-|  HSCT = `rd`   |       2812      |      42       | 
-|  SOT = `dr`    |       1155      |      34       | 
+|  HSCT = `rd`   |       5411      |     2450      |
+|  SOT = `dr`    |       5663      |     2618      |
 
 The same Nextflow command also runs Allo-Affinity and writes the af-AMS and related tables in the output run directory.
 
 <br/>
-
-If you want to run the cleaved peptide prediction, add `--allo_affinity_opts="--cleavage"` to the Nextflow command.
 
 You can now enjoy AlloPipe. If you have any feedback, please get in touch, we will be happy to help!
