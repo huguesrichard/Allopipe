@@ -1,6 +1,9 @@
 process NORMALIZE_COHORT {
 	label 'allopipe'
-	tag { params.mode == 'cohort' ? "${run_dirs.size()} PAIRS" : null }
+	tag {
+		def pair_count = run_dirs instanceof Collection ? run_dirs.size() : 1
+		params.mode == 'cohort' ? "${pair_count} PAIR${pair_count == 1 ? '' : 'S'}" : null
+	}
 	publishDir "${output_dir}", mode: 'copy', overwrite: true
 
 	input:
