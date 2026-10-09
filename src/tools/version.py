@@ -1,3 +1,3 @@
 """AlloPipe release version stamped by semantic-release."""
 
-__version__ = "2.4.1"
+__version__ = "2.4.2"
