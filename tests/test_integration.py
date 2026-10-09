@@ -350,29 +350,3 @@ class TestPipelinePermissions:
         test_file = Path(run_tables) / "test.txt"
         test_file.write_text("test", encoding="utf-8")
         assert test_file.exists()
-
-    def test_handles_readonly_directories(self, tmp_path):
-        """Test handling of read-only directories (skip test on some systems)"""
-        import os
-        import stat
-        
-        # Create a directory and make it read-only
-        readonly_dir = tmp_path / "readonly"
-        readonly_dir.mkdir()
-        
-        try:
-            # Try to make it read-only (may not work on all systems)
-            os.chmod(str(readonly_dir), stat.S_IRUSR | stat.S_IXUSR)
-            
-            # Try to create a file in it - should fail
-            test_file = readonly_dir / "test.txt"
-            try:
-                test_file.write_text("test", encoding="utf-8")
-                # If it succeeds, the system allows writing to read-only dirs
-                assert True  # Test passes if we can write
-            except (OSError, PermissionError):
-                # Expected on systems that enforce read-only
-                assert True  # Test passes if writing fails as expected
-        except OSError:
-            # If we can't change permissions, skip the test
-            pytest.skip("Cannot change directory permissions on this system")

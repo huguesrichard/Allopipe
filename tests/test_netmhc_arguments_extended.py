@@ -235,27 +235,6 @@ class TestNetmhcArgumentsParsing:
         with pytest.raises(argparse.ArgumentTypeError):
             netmhc_arguments.check_hla_format(initial_args, parser, "INVALID")
 
-    def test_accepts_cleavage_mode(self):
-        """Test cleavage mode option"""
-        # This would require full argument parsing
-        # Test that the argument exists in the parser
-        parser = arguments_handling.CustomParser(prog="test")
-        # The cleavage argument is added in netmhc_arguments()
-        # For now, just test that we can call the function
-        assert callable(netmhc_arguments.netmhc_arguments)
-
-    def test_accepts_dry_run_mode(self):
-        """Test dry-run mode option"""
-        # Similar to cleavage
-        assert callable(netmhc_arguments.netmhc_arguments)
-
-    def test_orientation_affects_vcf_selection(self):
-        """Test that orientation determines which VCF to use"""
-        # This is complex, would require full pipeline setup
-        # For now, test that the concept is understood
-        assert True  # Placeholder
-
-
 class TestNetmhcArgumentsEdgeCases:
     """Tests for edge cases in NetMHC arguments"""
     
@@ -285,10 +264,3 @@ class TestNetmhcArgumentsEdgeCases:
         # Invalid peptide length
         with pytest.raises(argparse.ArgumentTypeError):
             netmhc_arguments.check_if_valid_k(initial_args, "7")  # Too small for class 1
-
-    def test_handles_conflicting_options(self):
-        """Test with conflicting option combinations"""
-        # This would require full argument parsing
-        # For example, test that certain combinations are rejected
-        # For now, test that the parser exists
-        assert netmhc_arguments.netmhc_arguments is not None
