@@ -284,19 +284,6 @@ class TestAamsNetMhcWorkflow:
         assert lines[0].startswith('>')
         assert all(line.isalpha() or line.startswith('>') for line in lines)
 
-    def test_handles_netmhc_output(self, tmp_path):
-        """Test processing of NetMHCpan output"""
-        netmhc_file = tmp_path / "netmhc.txt"
-        netmhc_file.write_text(
-            "HLA-A*02:01\n"
-            "Pos\tPeptide\tCore\tAff(nM)\t%Rank\n"
-            "1\tMVKKA\tMVKKA\t500\t1.5\n",
-            encoding="utf-8"
-        )
-        
-        # Should be able to process
-        assert netmhc_file.exists()
-
 
 class TestPipelineErrorHandling:
     """Tests for error handling across pipelines"""

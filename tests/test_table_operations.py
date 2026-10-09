@@ -309,14 +309,6 @@ class TestGetRefRatioPair:
 class TestGetRefRatio:
     """Tests for get_ref_ratio() - loading reference populations"""
     
-    def test_loads_reference_populations(self, tmp_path):
-        """Test loading reference population data"""
-        run_path = tmp_path / "run"
-        run_path.mkdir()
-        
-        # Create mock reference files if needed
-        assert run_path.exists()
-
     def test_normalizes_ratios(self):
         """Test normalization of ratios"""
         """Test normalization of ratios"""
