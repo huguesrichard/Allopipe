@@ -290,7 +290,7 @@ nextflow run main.nf -profile conda \
 | `--force_overwrite` | Remove `<output_dir>/runs/<run_name>` before launching when it already exists. When combined with `-resume`, the published run directory is removed while Nextflow's cached tasks remain available. |
 | `--skip_vep_annotation true` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
 | `--vep_cache <DIR>` | VEP cache path inside the execution environment. Default: `/cache`. |
-| `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_113.4`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |
+| `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_116.2`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |
 | `--frameshift true` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
 | `--frameshift_plugin_path <PATH>` | Path to the VEP `Frameshift.pm` plugin or plugin directory. |
 | `--allo_count_opts "<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
