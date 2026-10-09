@@ -50,7 +50,7 @@ class TestCreateRunDirectory:
 class TestWriteLog:
     """Tests for write_log()"""
     
-    def test_log_file_created_with_fields(self, tmp_path):
+    def test_log_file_created_with_fields(self, tmp_path, nextflow_environment):
         """Test that log file is created with proper fields"""
         output_dir = tmp_path / "output"
         run_name = "test_run"
@@ -67,8 +67,7 @@ class TestWriteLog:
             min_gq=20,
             homozygosity_thr=0.8,
             base_length=3,
-            workers=4,
-            norm_score=False,
+            frameshift=False,
             pair="",
             run_name=run_name,
         )
@@ -82,8 +81,13 @@ class TestWriteLog:
         # Check content
         content = log_file.read_text()
         assert "Orientation: dr" in content
-        assert "Donor:" in content
-        assert "Recipient:" in content
+        assert "Donor: /path/to/donor.vcf\n" in content
+        assert "Recipient: /path/to/recipient.vcf\n" in content
+        published_dir, command = nextflow_environment
+        assert f"Output_dir: {published_dir}\n" in content
+        assert f"Nextflow_command: {command}\n" in content
+        assert "AlloPipe_version: v-test\n" in content
+        assert "Frameshift: False\n" in content
 
 
 class TestExplodeGtAd:

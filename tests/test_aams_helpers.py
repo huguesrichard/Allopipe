@@ -54,16 +54,14 @@ class TestReadLogField:
             encoding="utf-8"
         )
         
-        args = SimpleNamespace(output_dir=str(output_dir), run_name=run_name, pair="")
-        
-        orientation = aams_helpers.read_log_field(args, "Orientation")
+        orientation = aams_helpers.read_log_field(log_file, "Orientation")
         assert orientation == "dr"
         
-        donor = aams_helpers.read_log_field(args, "Donor")
-        assert "/donor.vcf" in donor
+        donor = aams_helpers.read_log_field(log_file, "Donor")
+        assert donor == "/path/to/donor.vcf.gz"
 
-    def test_missing_field_raises_error(self, tmp_path):
-        """Test that missing field raises appropriate error"""
+    def test_missing_field_returns_none(self, tmp_path):
+        """Missing log fields are optional, not parser errors."""
         output_dir = tmp_path / "output"
         run_name = "test_run"
         aams_helpers.create_aams_dependencies(run_name, str(output_dir))
@@ -73,10 +71,8 @@ class TestReadLogField:
         log_file = logs_dir / "run.log"
         log_file.write_text("Orientation: dr\n", encoding="utf-8")
         
-        args = SimpleNamespace(output_dir=str(output_dir), run_name=run_name, pair="")
-        
         # When field is missing, should return None
-        assert aams_helpers.read_log_field(args, "NonexistentField") is None
+        assert aams_helpers.read_log_field(log_file, "NonexistentField") is None
 
 
 class TestDictToDataframe:
@@ -182,6 +178,7 @@ class TestAddPepSeq:
             "aa_alt_indiv_y": ["N"],
             "aa_REF": ["K"],
             "diff": ["K>N"],
+            "Frameshift_sequence": [None],
         })
         peptides_ensembl = pd.DataFrame({
             "Gene_id": ["ENSG0001"],
@@ -197,6 +194,8 @@ class TestAddPepSeq:
         assert "Peptide_id" in result.columns
         # Use scalar access to avoid pandas coercion paths that trigger numpy DeprecationWarnings
         assert result.at[0, "Peptide_id"] == "ENSP0001"
+        assert result.at[0, "Sequence_aa"] == "MVKKA"
+        assert result.at[0, "Frameshift_sequence"] is None
 
     def test_no_matching_peptides(self):
         """Test with no matching peptides"""
@@ -216,6 +215,7 @@ class TestAddPepSeq:
             "aa_alt_indiv_y": ["N"],
             "aa_REF": ["K"],
             "diff": ["K>N"],
+            "Frameshift_sequence": [None],
         })
         peptides_ensembl = pd.DataFrame({
             "Gene_id": ["ENSG0099"],

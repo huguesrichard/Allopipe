@@ -6,7 +6,6 @@ from unittest.mock import patch
 from pathlib import Path
 
 import matplotlib.image as mpimg
-import pytest
 
 from tools import plot_hist, plot_pie
 
@@ -22,13 +21,10 @@ def assert_valid_png(path):
 class TestHistPlot:
     """Tests for hist() - histogram visualization"""
 
-    @pytest.fixture(autouse=True)
-    def reference_data_directory(self, monkeypatch):
-        # This branch's histogram resolves ../data from the historical CLI cwd.
-        monkeypatch.chdir(Path(__file__).resolve().parents[1] / "src")
-    
-    def test_creates_histogram_file(self, tmp_path):
+    def test_creates_histogram_file(self, tmp_path, monkeypatch):
         """Test that histogram PNG file is created"""
+        # Nextflow workers need repository data resolution independent of cwd.
+        monkeypatch.chdir(tmp_path)
         # plot_hist.hist expects a directory containing CSV files
         ams_dir = tmp_path / "ams_data"
         ams_dir.mkdir()

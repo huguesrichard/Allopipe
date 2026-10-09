@@ -26,7 +26,7 @@ class TestGetVepIndicesFromVcf:
         with gzip.open(vcf_path, "wt", encoding="utf-8") as f:
             f.write(vcf_text)
         
-        vep_indices = cleavage._get_vep_indices_from_vcf(vcf_path)
+        vep_indices = cleavage._get_vep_indices_from_vcf(vcf_path, frameshift_mode=False)
         assert vep_indices.gene == 2  # ENSG index
         assert vep_indices.transcript == 3  # ENST index
         assert vep_indices.prot == 6  # Protein position index
@@ -43,7 +43,7 @@ class TestGetVepIndicesFromVcf:
         with open(vcf_path, "w", encoding="utf-8") as f:
             f.write(vcf_text)
         
-        vep_indices = cleavage._get_vep_indices_from_vcf(vcf_path)
+        vep_indices = cleavage._get_vep_indices_from_vcf(vcf_path, frameshift_mode=False)
         assert vep_indices.gene == 2
         assert vep_indices.transcript == 3
 
@@ -61,40 +61,44 @@ class TestMmIntersect:
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1", "1"],
+            "POS": ["100", "200"],
             "Transcript_id": ["ENST0001", "ENST0002"],
             "Gene_id": ["ENSG0001", "ENSG0002"],
             "peptide_ALT": ["MVKK", "LCCA"],
         })
         
         result = cleavage.mm_intersect(mismatches_df, transcripts_pair)
-        assert len(result) > 0
-        assert list(result.columns) == list(transcripts_pair.columns)
+        pd.testing.assert_frame_equal(result.reset_index(drop=True), transcripts_pair)
 
     def test_merge_empty_mismatches(self):
         """Test with empty mismatches DataFrame"""
         mismatches_df = pd.DataFrame({
             "CHROM": pd.Series([], dtype=int),
+            "POS": pd.Series([], dtype=str),
             "transcripts_x": pd.Series([], dtype=str),
             "genes_x": pd.Series([], dtype=str),
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "Transcript_id": ["ENST0001"],
             "Gene_id": ["ENSG0001"],
         })
         
         result = cleavage.mm_intersect(mismatches_df, transcripts_pair)
-        assert len(result) == 1
+        pd.testing.assert_frame_equal(result.reset_index(drop=True), transcripts_pair)
 
     def test_merge_no_matching_rows(self):
         """Test with no matching rows between DataFrames"""
         mismatches_df = pd.DataFrame({
             "CHROM": [1],
+            "POS": ["100"],
             "transcripts_x": ["ENST0001"],
             "genes_x": ["ENSG0001"],
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["2"],
+            "POS": ["100"],
             "Transcript_id": ["ENST0002"],
             "Gene_id": ["ENSG0002"],
         })
@@ -110,6 +114,7 @@ class TestAddPepSeqChop:
         """Test successful merge of transcripts with peptides"""
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "Gene_id": ["ENSG0001"],
             "Transcript_id": ["ENST0001"],
             "data": ["x"],
@@ -131,6 +136,7 @@ class TestAddPepSeqChop:
         """Test when no peptides match transcripts"""
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "Gene_id": ["ENSG0001"],
             "Transcript_id": ["ENST0001"],
         })
@@ -152,16 +158,17 @@ class TestLoadPeptideIdMap:
         """Test successful loading of peptide ID mapping"""
         tsv_file = tmp_path / "peptides.tsv"
         tsv_file.write_text(
-            "Peptide_id\tSequence\n"
-            "ENSP0000000001\tMVKKA\n"
-            "ENSP0000000002\tLCCAV\n",
+            "Peptide_id\tSequence\tCHROM\tPOS\n"
+            "ENSP0000000001\tMVKKA\t1\t100\n"
+            "ENSP0000000002\tLCCAV\t2\t200\n",
             encoding="utf-8"
         )
         
         mapping = cleavage.load_peptide_id_map(str(tsv_file))
-        assert "0000000001" in mapping  # Last 10 chars
-        assert mapping["0000000001"] == "ENSP0000000001"
-        assert len(mapping) == 2
+        assert mapping == {
+            "0000000001": [("ENSP0000000001", "1", "100")],
+            "0000000002": [("ENSP0000000002", "2", "200")],
+        }
 
     def test_missing_peptide_id_column(self, tmp_path):
         """Test with missing Peptide_id column"""
@@ -201,8 +208,11 @@ class TestLoadPeptideIdMap:
         )
         
         mapping = cleavage.load_peptide_id_map(str(tsv_file))
-        # Last one wins
-        assert mapping["0000000001"] == "XYZABC0000000001"
+        # Collisions preserve both proteins rather than overwriting one.
+        assert mapping["0000000001"] == [
+            ("PREFIXABC0000000001", "", ""),
+            ("XYZABC0000000001", "", ""),
+        ]
 
 
 class TestParseNetchopOutput:
@@ -297,23 +307,27 @@ class TestNetchopTablePrep:
         
         mismatches_df = pd.DataFrame({
             "CHROM": [1],
+            "POS": ["100"],
             "transcripts_x": ["ENST0001"],
             "genes_x": ["ENSG0001"],
-            "peptide_ALT": ["MVKKA"],
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "Transcript_id": ["ENST0001"],
             "Gene_id": ["ENSG0001"],
             "peptide_ALT": ["MVKKA"],
             "Peptide_id": ["ENSP0001"],
+            "aa_REF": ["K"],
+            "aa_alt_indiv": ["N"],
+            "Sequence_aa": [None],
         })
         peptides_ensembl = pd.DataFrame({
             "CHROM": ["1"],
             "Gene_id": ["ENSG0001"],
             "Transcript_id": ["ENST0001"],
             "Peptide_id": ["ENSP0001"],
-            "Sequence_aa_y": ["LCCA"],
+            "Sequence_aa": ["LCCA"],
         })
         
         args = SimpleNamespace(pair="", run_name="test")
@@ -322,8 +336,11 @@ class TestNetchopTablePrep:
             mismatches_df, transcripts_pair, peptides_ensembl, args, str(netchop_dir)
         )
         
-        assert len(chop_table) > 0
-        assert path.endswith("_netchop_table.csv")
+        expected = transcripts_pair.drop(columns=["aa_REF", "aa_alt_indiv"])
+        pd.testing.assert_frame_equal(chop_table.reset_index(drop=True), expected)
+        assert path == str(netchop_dir / "test_netchop_table.csv")
+        saved = pd.read_csv(path, sep="\t", dtype={"CHROM": str, "POS": str})
+        pd.testing.assert_frame_equal(saved, expected, check_dtype=False)
         
     def test_remove_duplicates(self, tmp_path):
         """Test that duplicates are removed"""
@@ -332,18 +349,20 @@ class TestNetchopTablePrep:
         
         mismatches_df = pd.DataFrame({
             "CHROM": ["1", "1"],
+            "POS": ["100", "200"],
             "transcripts_x": ["ENST0001", "ENST0001"],
             "genes_x": ["ENSG0001", "ENSG0001"],
-            "peptide_ALT": ["MVKKA", "MVKKA"],
-            "Peptide_id": ["ENSP0001", "ENSP0001"],
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1", "1"],
+            "POS": ["100", "200"],
             "Transcript_id": ["ENST0001", "ENST0001"],
             "Gene_id": ["ENSG0001", "ENSG0001"],
             "peptide_ALT": [np.nan, "MVKKA"],
             "Peptide_id": ["ENSP0001", "ENSP0001"],
             "Sequence_aa": [np.nan, np.nan],
+            "aa_REF": ["K", "K"],
+            "aa_alt_indiv": ["N", "N"],
         })
         peptides_ensembl = pd.DataFrame({
             "CHROM": ["1"],
@@ -360,27 +379,30 @@ class TestNetchopTablePrep:
         )
         
         # Should have removed duplicates
-        assert len(chop_table) == 1
+        assert chop_table["peptide_ALT"].tolist() == ["MVKKA"]
+        assert chop_table["Peptide_id"].tolist() == ["ENSP0001"]
 
-    def test_remove_nan_peptides(self, tmp_path):
-        """Test that peptides with NaN are removed"""
+    def test_fills_missing_peptides_from_ensembl(self, tmp_path):
+        """Missing sequences are reconstructed from Ensembl before filtering."""
         netchop_dir = tmp_path / "netchop"
         netchop_dir.mkdir()
         
         mismatches_df = pd.DataFrame({
             "CHROM": [1, 1],
+            "POS": ["100", "200"],
             "transcripts_x": ["ENST0001", "ENST0002"],
             "genes_x": ["ENSG0001", "ENSG0002"],
-            "peptide_ALT": ["MVKKA", None],
-            "Peptide_id": ["ENSP0001", "ENSP0002"],
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1", "1"],
+            "POS": ["100", "200"],
             "Transcript_id": ["ENST0001", "ENST0002"],
             "Gene_id": ["ENSG0001", "ENSG0002"],
             "peptide_ALT": ["MVKKA", None],
             "Peptide_id": ["ENSP0001", "ENSP0002"],
             "Sequence_aa": [np.nan, np.nan],
+            "aa_REF": ["K", "K"],
+            "aa_alt_indiv": ["N", "N"],
         })
         peptides_ensembl = pd.DataFrame({
             "CHROM": ["1", "1"],
@@ -396,8 +418,9 @@ class TestNetchopTablePrep:
             mismatches_df, transcripts_pair, peptides_ensembl, args, str(netchop_dir)
         )
         
-        # NaN peptides should be removed
-        assert pd.isna(chop_table["peptide_ALT"]).sum() == 0
+        # The current stage fills missing proteins from Ensembl before dropping NaNs.
+        assert chop_table["peptide_ALT"].tolist() == ["MVKKA", "LCCA"]
+        assert chop_table["Peptide_id"].tolist() == ["ENSP0001", "ENSP0002"]
 
 
 class TestPostprocessNetchop:
@@ -421,18 +444,24 @@ class TestPostprocessNetchop:
         # Create peptide ID map
         chop_table_file = netchop_dir / "chop_table.csv"
         chop_table_file.write_text(
-            "Peptide_id\tSequence\n"
-            "ENSP0000000356701\tMVKKA\n",
+            "Peptide_id\tSequence\tCHROM\tPOS\n"
+            "ENSP0000000356701\tMVKKA\t1\t100\n",
             encoding="utf-8"
         )
         
-        args = SimpleNamespace(pair="", run_name="test")
+        args = SimpleNamespace(pair="P01", run_name="test", length=2)
         
         cleavage.postprocess_netchop(str(netchop_output), str(chop_table_file), args, str(netchop_dir))
         
         # Check output file created
-        peptides_file = netchop_dir / "test_netchop_peptides.txt"
-        assert peptides_file.exists()
+        peptides_file = netchop_dir / "P01_test_netchop_peptides.csv"
+        result = pd.read_csv(peptides_file, dtype=str, keep_default_na=False)
+        expected = pd.DataFrame({
+            "CHROM": ["1", "1"], "POS": ["100", "100"],
+            "Peptide_id": ["ENSP0000000356701"] * 2,
+            "Peptide": ["MVK"] * 2, "hla_peptides": ["MV", "VK"],
+        })
+        pd.testing.assert_frame_equal(result, expected)
 
     def test_missing_id_fallback(self, tmp_path):
         """Test fallback when peptide ID not found in map"""
@@ -444,6 +473,8 @@ class TestPostprocessNetchop:
             "header", "-----", "-----",
             "Pos AA C S Ident",
             "1 M . 0.1 UNKNOWN0001",  # ID not in map
+            "2 V . 0.1 UNKNOWN0001",
+            "3 K . 0.1 UNKNOWN0001",
         ]), encoding="utf-8")
         
         chop_table_file = netchop_dir / "chop_table.csv"
@@ -452,10 +483,14 @@ class TestPostprocessNetchop:
             encoding="utf-8"
         )
         
-        args = SimpleNamespace(pair="", run_name="test")
+        args = SimpleNamespace(pair="", run_name="test", length=2)
         
         # Should not raise error, use short_id as fallback
         cleavage.postprocess_netchop(str(netchop_output), str(chop_table_file), args, str(netchop_dir))
         
-        peptides_file = netchop_dir / "test_netchop_peptides.txt"
-        assert peptides_file.exists()
+        peptides_file = netchop_dir / "test_netchop_peptides.csv"
+        result = pd.read_csv(peptides_file, dtype=str, keep_default_na=False)
+        assert result.to_dict("records") == [
+            {"CHROM": "", "POS": "", "Peptide_id": "NKNOWN0001", "Peptide": "MVK", "hla_peptides": peptide}
+            for peptide in ["MV", "VK"]
+        ]

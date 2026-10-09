@@ -75,8 +75,8 @@ class TestCheckIfExistingPath:
             netmhc_arguments.check_if_existing_path(parser, nonexistent)
 
 
-class TestCheckIfExistingRunName:
-    """Tests for check_if_existing_run_name()"""
+class TestCheckIfExistingOutputRunName:
+    """Tests for check_if_existing_output_run_name()."""
     
     def test_accepts_valid_run_name(self, tmp_path):
         """Test acceptance of valid run name"""
@@ -87,11 +87,11 @@ class TestCheckIfExistingRunName:
         (output_dir / "runs" / run_name).mkdir(parents=True)
         
         parser = arguments_handling.CustomParser(prog="test")
-        result = netmhc_arguments.check_if_existing_run_name(
+        result = netmhc_arguments.check_if_existing_output_run_name(
             parser, run_name, str(output_dir)
         )
         
-        assert result is not None
+        assert result is None  # Validation succeeds without returning a run name.
 
     def test_handles_missing_output_dir(self, tmp_path):
         """Test handling when output directory doesn't exist"""
@@ -99,40 +99,29 @@ class TestCheckIfExistingRunName:
         
         parser = arguments_handling.CustomParser(prog="test")
         with pytest.raises(SystemExit) as error:
-            netmhc_arguments.check_if_existing_run_name(
+            netmhc_arguments.check_if_existing_output_run_name(
                 parser, "test_run", nonexistent_dir
             )
         assert error.value.code == 2
 
 
-class TestNormalizeOutputDir:
-    """Tests for normalize_output_dir()"""
+class TestParseOutputDir:
+    """Output path normalization belongs to the shared argument helpers."""
     
-    def test_converts_relative_to_absolute(self, tmp_path):
+    def test_converts_relative_to_absolute(self, tmp_path, monkeypatch):
         """Test conversion of relative path to absolute"""
-        # Save current directory
-        original_cwd = Path.cwd()
-        
-        try:
-            # Change to tmp_path
-            import os
-            os.chdir(str(tmp_path))
-            
-            result = netmhc_arguments.normalize_output_dir("output")
-            
-            assert Path(result).is_absolute()
-        finally:
-            # Restore original directory
-            os.chdir(str(original_cwd))
+        monkeypatch.chdir(tmp_path)
+        result = arguments_handling.parse_output_dir("output")
+        assert result == str(tmp_path / "output")
 
     def test_keeps_absolute_path_absolute(self, tmp_path):
         """Test that absolute paths remain absolute"""
         abs_path = str(tmp_path / "output")
         Path(abs_path).mkdir(exist_ok=True)
         
-        result = netmhc_arguments.normalize_output_dir(abs_path)
+        result = arguments_handling.parse_output_dir(abs_path)
         
-        assert str(result) == abs_path or Path(result).is_absolute()
+        assert result == abs_path
 
 
 class TestCheckHlaFormat:

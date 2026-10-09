@@ -1,6 +1,6 @@
 #coding:utf-8
 """
-End-to-end integration tests for AMS and AAMS pipelines
+Integration tests for Python stages invoked by Nextflow (no external tools)
 """
 from types import SimpleNamespace
 from pathlib import Path
@@ -16,9 +16,9 @@ from tools import (
 
 
 class TestAmsIntegrationPipeline:
-    """Integration tests for complete AMS pipeline"""
+    """Integration tests for the Allo-Count Python stage."""
     
-    def test_ams_workflow_creates_output_structure(self, tmp_path):
+    def test_ams_workflow_creates_output_structure(self, tmp_path, nextflow_environment):
         """Test that AMS creates complete output directory structure"""
         output_dir = str(tmp_path / "output")
         run_name = "ams_test"
@@ -36,7 +36,7 @@ class TestAmsIntegrationPipeline:
             imputation="imputation",
             min_dp=10, max_dp=1000, min_ad=2, min_gq=20,
             homozygosity_thr=0.8, base_length=3,
-            workers=1, norm_score=False,
+            frameshift=False,
             pair="", run_name=run_name, output_dir=output_dir,
         )
         ams_helpers.write_log(run_logs, args)
@@ -77,10 +77,10 @@ class TestAmsIntegrationPipeline:
         # Count mismatches
         count_df, mismatch_count = ams_helpers.count_mismatches(filtered, "dr")
         
-        # Should identify at least one mismatch
-        assert mismatch_count > 0
+        assert mismatch_count == 1
+        assert count_df["POS"].tolist() == [100]
 
-    def test_ams_saves_output_files(self, tmp_path):
+    def test_ams_saves_output_files(self, tmp_path, nextflow_environment):
         """Test that AMS saves required output files"""
         output_dir = tmp_path / "output"
         run_name = "test"
@@ -88,36 +88,40 @@ class TestAmsIntegrationPipeline:
             run_name, str(output_dir)
         )
         
-        # Create mock data
-        df = pd.DataFrame({"col": [1, 2, 3]})
         mismatch_count = 5
         
         args = SimpleNamespace(
             donor="donor.vcf", recipient="recipient.vcf",
             pair="P01", run_name=run_name, orientation="dr",
             min_dp=10, max_dp=1000, min_ad=2, min_gq=20,
-            homozygosity_thr=0.8, base_length=3,
+            homozygosity_thr=0.8, base_length=3, output_dir=str(output_dir),
         )
-        formatted_datetime = ""
         
         # Create dummy input files
-        df_donor_file = str(tmp_path / "donor.tsv")
-        df_recipient_file = str(tmp_path / "recipient.tsv")
-        mismatches_file = str(tmp_path / "mismatches.tsv")
+        df_donor_file = str(output_dir / "donor.tsv")
+        df_recipient_file = str(output_dir / "recipient.tsv")
+        mismatches_file = str(output_dir / "mismatches.tsv")
         Path(df_donor_file).write_text("data\n", encoding="utf-8")
         Path(df_recipient_file).write_text("data\n", encoding="utf-8")
         Path(mismatches_file).write_text("data\n", encoding="utf-8")
         
         result_path = table_operations.save_mismatch(
-            str(run_ams), args, mismatch_count, formatted_datetime,
+            str(run_ams), args, mismatch_count,
             df_donor_file, df_recipient_file, mismatches_file
         )
         
-        assert result_path is not None
+        table_operations.create_AMS_df(result_path)
+        result = pd.read_csv(Path(result_path) / "AMS_df.tsv", sep="\t")
+        assert result["pair"].tolist() == ["P01"]
+        assert result["ams"].tolist() == [5]
+        published_dir, _ = nextflow_environment
+        assert result["donor_table"].tolist() == [str(published_dir / "donor.tsv")]
+        assert result["recipient_table"].tolist() == [str(published_dir / "recipient.tsv")]
+        assert result["mismatches_table"].tolist() == [str(published_dir / "mismatches.tsv")]
 
 
 class TestAamsIntegrationPipeline:
-    """Integration tests for complete AAMS pipeline"""
+    """Integration tests for the Allo-Affinity Python stage."""
     
     def test_aams_creates_dependencies(self, tmp_path):
         """Test that AAMS creates all necessary directories"""
@@ -141,18 +145,20 @@ class TestAamsIntegrationPipeline:
         # Create mock data
         mismatches_df = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "transcripts_x": ["ENST0001"],
             "genes_x": ["ENSG0001"],
-            "peptide_ALT": ["MVKKA"],
-            "Peptide_id": ["ENSP0001"],
         })
         transcripts_pair = pd.DataFrame({
             "CHROM": ["1"],
+            "POS": ["100"],
             "Transcript_id": ["ENST0001"],
             "Gene_id": ["ENSG0001"],
             "peptide_ALT": ["MVKKA"],
             "Peptide_id": ["ENSP0001"],
             "Sequence_aa": [np.nan],
+            "aa_REF": ["K"],
+            "aa_alt_indiv": ["N"],
         })
         peptides_ensembl = pd.DataFrame({
             "CHROM": ["1"],
@@ -169,8 +175,11 @@ class TestAamsIntegrationPipeline:
             mismatches_df, transcripts_pair, peptides_ensembl, args, str(netchop_dir)
         )
         
-        assert len(chop_table) > 0
-        assert Path(chop_path).exists()
+        assert chop_table["Peptide_id"].tolist() == ["ENSP0001"]
+        assert chop_table["peptide_ALT"].tolist() == ["MVKKA"]
+        assert "aa_REF" not in chop_table.columns
+        saved = pd.read_csv(chop_path, sep="\t", dtype={"CHROM": str, "POS": str})
+        pd.testing.assert_frame_equal(saved, chop_table, check_dtype=False)
 
     def test_aams_peptide_generation_workflow(self, tmp_path):
         """Test peptide generation in AAMS"""
@@ -202,11 +211,11 @@ class TestAamsIntegrationPipeline:
         assert "MVKKA" in content
 
 
-class TestEndToEndAmsWorkflow:
-    """Complete end-to-end AMS workflow test"""
+class TestAmsStageIntegration:
+    """VCF parsing and metadata hand-off between Python stages."""
     
-    def test_creates_vcf_output_files(self, tmp_path):
-        """Test VCF parsing and output creation"""
+    def test_parses_staged_vcf(self, tmp_path):
+        """Test VEP parsing of a compressed worker input."""
         # Create minimal VCF
         vcf_file = tmp_path / "test.vcf.gz"
         vcf_text = "\n".join([
@@ -220,13 +229,16 @@ class TestEndToEndAmsWorkflow:
             f.write(vcf_text)
         
         # Parse VEP
-        df_infos, vep_indices = parsing_functions.gzvcf_vep_parser(str(vcf_file))
+        df_infos, vep_indices = parsing_functions.gzvcf_vep_parser(str(vcf_file), frameshift_mode=False)
         
-        assert isinstance(df_infos, pd.DataFrame)
-        assert vep_indices is not None
+        assert df_infos["#CHROM"].tolist() == ["1"]
+        assert df_infos["POS"].tolist() == ["100"]
+        assert vep_indices.gene == 2
+        assert vep_indices.transcript == 3
+        assert vep_indices.frameshift is None
 
-    def test_complete_donor_recipient_workflow(self, tmp_path):
-        """Test complete donor-recipient processing"""
+    def test_log_metadata_is_readable_by_aams(self, tmp_path, nextflow_environment):
+        """The AAMS stage reads provenance written by the AMS stage."""
         output_dir = tmp_path / "output"
         run_name = "complete_test"
         
@@ -241,7 +253,7 @@ class TestEndToEndAmsWorkflow:
             orientation="dr", imputation="imputation",
             min_dp=10, max_dp=1000, min_ad=2, min_gq=20,
             homozygosity_thr=0.8, base_length=3,
-            workers=1, norm_score=False,
+            frameshift=False,
             pair="", run_name=run_name, output_dir=str(output_dir),
         )
         ams_helpers.write_log(run_logs, args)
@@ -251,7 +263,10 @@ class TestEndToEndAmsWorkflow:
         assert (Path(run_logs) / "run.log").exists()
         
         log_content = (Path(run_logs) / "run.log").read_text()
-        assert "Orientation" in log_content
+        assert aams_helpers.read_log_field(Path(run_logs) / "run.log", "Orientation") == "dr"
+        published_dir, command = nextflow_environment
+        assert aams_helpers.read_log_field(Path(run_logs) / "run.log", "Output_dir") == str(published_dir)
+        assert f"Nextflow_command: {command}\n" in log_content
 
 
 class TestAamsNetMhcWorkflow:
@@ -293,7 +308,7 @@ class TestPipelineErrorHandling:
         nonexistent = str(tmp_path / "missing.vcf")
         
         with pytest.raises(FileNotFoundError) as error:
-            parsing_functions.vcf_vep_parser(nonexistent)
+            parsing_functions.vcf_vep_parser(nonexistent, frameshift_mode=False)
         assert error.value.filename == nonexistent
 
     def test_handles_malformed_vcf(self, tmp_path):
@@ -302,7 +317,7 @@ class TestPipelineErrorHandling:
         vcf_file.write_text("not a valid vcf file\n", encoding="utf-8")
         
         with pytest.raises(ValueError, match="does not contain the VEP information"):
-            parsing_functions.vcf_vep_parser(str(vcf_file))
+            parsing_functions.vcf_vep_parser(str(vcf_file), frameshift_mode=False)
 
     def test_handles_empty_dataframes(self):
         """Test handling of empty DataFrames"""

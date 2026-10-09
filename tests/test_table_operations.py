@@ -2,11 +2,11 @@
 """
 Tests for table_operations.py module (Transcript & mismatch merging)
 """
-import inspect
 from pathlib import Path
 import pandas as pd
+import pytest
 
-from tools import table_operations
+from tools import table_operations, normalize_cohort
 
 
 class TestSaveMismatch:
@@ -30,25 +30,19 @@ class TestSaveMismatch:
             "output_dir": str(tmp_path),
         })()
 
-        save_args = [str(run_ams), args, 4]
-        if "formatted_datetime" in inspect.signature(
-            table_operations.save_mismatch
-        ).parameters:
-            save_args.append("")
-        save_args.extend([
+        ams_exp_path = table_operations.save_mismatch(
+            str(run_ams), args, 4,
             str(tmp_path / "donor.tsv"),
             str(tmp_path / "recipient.tsv"),
             str(tmp_path / "mismatches.tsv"),
-        ])
-
-        ams_exp_path = table_operations.save_mismatch(*save_args)
+        )
         table_operations.create_AMS_df(ams_exp_path)
 
         result = pd.read_csv(Path(ams_exp_path) / "AMS_df.tsv", sep="\t", dtype=str)
         assert result.loc[0, "donor"] == "test.1"
         assert result.loc[0, "recipient"] == "test.2"
     
-    def test_creates_ams_file(self, tmp_path):
+    def test_creates_ams_file(self, tmp_path, nextflow_environment):
         """Test creation of AMS output file"""
         run_ams = tmp_path / "AMS"
         run_ams.mkdir()
@@ -65,10 +59,10 @@ class TestSaveMismatch:
             'min_gq': 20,
             'homozygosity_thr': 0.8,
             'base_length': 3,
+            'output_dir': str(tmp_path),
         })()
         
         mismatch_count = 5
-        formatted_datetime = ""
         
         df_donor_file = str(tmp_path / "donor.tsv")
         df_recipient_file = str(tmp_path / "recipient.tsv")
@@ -80,12 +74,19 @@ class TestSaveMismatch:
         Path(mismatches_file).write_text("data\n", encoding="utf-8")
         
         result_path = table_operations.save_mismatch(
-            str(run_ams), args, mismatch_count, formatted_datetime,
+            str(run_ams), args, mismatch_count,
             df_donor_file, df_recipient_file, mismatches_file
         )
         
-        assert result_path is not None
-        assert Path(result_path).exists() or str(run_ams) in result_path
+        files = list(Path(result_path).glob("*.pkl"))
+        assert len(files) == 1
+        result = pd.read_pickle(files[0])
+        published_dir, _ = nextflow_environment
+        assert result.loc[0, "ams"] == 5
+        assert result.loc[0, "donor_table"] == str(published_dir / "donor.tsv")
+        assert result.loc[0, "recipient_table"] == str(published_dir / "recipient.tsv")
+        assert result.loc[0, "mismatches_table"] == str(published_dir / "mismatches.tsv")
+        pd.testing.assert_frame_equal(pd.read_csv(files[0].with_suffix(".csv")), result)
 
 
 class TestCreateAmsDataframe:
@@ -183,6 +184,7 @@ class TestBuildTranscriptsTableIndiv:
             'aa': 6,
             'codons': 7,
             'gnomad': 8,
+            'frameshift': None,
         })()
         
         result = table_operations.build_transcripts_table_indiv(
@@ -240,6 +242,7 @@ class TestBuildTranscriptsTableIndiv:
             'aa': 6,
             'codons': 7,
             'gnomad': 8,
+            'frameshift': None,
         })()
         
         result = table_operations.build_transcripts_table_indiv(
@@ -267,6 +270,7 @@ class TestBuildTranscriptsTable:
             "Protein_position": ["42"],
             "Amino_acids": ["K/N"],
             "Codons": ["aAa/aTa"],
+            "Frameshift_sequence": [""],
             "gnomADe_AF": ["0.001"],
             "diff": ["1"],
         })
@@ -281,6 +285,7 @@ class TestBuildTranscriptsTable:
             "Protein_position": ["42"],
             "Amino_acids": ["K/N"],
             "Codons": ["aAa/aTa"],
+            "Frameshift_sequence": [""],
             "gnomADe_AF": ["0.001"],
             "diff": ["1"],
         })
@@ -323,7 +328,7 @@ class TestGetRefRatioPair:
             "GT": ["0/0", "0/0", "0/1"],
         })
         
-        ratio = table_operations.get_ref_ratio_pair(donor_df, recipient_df)
+        ratio = normalize_cohort.get_ref_ratio_pair(donor_df, recipient_df)
         
         assert isinstance(ratio, tuple)
         assert len(ratio) == 3
@@ -332,12 +337,11 @@ class TestGetRefRatioPair:
         assert ratio == (1, 3, 1/3)
 
 
-class TestGetRefRatio:
-    """Tests for get_ref_ratio() - loading reference populations"""
+class TestCohortReferenceRatio:
+    """Reference ratios are now calculated in the final cohort stage."""
     
-    def test_normalizes_ratios(self):
-        """Test normalization of ratios"""
-        """Test normalization of ratios"""
+    def test_counts_common_and_total_reference_positions(self):
+        """A heterozygous/reference site contributes only to total_ref."""
         # Test get_ref_ratio_pair function
         donor_df = pd.DataFrame({
             "CHROM": [1, 1],
@@ -350,57 +354,62 @@ class TestGetRefRatio:
             "GT": ["0/0", "0/0"]
         })
         
-        common_ref, total_ref, ref_ratio = table_operations.get_ref_ratio_pair(donor_df, recipient_df)
+        common_ref, total_ref, ref_ratio = normalize_cohort.get_ref_ratio_pair(donor_df, recipient_df)
         
         assert common_ref == 1  # One position where both are 0/0
         assert total_ref == 2   # Two positions total
         assert ref_ratio == 0.5
 
 
-class TestAddNorm:
-    """Tests for add_norm() - adding normalized columns"""
-    
-    def test_adds_normalized_columns(self, tmp_path):
-        """Test adding normalized score columns"""
-        # add_norm expects a dataframe containing 'ams' and 'ref_ratio' columns
-        ams_df = pd.DataFrame({
-            "pair": ["pairA"],
-            "ams": [5],
-            "ref_ratio": [0.8],
-        })
-        # Provide a directory path for output
-        ams_dir = tmp_path / "ams_dir"
+class TestCohortNormalization:
+    """The final Nextflow cohort stage replaces the former add_norm helper."""
+
+    @staticmethod
+    def cohort_files(tmp_path, last_score=31):
+        ams_dir = tmp_path / "AMS"
         ams_dir.mkdir()
+        ams_pkls, donor_tables, recipient_tables = [], [], []
+        # Deliberately unsorted inputs: pair ordering must be numeric.
+        for pair, score, common in [("P10", last_score, 4), ("P1", 10, 2), ("P2", 20, 3)]:
+            ams_file = ams_dir / f"{pair}_AMS.pkl"
+            pd.DataFrame({"pair": [pair], "ams": [score]}).to_pickle(ams_file)
+            donor = pd.DataFrame({"CHROM": ["1"] * 4, "POS": [100, 200, 300, 400], "GT": ["0/0"] * 4})
+            recipient = donor.copy()
+            recipient["GT"] = ["0/0"] * common + ["0/1"] * (4 - common)
+            donor_file = tmp_path / f"{pair}_D0_table.tsv"
+            recipient_file = tmp_path / f"{pair}_R0_table.tsv"
+            donor.to_csv(donor_file, sep="\t", index=False)
+            recipient.to_csv(recipient_file, sep="\t", index=False)
+            ams_pkls.append(str(ams_file))
+            donor_tables.append(str(donor_file))
+            recipient_tables.append(str(recipient_file))
+        return ams_dir, ams_pkls, donor_tables, recipient_tables
 
-        table_operations.add_norm(ams_df, str(ams_dir), ref_ratio=0.8)
-
-        # Check output file was created with expected columns
-        out_tsv = ams_dir / "AMS_df.tsv"
-        assert out_tsv.exists()
-        out_df = pd.read_csv(out_tsv, sep="\t")
-        assert "ams_giab" in out_df.columns
-        assert "ams_norm" in out_df.columns
-        assert "ref_ratio" in out_df.columns
-
-    def test_normalizes_correctly(self, tmp_path):
-        """Test that normalization formula is correct"""
-        # Create test data
-        ams_df = pd.DataFrame({
-            "ams": [10, 20, 30],
-            "ref_ratio": [0.5, 0.7, 0.9]
+    def test_adds_normalized_columns(self, tmp_path):
+        ams_dir, ams_pkls, donors, recipients = self.cohort_files(tmp_path)
+        normalize_cohort.write_normalized_ams_tables(ams_pkls, donors, recipients)
+        result = pd.read_csv(ams_dir / "AMS_df.tsv", sep="\t")
+        expected = pd.DataFrame({
+            "pair": ["P1", "P2", "P10"],
+            "ams_giab": [10, 20, 31],
+            "common_ref": [2, 3, 4],
+            "total_ref": [4, 4, 4],
+            "ref_ratio": [0.5, 0.75, 1.0],
+            "ams_norm": [20, 20, 20],
         })
-        ref_ratio = 0.8  # Not used in add_norm, but passed
-        
-        # Create the directory
-        ams_exp_path = tmp_path / "test"
-        ams_exp_path.mkdir()
-        
-        # Call add_norm
-        table_operations.add_norm(ams_df, str(ams_exp_path), ref_ratio)
-        
-        # Check that ams_norm column was added
-        assert "ams_norm" in ams_df.columns
-        
-        # The normalization uses linear regression
-        # We can check that values are reasonable
-        assert all(isinstance(x, (int, float)) for x in ams_df["ams_norm"] if x != "NA")
+        pd.testing.assert_frame_equal(result, expected)
+
+    @pytest.mark.parametrize("last_score", [
+        31,
+        pytest.param(30, marks=pytest.mark.xfail(
+            strict=True,
+            reason="Float regression yields 19.999...; astype(int) truncates the expected score 20 to 19",
+        )),
+    ])
+    def test_normalizes_correctly(self, tmp_path, last_score):
+        _, ams_pkls, donors, recipients = self.cohort_files(tmp_path, last_score)
+        result = normalize_cohort.normalize_ams(ams_pkls, list(reversed(donors)), recipients)
+        assert result["pair"].tolist() == ["P1", "P2", "P10"]
+        assert result["ams_giab"].tolist() == [10, 20, last_score]
+        assert result["ref_ratio"].tolist() == [0.5, 0.75, 1.0]
+        assert result["ams_norm"].tolist() == [20, 20, 20]

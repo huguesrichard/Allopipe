@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import pytest
 
-from tools import arguments_handling, netmhc_arguments
+from tools import arguments_handling, netmhc_arguments, aams_helpers
 
 
 def _write_dummy_vcf(path: Path) -> None:
@@ -208,15 +208,27 @@ class TestArgumentsHandlingExtended:
 class TestNetmhcArgumentsHandling:
     """Tests for NetMHC-specific argument handling"""
     
-    def test_netmhc_requires_run_name(self, tmp_path, monkeypatch):
+    def test_netmhc_requires_run_name(self, tmp_path, monkeypatch, capsys):
         """Test NetMHC pipeline requires run name"""
-        # Would need netmhc_arguments implementation
-        pass
+        ensembl_dir = tmp_path / "ensembl"
+        ensembl_dir.mkdir()
+        monkeypatch.setattr(sys, "argv", [
+            "aams_pipeline.py", "-d", str(ensembl_dir), "-a", "HLA-A02:01",
+            "-o", str(tmp_path),
+        ])
+        with pytest.raises(SystemExit) as error:
+            netmhc_arguments.netmhc_arguments()
+        assert error.value.code == 2
+        output = capsys.readouterr()
+        assert "--run_name" in output.err + output.out
+        assert "required" in output.err + output.out
 
-    def test_netmhc_orientation_options(self):
-        """Test NetMHC accepts orientation options"""
-        # Would test netmhc_arguments.netmhc_arguments()
-        pass
+    @pytest.mark.parametrize("orientation", ["dr", "rd"])
+    def test_netmhc_orientation_from_ams_log(self, tmp_path, orientation):
+        """AAMS inherits orientation from the AMS log, not a CLI option."""
+        log_file = tmp_path / "P01_run.log"
+        log_file.write_text(f"Orientation: {orientation}\n", encoding="utf-8")
+        assert aams_helpers.read_log_field(log_file, "Orientation") == orientation
 
 
 class TestCheckFunctions:

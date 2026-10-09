@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 import gzip
 import pandas as pd
+import pytest
 
 from tools import aams_helpers, cleavage
 
@@ -16,18 +17,18 @@ def test_get_ams_params_parses_mismatches_file_from_output_dir(tmp_path):
     assert mismatches_path == str(mismatch_file)
 
 
-def test_read_log_field_uses_output_dir(tmp_path):
+def test_read_log_field_reads_explicit_log_path(tmp_path):
     output_dir = tmp_path / "out"
     logs_dir = output_dir / "runs" / "runB" / "logs"
     logs_dir.mkdir(parents=True)
     log_file = logs_dir / "run.log"
     log_file.write_text("Orientation: dr\nDonor: /tmp/donor.vcf.gz\n", encoding="utf-8")
-    args = SimpleNamespace(output_dir=str(output_dir), run_name="runB", pair="")
-    assert aams_helpers.read_log_field(args, "Orientation") == "dr"
-    assert aams_helpers.read_log_field(args, "Donor") == "/tmp/donor.vcf.gz"
+    assert aams_helpers.read_log_field(log_file, "Orientation") == "dr"
+    assert aams_helpers.read_log_field(log_file, "Donor") == "/tmp/donor.vcf.gz"
 
 
-def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
+@pytest.mark.parametrize("individual", ["donor", "recipient"])
+def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path, individual):
     output_dir = tmp_path / "out"
     run_name = "runC"
     logs_dir = output_dir / "runs" / run_name / "logs"
@@ -35,7 +36,8 @@ def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
     logs_dir.mkdir(parents=True)
     run_tables.mkdir(parents=True)
 
-    donor_path = str(tmp_path / "SAMPLE_DONOR.vcf.gz")
+    sample = f"SAMPLE_{individual.upper()}"
+    vcf_path = str(tmp_path / f"{sample}.vcf.gz")
     # Create a minimal VCF for extracting VEP field indices
     vcf_text = "\n".join(
         [
@@ -46,17 +48,19 @@ def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
             "1\t100\t.\tA\tT\t.\t.\tCSQ=T|missense_variant|ENSG0001|ENST0001|123|45|15|K/N|aAa/aTa|0.001",
         ]
     ) + "\n"
-    with gzip.open(donor_path, "wt", encoding="utf-8") as f:
+    with gzip.open(vcf_path, "wt", encoding="utf-8") as f:
         f.write(vcf_text)
 
     (logs_dir / "run.log").write_text(
-        f"Orientation: dr\nDonor: {donor_path}\nRecipient: /tmp/r.vcf.gz\n",
+        "Orientation: dr\n"
+        f"Donor: {vcf_path if individual == 'donor' else tmp_path / 'unused_donor.vcf.gz'}\n"
+        f"Recipient: {vcf_path if individual == 'recipient' else tmp_path / 'unused_recipient.vcf.gz'}\n",
         encoding="utf-8",
     )
 
     str_params = "20_400_5_0_0.2_3"
     str_params_split = "20_400_5_0.2"
-    pickle_path = run_tables / f"SAMPLE_DONOR_vep_infos_table_{str_params_split}.pkl"
+    pickle_path = run_tables / f"{sample}_vep_infos_table_{str_params_split}.pkl"
     df = pd.DataFrame(
        {
         "CHROM": ["1"],
@@ -67,7 +71,7 @@ def test_pickle_parsing_reads_from_output_dir_and_extracts_fields(tmp_path):
     df.to_pickle(pickle_path)
 
     args = SimpleNamespace(output_dir=str(output_dir), run_name=run_name, pair="")
-    parsed = cleavage.pickle_parsing(str_params, args)
+    parsed = cleavage.pickle_parsing(str_params, args, logs_dir / "run.log", individual)
     assert "INFO" not in parsed.columns
     assert parsed.loc[0, "Gene_id"] == "ENSG0001"
     assert parsed.loc[0, "Transcript_id"] == "ENST0001"
