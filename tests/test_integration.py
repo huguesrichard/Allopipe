@@ -292,33 +292,26 @@ class TestPipelineErrorHandling:
         """Test graceful handling of missing input files"""
         nonexistent = str(tmp_path / "missing.vcf")
         
-        # Should raise or handle gracefully
-        with pytest.raises((FileNotFoundError, OSError, ValueError)):
+        with pytest.raises(FileNotFoundError) as error:
             parsing_functions.vcf_vep_parser(nonexistent)
+        assert error.value.filename == nonexistent
 
     def test_handles_malformed_vcf(self, tmp_path):
         """Test handling of malformed VCF"""
         vcf_file = tmp_path / "malformed.vcf"
         vcf_file.write_text("not a valid vcf file\n", encoding="utf-8")
         
-        # Should handle without crashing
-        try:
+        with pytest.raises(ValueError, match="does not contain the VEP information"):
             parsing_functions.vcf_vep_parser(str(vcf_file))
-        except Exception:
-            # Expected for malformed input
-            pass
 
     def test_handles_empty_dataframes(self):
         """Test handling of empty DataFrames"""
-        empty_df = pd.DataFrame()
-        
-        # Functions should handle empty input, even if required columns are missing
         empty_df = pd.DataFrame({
             "GT_x": [],
             "GT_y": [],
         })
         result = ams_helpers.keep_alt(empty_df, "x", "y")
-        assert isinstance(result, pd.DataFrame)
+        pd.testing.assert_frame_equal(result, empty_df)
 
 
 class TestPipelinePermissions:

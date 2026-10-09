@@ -189,7 +189,21 @@ class TestBuildTranscriptsTableIndiv:
             str(vep_file), merged_ams, vep_indices, "donor"
         )
         
-        assert isinstance(result, (pd.DataFrame, str, dict))
+        expected = pd.DataFrame({
+            "CHROM": [1, 1],
+            "POS": [100, 200],
+            "Gene_id": ["ENSG0001", "ENSG0002"],
+            "Transcript_id": ["ENST0001", "ENST0002"],
+            "Protein_position": ["3", "6"],
+            "Amino_acids": ["K/N", "R/R"],
+            "aa_ref_indiv_x": ["K", "R"],
+            "aa_alt_indiv_x": ["N", "R"],
+            "diff": ["1", "0"],
+        })
+        pd.testing.assert_frame_equal(
+            result[expected.columns].reset_index(drop=True), expected
+        )
+        assert "INFO" not in result.columns
 
     def test_filters_by_position(self, tmp_path):
         """Test that transcripts are filtered by position"""
@@ -232,9 +246,9 @@ class TestBuildTranscriptsTableIndiv:
             str(vep_file), merged_ams, vep_indices, "donor"
         )
         
-        # Should only include positions 100 and 300, not 200
-        assert len(result) == 2
-        assert all(pos in [100, 300] for pos in result["POS"])
+        assert result["POS"].tolist() == [100, 300]
+        assert result["Gene_id"].tolist() == ["ENSG0001", "ENSG0003"]
+        assert result["Transcript_id"].tolist() == ["ENST0001", "ENST0003"]
 
 
 class TestBuildTranscriptsTable:
@@ -271,13 +285,25 @@ class TestBuildTranscriptsTable:
             "diff": ["1"],
         })
         
+        # Keep the common transcript once and retain a recipient-only transcript.
+        recipient_only = transcripts_recipient.copy()
+        recipient_only.loc[0, "POS"] = 200
+        recipient_only.loc[0, "Gene_id"] = "ENSG0002"
+        recipient_only.loc[0, "Transcript_id"] = "ENST0002"
+        transcripts_recipient = pd.concat(
+            [transcripts_recipient, recipient_only], ignore_index=True
+        )
+        expected = pd.concat([transcripts_donor, recipient_only], ignore_index=True)
+        transcripts_donor = pd.concat(
+            [transcripts_donor, transcripts_donor], ignore_index=True
+        )
+
         result = table_operations.build_transcripts_table(
             transcripts_donor, transcripts_recipient
         )
-        
-        assert isinstance(result, pd.DataFrame)
-        # Should have columns from both
-        assert len(result) >= 0
+        pd.testing.assert_frame_equal(
+            result.sort_values("POS").reset_index(drop=True), expected, check_like=True
+        )
 
 
 class TestGetRefRatioPair:

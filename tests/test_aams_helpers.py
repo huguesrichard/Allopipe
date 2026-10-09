@@ -4,6 +4,7 @@ Comprehensive tests for aams_helpers.py module (NetMHCpan peptide processing)
 """
 from types import SimpleNamespace
 from pathlib import Path
+from unittest.mock import patch
 import pandas as pd
 import pytest
 
@@ -232,34 +233,27 @@ class TestAddPepSeq:
 class TestMutationProcess:
     """Tests for mutation_process() - applying mutations"""
     
-    def test_substitution_variant(self):
+    @pytest.mark.parametrize(
+        "position, expected", [(1, "TCD"), (5, "DETGH"), (9, "HIT")]
+    )
+    def test_substitution_variant(self, position, expected):
         """Test substitution variant processing"""
-        row = pd.Series({
-            "Ref": "A",
-            "Alt": "T",
-            "Consequence": "missense_variant",
-        })
-        
-        # Should apply mutation logic
         result = aams_helpers.mutation_process(
-            row, "T", position=50, pep_size=9, ref_base="A", alt_base="T"
+            "ACDEFGHIK", "T", position=position, pep_size=3
         )
-        
-        assert result is not None
+        assert result == expected
 
     def test_deletion_variant(self):
-        """Test deletion variant processing"""
-        row = pd.Series({
-            "Ref": "ATG",
-            "Alt": "A",
-            "Consequence": "frameshift_variant",
-        })
-        
-        result = aams_helpers.mutation_process(
-            row, "A", position=50, pep_size=9
-        )
-        
-        assert result is not None
+        """Test deletion dispatch and the current gap-marked peptide window."""
+        with patch.object(
+            aams_helpers, "deletion", wraps=aams_helpers.deletion
+        ) as apply_deletion:
+            result = aams_helpers.mutation_process(
+                "ACDEFGHIK", "-", position=4, pep_size=3
+            )
+
+        apply_deletion.assert_called_once_with("ACDEFGHIK", "-", 4, 3)
+        assert result == "DE-FG"
 
 
 class TestPeptideSegmentation:
@@ -280,9 +274,9 @@ class TestPeptideSegmentation:
         
         result = aams_helpers.peptide_seg(peptide, 9)
         
-        # Should generate overlapping segments
-        assert len(result) > 1
-        assert all(len(seg) == 9 for seg in result)
+        assert result == [
+            "MVKKAMVKK", "VKKAMVKKK", "KKAMVKKKA", "KAMVKKKAA", "AMVKKKAAA"
+        ]
 
     def test_peptide_too_short(self):
         """Test with peptide shorter than pep_size"""
@@ -290,8 +284,7 @@ class TestPeptideSegmentation:
         
         result = aams_helpers.peptide_seg(peptide, 9)
         
-        # Should handle short sequences
-        assert isinstance(result, list)
+        assert result == []
 
 
 class TestWritePepFasta:

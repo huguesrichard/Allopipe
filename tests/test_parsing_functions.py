@@ -61,8 +61,13 @@ class TestVcfVepParser:
         
         df_infos, _ = parsing_functions.vcf_vep_parser(str(vcf_file))
         
-        # Should parse both variants
-        assert len(df_infos) >= 2
+        assert df_infos["POS"].tolist() == ["100", "200"]
+        assert df_infos["REF"].tolist() == ["A", "G"]
+        assert df_infos["ALT"].tolist() == ["T", "C"]
+        assert df_infos["INFO"].tolist() == [
+            "CSQ=T|missense|ENSG0001|ENST0001|1|2|3|K/N|aAa/aTa|0.001",
+            "CSQ=C|frameshift|ENSG0002|ENST0002|1|2|3|G/R|gGg/cCc|0.002",
+        ]
 
     def test_handles_missing_vep_info(self, tmp_path):
         """Test with missing VEP INFO annotation"""
@@ -74,7 +79,7 @@ class TestVcfVepParser:
         ]) + "\n"
         vcf_file.write_text(vcf_text, encoding="utf-8")
         
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="does not contain the VEP information"):
             parsing_functions.vcf_vep_parser(str(vcf_file))
 
 
@@ -120,8 +125,8 @@ class TestGzvcfVepParser:
         df1, idx1 = parsing_functions.vcf_vep_parser(str(vcf_uncompressed))
         df2, idx2 = parsing_functions.gzvcf_vep_parser(str(vcf_compressed))
         
-        # Results should be equivalent
-        assert len(df1) == len(df2)
+        pd.testing.assert_frame_equal(df1, df2)
+        assert vars(idx1) == vars(idx2)
 
 
 class TestExtractAaFromVep:
@@ -156,19 +161,14 @@ class TestReadFasta:
             ">seq1 description\n"
             "MVKKAMVKKA\n"
             "MVKKV\n"
-            ">seq2\n"
+            ">seq2 description\n"
             "LCCA\n",
             encoding="utf-8"
         )
         
         result = parsing_functions.read_fasta(str(fasta_file))
         
-        assert isinstance(result, dict)
-        assert "seq1" in result
-        # Note: read_fasta includes the newline in the key from header line
-        # Check that seq2 exists (may have trailing newline depending on implementation)
-        has_seq2 = "seq2" in result or "seq2\n" in result
-        assert has_seq2
+        assert result == {"seq1": "MVKKAMVKKAMVKKV", "seq2": "LCCA"}
 
     def test_handles_empty_fasta(self, tmp_path):
         """Test with empty FASTA file"""
@@ -183,22 +183,17 @@ class TestReadFasta:
         """Test FASTA with multi-line sequences"""
         fasta_file = tmp_path / "multiline.fa"
         fasta_file.write_text(
-            ">seq1\n"
+            ">seq1 description\n"
             "MVKKAMVKKAMVKKA\n"
             "LCCA\n"
-            ">seq2\n"
+            ">seq2 description\n"
             "AAAA\n",
             encoding="utf-8"
         )
         
         result = parsing_functions.read_fasta(str(fasta_file))
         
-        # seq1 should have concatenated sequence (note: key includes trailing newline)
-        has_seq1 = "seq1" in result or "seq1\n" in result
-        assert has_seq1
-        # Verify sequence was concatenated
-        seq_key = "seq1" if "seq1" in result else "seq1\n"
-        assert len(result[seq_key]) > 0
+        assert result == {"seq1": "MVKKAMVKKAMVKKALCCA", "seq2": "AAAA"}
 
 
 class TestReadPepFa:

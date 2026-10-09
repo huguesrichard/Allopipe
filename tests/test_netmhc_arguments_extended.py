@@ -98,13 +98,11 @@ class TestCheckIfExistingRunName:
         nonexistent_dir = str(tmp_path / "nonexistent")
         
         parser = arguments_handling.CustomParser(prog="test")
-        # Should handle gracefully or raise (SystemExit is raised via parser.error)
-        try:
+        with pytest.raises(SystemExit) as error:
             netmhc_arguments.check_if_existing_run_name(
                 parser, "test_run", nonexistent_dir
             )
-        except (SystemExit, Exception):
-            pass
+        assert error.value.code == 2
 
 
 class TestNormalizeOutputDir:
@@ -186,8 +184,8 @@ class TestCheckIfValidFloat:
 class TestNetmhcArgumentsParsing:
     """Tests for complete netmhc_arguments() parsing"""
     
-    def test_requires_run_name(self, tmp_path, monkeypatch):
-        """Test that run name is required"""
+    def test_parses_existing_run_name(self, tmp_path, monkeypatch):
+        """Test successful parsing of an explicitly supplied, existing run."""
         output_dir = tmp_path / "output"
         output_dir.mkdir()
         run_path = output_dir / "runs" / "test_run" / "run_tables"
@@ -211,15 +209,11 @@ class TestNetmhcArgumentsParsing:
         
         monkeypatch.setattr("sys.argv", test_args)
         
-        # This would require full setup, so we'll test the validation separately
-        # For now, test that the function exists and can be called
-        try:
-            args = netmhc_arguments.netmhc_arguments()
-            # If it succeeds, good
-            assert hasattr(args, 'run_name')
-        except SystemExit:
-            # Expected if setup incomplete
-            pass
+        args = netmhc_arguments.netmhc_arguments()
+        assert args.run_name == "test_run"
+        assert args.output_dir == str(output_dir.resolve())
+        assert args.ensembl_path == tmp_path / "ensembl"
+        assert args.hla_typing == "HLA-A02:01"
 
     def test_requires_valid_hla_alleles(self):
         """Test that HLA alleles must be valid"""
