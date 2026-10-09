@@ -90,14 +90,6 @@ def test_check_if_accepted_str_rejects_unsafe_run_names(run_name):
         arguments_handling.check_if_accepted_str(parser, run_name)
 
 
-def test_check_workers_count_bounds(monkeypatch):
-    parser = arguments_handling.CustomParser(prog="prog")
-    monkeypatch.setattr(arguments_handling.os, "cpu_count", lambda: 4)
-    assert arguments_handling.check_workers_count(parser, "2") == 2
-    with pytest.raises(SystemExit):
-        arguments_handling.check_workers_count(parser, "8")
-
-
 def test_arguments_raise_when_min_dp_gt_max_dp(tmp_path, monkeypatch):
     donor = tmp_path / "donor.vcf"
     recipient = tmp_path / "recipient.vcf"

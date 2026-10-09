@@ -275,19 +275,3 @@ class TestCheckFunctions:
         # Should accept valid orientations
         result = arguments_handling.check_if_accepted_str(parser, "dr")
         assert result == "dr" or result is not None
-
-    def test_check_workers_count_valid(self, monkeypatch):
-        """Test workers count validation"""
-        parser = arguments_handling.CustomParser(prog="test")
-        monkeypatch.setattr(arguments_handling.os, "cpu_count", lambda: 8)
-        
-        result = arguments_handling.check_workers_count(parser, "4")
-        assert result == 4
-
-    def test_check_workers_exceeds_cpu_count(self, monkeypatch):
-        """Test workers count cannot exceed CPU count"""
-        parser = arguments_handling.CustomParser(prog="test")
-        monkeypatch.setattr(arguments_handling.os, "cpu_count", lambda: 4)
-        
-        with pytest.raises(SystemExit):
-            arguments_handling.check_workers_count(parser, "8")

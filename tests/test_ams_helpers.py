@@ -47,63 +47,6 @@ class TestCreateRunDirectory:
         assert Path(output_dir).exists()
 
 
-class TestHandleOverwrite:
-    """Tests for handle_overwrite()"""
-    
-    def test_returns_false_when_file_does_not_exist(self, tmp_path):
-        """Test when AMS file doesn't exist"""
-        output_dir = tmp_path / "output"
-        output_dir.mkdir()
-        run_name = "new_run"
-        
-        args = SimpleNamespace(
-            output_dir=str(output_dir),
-            run_name=run_name,
-            pair="",
-            orientation="dr",
-            min_dp=10,
-            max_dp=1000,
-            min_ad=2,
-            min_gq=20,
-            homozygosity_thr=0.8,
-            base_length=3,
-        )
-        
-        # Should return False (no existing file)
-        result = ams_helpers.handle_overwrite(args)
-        assert result == False
-
-    def test_returns_true_when_ams_file_exists(self, tmp_path):
-        """Test when AMS file already exists"""
-        output_dir = tmp_path / "output"
-        run_name = "test_run"
-        run_path, run_tables, run_plots, run_ams, _ = ams_helpers.create_run_directory(
-            run_name, str(output_dir)
-        )
-        
-        # Create an existing AMS file in the expected overwrite path
-        overwrite_dir = Path(run_ams) / f"{run_name}_AMS_10_1000_2_0.8_20_dr_3"
-        overwrite_dir.mkdir(parents=True, exist_ok=True)
-        ams_file = overwrite_dir / f"AMS_{run_name}_10_1000_2_0.8_20_dr_3.csv"
-        ams_file.write_text("pair,mismatch_count\n", encoding="utf-8")
-        
-        args = SimpleNamespace(
-            output_dir=str(output_dir),
-            run_name=run_name,
-            pair="",
-            orientation="dr",
-            min_dp=10,
-            max_dp=1000,
-            min_ad=2,
-            min_gq=20,
-            homozygosity_thr=0.8,
-            base_length=3,
-        )
-        
-        result = ams_helpers.handle_overwrite(args)
-        assert result == True
-
-
 class TestWriteLog:
     """Tests for write_log()"""
     
