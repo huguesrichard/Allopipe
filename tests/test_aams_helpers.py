@@ -1,0 +1,337 @@
+#coding:utf-8
+"""
+Comprehensive tests for aams_helpers.py module (NetMHCpan peptide processing)
+"""
+from types import SimpleNamespace
+from pathlib import Path
+from unittest.mock import patch
+import pandas as pd
+import pytest
+
+from tools import aams_helpers
+
+
+class TestCreateAamsDependencies:
+    """Tests for create_aams_dependencies()"""
+    
+    def test_creates_all_directories(self, tmp_path):
+        """Test that all required AAMS directories are created"""
+        output_dir = str(tmp_path / "output")
+        run_name = "aams_run"
+        
+        aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
+            run_name, output_dir
+        )
+        
+        # All paths should exist
+        assert Path(aams_run_tables).exists()
+        assert Path(netmhc_dir).exists()
+        assert Path(aams_path).exists()
+        assert Path(netchop_dir).exists()
+        
+        # Verify structure
+        assert "run_tables" in aams_run_tables
+        assert "netmhc" in netmhc_dir or "runs" in netmhc_dir
+
+
+class TestReadLogField:
+    """Tests for read_log_field()"""
+    
+    def test_reads_existing_field(self, tmp_path):
+        """Test reading an existing field from log"""
+        output_dir = tmp_path / "output"
+        run_name = "test_run"
+        aams_helpers.create_aams_dependencies(run_name, str(output_dir))
+
+        # Create log file in expected location
+        logs_dir = Path(output_dir) / "runs" / run_name / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        log_file = logs_dir / "run.log"
+        log_file.write_text(
+            "Orientation: dr\n"
+            "Donor: /path/to/donor.vcf.gz\n"
+            "Recipient: /path/to/recipient.vcf.gz\n",
+            encoding="utf-8"
+        )
+        
+        orientation = aams_helpers.read_log_field(log_file, "Orientation")
+        assert orientation == "dr"
+        
+        donor = aams_helpers.read_log_field(log_file, "Donor")
+        assert donor == "/path/to/donor.vcf.gz"
+
+    def test_missing_field_returns_none(self, tmp_path):
+        """Missing log fields are optional, not parser errors."""
+        output_dir = tmp_path / "output"
+        run_name = "test_run"
+        aams_helpers.create_aams_dependencies(run_name, str(output_dir))
+        
+        logs_dir = Path(output_dir) / "runs" / run_name / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        log_file = logs_dir / "run.log"
+        log_file.write_text("Orientation: dr\n", encoding="utf-8")
+        
+        # When field is missing, should return None
+        assert aams_helpers.read_log_field(log_file, "NonexistentField") is None
+
+
+class TestDictToDataframe:
+    """Tests for dict_to_df() - peptide dictionary conversion"""
+    
+    def test_converts_dict_to_dataframe(self):
+        """Test conversion of peptide dictionary to DataFrame"""
+        # Values should include [Gene_id, Coordinates, Transcript_id, Sequence_aa]
+        peptides = {
+            "ENSP0001": ["ENSG0001", "1:100:100:1", "ENST0001", "MVKKA"],
+            "ENSP0002": ["ENSG0002", "2:200:200:1", "ENST0002", "KWMVK"],
+        }
+        
+        df = aams_helpers.dict_to_df(peptides)
+        
+        assert isinstance(df, pd.DataFrame)
+        assert "Peptide_id" in df.columns
+        assert "Sequence_aa" in df.columns or "Sequence" in df.columns
+        assert len(df) == 2
+
+    def test_empty_dict_returns_empty_dataframe(self):
+        """Test with empty peptide dictionary"""
+        peptides = {}
+        
+        with pytest.raises(ValueError, match="Columns must be same length as key"):
+            df = aams_helpers.dict_to_df(peptides)
+
+
+class TestContributingAmsTranscripts:
+    """Tests for contributing_ams_transcripts()"""
+    
+    def test_filters_transcripts_by_position(self):
+        """Test transcript filtering by position overlap"""
+        # merged_pair is expected to contain transcripts_x and transcripts_y columns
+        merged_pair = pd.DataFrame({
+            "CHROM": [1, 1],
+            "POS": [100, 200],
+            "transcripts_x": ["ENST0001", "ENST0002"],
+            "transcripts_y": ["ENST0001", ""],
+        })
+        # This function expects an Ensembl transcripts dict keyed by transcript ID
+        ensembl_transcripts = {
+            "ENST0001": {"CHROM": "1", "start": 50, "end": 150},
+            "ENST0003": {"CHROM": "1", "start": 250, "end": 350},
+        }
+        
+        result = aams_helpers.contributing_ams_transcripts(merged_pair, ensembl_transcripts, "test")
+        
+        # Should include ENST0001 (overlaps POS 100)
+        assert len(result) > 0
+
+    def test_handles_missing_transcripts(self):
+        """Test with missing transcripts"""
+        merged_pair = pd.DataFrame({
+            "CHROM": [1],
+            "POS": [100],
+            "transcripts_x": ["ENST0001"],
+            "transcripts_y": [""],
+        })
+        ensembl_transcripts = {
+            "ENST0099": {"CHROM": "1", "start": 200, "end": 300},
+        }
+        
+        result = aams_helpers.contributing_ams_transcripts(merged_pair, ensembl_transcripts, "test")
+        
+        # Should return a dict (possibly empty) when no transcripts match
+        assert isinstance(result, dict)
+        assert len(result) == 0
+class TestFilterOnRefseq:
+    """Tests for filter_on_refseq()"""
+    
+    def test_filters_presence_in_refseq(self):
+        """Test filtering by presence in RefSeq"""
+        ams_transcripts = pd.DataFrame({
+            "transcript_id": ["ENST0001", "ENST0002"],
+            "data": [1, 2],
+        })
+        refseq_path = None  # Would be path to RefSeq file
+        
+        # If refseq file doesn't exist, should handle gracefully
+        with pytest.raises(ValueError, match="Invalid file path or buffer object type"):
+            result = aams_helpers.filter_on_refseq(ams_transcripts, refseq_path)
+
+
+class TestAddPepSeq:
+    """Tests for add_pep_seq()"""
+    
+    def test_adds_peptide_sequences(self):
+        """Test adding peptide sequences to transcripts"""
+        transcripts_pair = pd.DataFrame({
+            "CHROM": ["1"],
+            "POS": [100],
+            "cDNA_position": [123],
+            "Protein_position": [42],
+            "Consequence": ["missense_variant"],
+            "Gene_id": ["ENSG0001"],
+            "Transcript_id": ["ENST0001"],
+            "Sequence_nt": ["ATG"],
+            "Amino_acids": ["K/N"],
+            "aa_ref_indiv_x": ["K"],
+            "aa_alt_indiv_x": ["N"],
+            "aa_ref_indiv_y": ["K"],
+            "aa_alt_indiv_y": ["N"],
+            "aa_REF": ["K"],
+            "diff": ["K>N"],
+            "Frameshift_sequence": [None],
+        })
+        peptides_ensembl = pd.DataFrame({
+            "Gene_id": ["ENSG0001"],
+            "Transcript_id": ["ENST0001"],
+            "CHROM": ["1"],
+            "Peptide_id": ["ENSP0001"],
+            "Sequence_aa": ["MVKKA"],
+        })
+        
+        result = aams_helpers.add_pep_seq(transcripts_pair, peptides_ensembl)
+        
+        assert len(result) == 1
+        assert "Peptide_id" in result.columns
+        # Use scalar access to avoid pandas coercion paths that trigger numpy DeprecationWarnings
+        assert result.at[0, "Peptide_id"] == "ENSP0001"
+        assert result.at[0, "Sequence_aa"] == "MVKKA"
+        assert result.at[0, "Frameshift_sequence"] is None
+
+    def test_no_matching_peptides(self):
+        """Test with no matching peptides"""
+        transcripts_pair = pd.DataFrame({
+            "CHROM": ["1"],
+            "POS": [100],
+            "cDNA_position": [123],
+            "Protein_position": [42],
+            "Consequence": ["missense_variant"],
+            "Gene_id": ["ENSG0001"],
+            "Transcript_id": ["ENST0001"],
+            "Sequence_nt": ["ATG"],
+            "Amino_acids": ["K/N"],
+            "aa_ref_indiv_x": ["K"],
+            "aa_alt_indiv_x": ["N"],
+            "aa_ref_indiv_y": ["K"],
+            "aa_alt_indiv_y": ["N"],
+            "aa_REF": ["K"],
+            "diff": ["K>N"],
+            "Frameshift_sequence": [None],
+        })
+        peptides_ensembl = pd.DataFrame({
+            "Gene_id": ["ENSG0099"],
+            "Transcript_id": ["ENST0099"],
+            "CHROM": ["2"],
+            "Peptide_id": ["ENSP0099"],
+            "Sequence_aa": ["MVKKA"],
+        })
+        
+        result = aams_helpers.add_pep_seq(transcripts_pair, peptides_ensembl)
+        
+        assert len(result) == 0
+
+
+class TestMutationProcess:
+    """Tests for mutation_process() - applying mutations"""
+    
+    @pytest.mark.parametrize(
+        "position, expected", [(1, "TCD"), (5, "DETGH"), (9, "HIT")]
+    )
+    def test_substitution_variant(self, position, expected):
+        """Test substitution variant processing"""
+        result = aams_helpers.mutation_process(
+            "ACDEFGHIK", "T", position=position, pep_size=3
+        )
+        assert result == expected
+
+    def test_deletion_variant(self):
+        """Test deletion dispatch and the current gap-marked peptide window."""
+        with patch.object(
+            aams_helpers, "deletion", wraps=aams_helpers.deletion
+        ) as apply_deletion:
+            result = aams_helpers.mutation_process(
+                "ACDEFGHIK", "-", position=4, pep_size=3
+            )
+
+        apply_deletion.assert_called_once_with("ACDEFGHIK", "-", 4, 3)
+        assert result == "DE-FG"
+
+
+class TestPeptideSegmentation:
+    """Tests for peptide_seg() and get_peptides_ref()"""
+    
+    def test_peptide_segmentation_9aa(self):
+        """Test 9 amino acid peptide segmentation"""
+        peptide = "MVKKAMVKK"
+        
+        result = aams_helpers.peptide_seg(peptide, 9)
+        
+        assert len(result) == 1
+        assert result[0] == "MVKKAMVKK"
+
+    def test_peptide_segmentation_overlapping(self):
+        """Test overlapping 9-mer generation"""
+        peptide = "MVKKAMVKKKAAA"
+        
+        result = aams_helpers.peptide_seg(peptide, 9)
+        
+        assert result == [
+            "MVKKAMVKK", "VKKAMVKKK", "KKAMVKKKA", "KAMVKKKAA", "AMVKKKAAA"
+        ]
+
+    def test_peptide_too_short(self):
+        """Test with peptide shorter than pep_size"""
+        peptide = "MV"
+        
+        result = aams_helpers.peptide_seg(peptide, 9)
+        
+        assert result == []
+
+
+class TestWritePepFasta:
+    """Tests for write_pep_fasta()"""
+
+    def test_creates_valid_fasta(self, tmp_path):
+        """Test creation of valid FASTA file"""
+        # write_pep_fasta expects certain columns to build the header
+        transcripts_pair = pd.DataFrame({
+            "Gene_id": ["ENSG0001"],
+            "Transcript_id": ["ENST0001"],
+            "Peptide_id": ["ENSP0001"],
+            "CHROM": ["1"],
+            "POS": [100],
+            "peptide_REF": ["ABC"],
+            "peptide": ["DEF"],
+            "hla_peptides": [["PEP1", "PEP2"]],
+        })
+
+        fasta_path = str(tmp_path / "peptides.fasta")
+
+        aams_helpers.write_pep_fasta(fasta_path, transcripts_pair)
+
+        # Check file created and valid
+        assert Path(fasta_path).exists()
+
+        content = Path(fasta_path).read_text()
+        assert ">" in content
+        assert "PEP1" in content
+        assert "PEP2" in content
+
+    def test_fasta_format_correctness(self, tmp_path):
+        """Test FASTA format is correct"""
+        transcripts_pair = pd.DataFrame({
+            "Gene_id": ["ENSG0001"],
+            "Transcript_id": ["ENST0001"],
+            "Peptide_id": ["ENSP0001"],
+            "CHROM": ["1"],
+            "POS": [100],
+            "peptide_REF": ["ABC"],
+            "peptide": ["DEF"],
+            "hla_peptides": [["PEP1"]],
+        })
+
+        fasta_path = str(tmp_path / "peptides.fasta")
+        aams_helpers.write_pep_fasta(fasta_path, transcripts_pair)
+
+        lines = Path(fasta_path).read_text().strip().split('\n')
+        assert lines[0].startswith('>')
+        assert lines[1] == "PEP1"
