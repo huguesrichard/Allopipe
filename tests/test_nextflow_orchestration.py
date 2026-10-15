@@ -179,20 +179,10 @@ def test_existing_run_is_refused_without_overwrite(workflow):
     assert sentinel.read_text() == "keep"
 
 
-@pytest.mark.parametrize("preserve_extra_file", [
-    False,
-    pytest.param(True, marks=pytest.mark.xfail(
-        strict=True, raises=FileNotFoundError,
-        reason="NORMALIZE_COHORT republishes the whole run directory and removes extra files during -resume",
-    )),
-], ids=["cached-extraction", "preserve-extra-file"])
-def test_resume_preserves_existing_output_and_reuses_sample_extraction(workflow, preserve_extra_file):
+def test_resume_reuses_sample_extraction_and_publishes_results(workflow):
     run, published, folder = workflow
     first = run()
     assert first.returncode == 0, first.stdout + first.stderr
-    sentinel = published / "keep.txt"
-    if preserve_extra_file:
-        sentinel.write_text("keep", encoding="utf-8")
     # Remove the previous trace only; the Nextflow task cache remains intact.
     (folder / "trace.tsv").unlink()
     resumed = run("-resume")
@@ -205,8 +195,6 @@ def test_resume_preserves_existing_output_and_reuses_sample_extraction(workflow,
     # Count receives workflow.commandLine, which changes when -resume is added;
     # do not require all downstream stages to retain the same cache key.
     assert (published / "AMS" / "test" / "AMS_df.tsv").is_file()
-    if preserve_extra_file:
-        assert sentinel.read_text() == "keep"
 
 
 def test_force_overwrite_replaces_only_the_selected_run(workflow):

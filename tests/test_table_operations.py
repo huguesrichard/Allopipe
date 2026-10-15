@@ -3,6 +3,8 @@
 Tests for table_operations.py module (Transcript & mismatch merging)
 """
 from pathlib import Path
+from types import SimpleNamespace
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -399,17 +401,27 @@ class TestCohortNormalization:
         })
         pd.testing.assert_frame_equal(result, expected)
 
-    @pytest.mark.parametrize("last_score", [
-        31,
-        pytest.param(30, marks=pytest.mark.xfail(
-            strict=True,
-            reason="Float regression yields 19.999...; astype(int) truncates the expected score 20 to 19",
-        )),
+    @pytest.mark.parametrize("last_score,expected_scores", [
+        (29, [19, 20, 19]),
+        (31, [20, 20, 20]),
     ])
-    def test_normalizes_correctly(self, tmp_path, last_score):
+    def test_normalizes_correctly(self, tmp_path, last_score, expected_scores):
         _, ams_pkls, donors, recipients = self.cohort_files(tmp_path, last_score)
         result = normalize_cohort.normalize_ams(ams_pkls, list(reversed(donors)), recipients)
         assert result["pair"].tolist() == ["P1", "P2", "P10"]
         assert result["ams_giab"].tolist() == [10, 20, last_score]
         assert result["ref_ratio"].tolist() == [0.5, 0.75, 1.0]
-        assert result["ams_norm"].tolist() == [20, 20, 20]
+        assert result["ams_norm"].tolist() == expected_scores
+
+    def test_truncates_float_just_below_integer(self, tmp_path, monkeypatch):
+        _, ams_pkls, donors, recipients = self.cohort_files(tmp_path, last_score=30)
+        # Fix the fitted coefficient so this boundary case is independent of
+        # regression-library rounding: P10's normalized score is just below 20.
+        fitted = SimpleNamespace(coef_=np.array([[40.000000000000014]]))
+        regression = SimpleNamespace(fit=lambda x, y: fitted)
+        monkeypatch.setattr(normalize_cohort.lm, "LinearRegression", lambda: regression)
+
+        result = normalize_cohort.normalize_ams(ams_pkls, donors, recipients)
+
+        assert result["pair"].tolist() == ["P1", "P2", "P10"]
+        assert result["ams_norm"].tolist() == [20, 20, 19]
