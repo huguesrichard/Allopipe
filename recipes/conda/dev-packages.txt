@@ -1,0 +1,4 @@
+# Test-only Conda package specifications; runtime packages belong to allopipe.yml.
+# Install with --override-channels -c conda-forge (nodefaults is YAML-only).
+pytest>=8,<9
+pytest-cov>=5,<6
