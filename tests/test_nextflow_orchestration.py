@@ -132,10 +132,13 @@ def test_cohort_routes_shared_samples_and_per_pair_hla_and_publishes_results(wor
         assert count["output_dir"] == str(published.parent.parent)
         assert count["orientation"] == "dr" and count["imputation"] == "imputation"
         assert count["frameshift"] is False
+        assert count["mode"] == "cohort"
+        assert (published / "plots" / f"{pair}_pie_chart.png").read_bytes() == b"pair plot placeholder"
         assert "--run_name" in count["nextflow_command"]
     ams = pd.read_csv(published / "AMS" / "test" / "AMS_df.tsv", sep="\t")
     assert ams["pair"].tolist() == ["P1", "P2", "P3"]
     assert ams["ams_giab"].tolist() == ams["ams_norm"].tolist() == [1, 2, 3]
+    assert (published / "plots" / "distrib.png").is_file()
     aams = pd.read_csv(published / "AAMS" / "test" / "AAMS_df.tsv", sep="\t")
     pd.testing.assert_frame_equal(aams, pd.DataFrame({"pair": ["P1", "P2", "P3"], "aams": [10, 20, 30]}))
     assert {path.name for path in (published / "vcf_indiv").iterdir()} == {
@@ -256,11 +259,14 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
     count = json.loads((published / "logs" / "count.json").read_text())
     affinity = json.loads((published / "logs" / "affinity.json").read_text())
     assert count["pair"] == ""
+    assert count["mode"] == "pair"
+    assert (published / "plots" / "pie_chart.png").read_bytes() == b"pair plot placeholder"
     assert count["donor"] == "A" and count["recipient"] == "B"
     assert affinity == dict(count, hla="HLA-A02:01,HLA-B07:02", ensembl_exists=True)
     assert (published / "AMS" / "test" / "AMS.pkl").is_file()
     assert (published / "AAMS" / "test" / "AAMS_df.pkl").is_file()
     assert not (published / "AMS" / "test" / "AMS_df.tsv").exists()
+    assert (published / "plots" / "distrib.png").is_file()
     with (folder / "trace.tsv").open() as handle:
         trace = list(csv.DictReader(handle, delimiter="\t"))
     assert len(trace) == 2

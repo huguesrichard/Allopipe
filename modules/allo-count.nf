@@ -34,6 +34,7 @@ process ALLO_COUNT {
 		${frameshift ? '--frameshift' : ''} \
 		--pair ${pair_id} \
 		${allo_count_opts} \
+		--mode ${params.mode} \
 		-o ./
 
 	# Hard-link mirror for file-by-file publishing without replacing the existing run tree

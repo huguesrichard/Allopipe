@@ -34,6 +34,7 @@ def run_count(argv):
     parser.add_argument("--pair", nargs="?", default="", const="")
     parser.add_argument("-o", required=True)
     parser.add_argument("--frameshift", action="store_true")
+    parser.add_argument("--mode", choices=["pair", "cohort"], required=True)
     for name in ["donor", "recipient", "orientation", "imputation"]:
         parser.add_argument(name)
     args = parser.parse_args(argv)
@@ -50,12 +51,22 @@ def run_count(argv):
         "pair": args.pair, "donor": donor, "recipient": recipient,
         "orientation": args.orientation, "imputation": args.imputation,
         "frameshift": args.frameshift,
+        "mode": args.mode,
         "output_dir": os.environ["ALLOPIPE_PUBLISHED_OUTPUT_DIR"],
         "nextflow_command": base64.b64decode(os.environ["ALLOPIPE_NEXTFLOW_COMMAND_BASE64"]).decode(),
     }
     (logs / f"{prefix}count.json").write_text(json.dumps(record), encoding="utf-8")
     score = int(args.pair[1:]) if args.pair else 1
-    pd.DataFrame({"pair": [args.pair or "-"], "ams": [score]}).to_pickle(scores / f"{prefix}AMS.pkl")
+    ams = pd.DataFrame({"pair": [args.pair or "-"], "ams": [score]})
+    ams.to_pickle(scores / f"{prefix}AMS.pkl")
+    ams.to_csv(scores / f"{prefix}AMS.csv", index=False)
+    plots = run / "plots"
+    plots.mkdir()
+    (plots / f"{prefix}pie_chart.png").write_bytes(b"pair plot placeholder")
+    if args.mode == "pair":
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+        from tools.plot_hist import hist
+        hist(scores, plots)
 
 
 def run_affinity(argv):

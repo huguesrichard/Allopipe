@@ -268,6 +268,12 @@ def arguments():
         default="",
         const="",
     )
+    parser.add_argument(
+        "--mode", # internal cohort hist plot
+        help=argparse.SUPPRESS,
+        choices=["pair", "cohort"],
+        required=True,
+    )
     args = parser.parse_args()
     if args.min_dp > args.max_dp:
         raise ValueError(

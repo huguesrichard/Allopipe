@@ -2,7 +2,10 @@
 from pathlib import Path
 import subprocess
 import sys
+from unittest.mock import patch
 
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
@@ -153,6 +156,7 @@ def test_cli_assembles_and_writes_cohort_tables(pair_runs, tmp_path, with_aams):
             "ams_norm": [12 + offset, 30 + offset],
         })
         pd.testing.assert_frame_equal(ams, expected_ams)
+        assert mpimg.imread(final_run / "plots" / profile / "distrib.png").size > 0
         aams_file = final_run / "AAMS" / profile / "AAMS_df.tsv"
         if with_aams:
             expected_aams = pd.DataFrame({"pair": ["P2", "P10"], "aams": [3 + offset, 7 + offset]})
@@ -160,3 +164,36 @@ def test_cli_assembles_and_writes_cohort_tables(pair_runs, tmp_path, with_aams):
         else:
             assert not aams_file.exists()
     assert [file_contents(source) for source in sources] == before
+
+
+@pytest.mark.parametrize("reverse_order", [False, True])
+@pytest.mark.parametrize("multiple_profiles", [False, True])
+def test_final_distribution_traces_every_pair_independent_of_task_order(
+    pair_runs, tmp_path, monkeypatch, reverse_order, multiple_profiles,
+):
+    if not multiple_profiles:
+        for stage in pair_runs:
+            for path in (stage / "runs" / RUN_NAME / "AMS" / "strict").glob("*.pkl"):
+                path.unlink()
+    if reverse_order:
+        pair_runs.reverse()
+    if not multiple_profiles:
+        # Old worker plots must be replaced by a plot of the complete cohort.
+        for stage in pair_runs:
+            plots = stage / "runs" / RUN_NAME / "plots"
+            plots.mkdir()
+            (plots / "distrib.png").write_bytes(b"old pair plot")
+    output = tmp_path / "final"
+    monkeypatch.setattr(sys, "argv", [
+        "normalize_cohort.py", "--run-name", RUN_NAME, "--output-dir", str(output),
+        "--run-dir", *(str(stage) for stage in pair_runs),
+    ])
+    with patch.object(plt, "axvline", wraps=plt.axvline) as draw_line:
+        normalize_cohort.main()
+    plots = output / "runs" / RUN_NAME / "plots"
+    expected = [12, 30, 112, 130] if multiple_profiles else [12, 30]
+    assert [call.args[0] for call in draw_line.call_args_list] == expected
+    paths = [plots / profile / "distrib.png" for profile in ["default", "strict"]] \
+        if multiple_profiles else [plots / "distrib.png"]
+    for path in paths:
+        assert mpimg.imread(path).size > 0

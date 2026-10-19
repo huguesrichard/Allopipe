@@ -32,13 +32,13 @@ def hist(ams_exp_path, run_plots):
     # Plot the distribution for the "unrelated" group
     sns.histplot(AMS_unrelated, kde=True, color='red', label='Unrelated pairs', stat='density', bins=30)
 
-    # Define a directory for searching files
-    directory = ams_exp_path
-
-    # List all files in the directory, excluding subdirectories
-    files = [f for f in os.listdir(directory) if not os.path.isdir(os.path.join(directory, f))]
-
-    # Find a .tsv or .csv file
+    # Cohort normalization supplies the exact final table; standalone pair runs
+    # still supply their score directory.
+    source = Path(ams_exp_path)
+    directory = source.parent if source.is_file() else source
+    files = [source.name] if source.is_file() else sorted(
+        path.name for path in directory.iterdir() if path.is_file()
+    )
     tsv_file = next((f for f in files if f.endswith('.tsv')), None)
     csv_file = next((f for f in files if f.endswith('.csv')), None)
 
@@ -86,6 +86,20 @@ def hist(ams_exp_path, run_plots):
     plt.legend(loc='upper left')
 
     # Save the plot as a PNG file
-    plot_path = run_plots + "/" + "distrib.png"
+    plot_path = Path(run_plots) / "distrib.png"
     plt.savefig(plot_path, format='png')
     plt.close()
+
+
+def write_distribution_plots(run_dir):
+    """Plot completed AMS results, keeping score configurations separate."""
+    run_dir = Path(run_dir)
+    plots_root = run_dir / "plots"
+    ams_dirs = sorted({path.parent for path in (run_dir / "AMS").rglob("*.pkl")})
+    for ams_dir in ams_dirs:
+        plots_dir = plots_root
+        if len(ams_dirs) > 1:
+            plots_dir /= ams_dir.relative_to(run_dir / "AMS")
+        plots_dir.mkdir(parents=True, exist_ok=True)
+        final_table = ams_dir / "AMS_df.tsv"
+        hist(final_table if final_table.is_file() else ams_dir, plots_dir)

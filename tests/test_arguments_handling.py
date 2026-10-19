@@ -10,6 +10,29 @@ def _write_dummy_vcf(path: Path) -> None:
     path.write_text("##fileformat=VCFv4.2\n", encoding="utf-8")
 
 
+@pytest.mark.parametrize("mode_args,expected", [
+    ([], "required"),
+    (["--mode", "invalid"], "invalid choice"),
+    (["--mode", "pair"], "pair"),
+    (["--mode", "cohort"], "cohort"),
+])
+def test_execution_mode_must_be_explicit_and_valid(tmp_path, monkeypatch, capsys, mode_args, expected):
+    donor, recipient = tmp_path / "donor.vcf", tmp_path / "recipient.vcf"
+    for path in [donor, recipient]:
+        _write_dummy_vcf(path)
+    monkeypatch.setattr(sys, "argv", [
+        "ams_pipeline.py", str(donor), str(recipient), "dr", "imputation", *mode_args,
+    ])
+    if expected in ["pair", "cohort"]:
+        assert arguments_handling.arguments().mode == expected
+    else:
+        with pytest.raises(SystemExit) as error:
+            arguments_handling.arguments()
+        assert error.value.code == 2
+        message = capsys.readouterr().err
+        assert "--mode" in message and expected in message
+
+
 def test_arguments_output_dir_default_is_absolute(tmp_path, monkeypatch):
     donor = tmp_path / "donor.vcf"
     recipient = tmp_path / "recipient.vcf"
@@ -19,7 +42,7 @@ def test_arguments_output_dir_default_is_absolute(tmp_path, monkeypatch):
         sys,
         "argv",
         [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -41,7 +64,7 @@ def test_arguments_output_dir_custom_is_absolute(tmp_path, monkeypatch):
         sys,
         "argv",
         [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "rd",
@@ -99,7 +122,7 @@ def test_arguments_raise_when_min_dp_gt_max_dp(tmp_path, monkeypatch):
         sys,
         "argv",
         [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -123,7 +146,7 @@ def test_arguments_raise_when_min_ad_gt_min_dp(tmp_path, monkeypatch):
         sys,
         "argv",
         [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",

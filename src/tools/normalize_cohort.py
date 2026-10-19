@@ -11,6 +11,7 @@ import pandas as pd
 from sklearn import linear_model as lm
 
 from table_operations import create_AAMS_df
+from plot_hist import write_distribution_plots
 
 
 def pair_sort_key(pair):
@@ -173,6 +174,7 @@ def main():
     ams_pkls, aams_pkls, donor_tables, recipient_tables = collect_run_files([run_dir], args.run_name)
     write_normalized_ams_tables(ams_pkls, donor_tables, recipient_tables)
     write_aams_tables(aams_pkls)
+    write_distribution_plots(run_dir)
 
 
 if __name__ == "__main__":

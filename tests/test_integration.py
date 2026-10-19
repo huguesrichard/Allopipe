@@ -5,6 +5,7 @@ Integration tests for Python stages invoked by Nextflow (no external tools)
 from types import SimpleNamespace
 from pathlib import Path
 import gzip
+import sys
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +14,37 @@ from tools import (
     ams_helpers, aams_helpers, parsing_functions,
     cleavage, table_operations
 )
+import ams_pipeline
+
+
+@pytest.mark.parametrize("mode", ["pair", "cohort"])
+def test_ams_entrypoint_plots_distribution_only_in_pair_mode(
+    tmp_path, monkeypatch, nextflow_environment, mode,
+):
+    header = (
+        "##fileformat=VCFv4.2\n"
+        '##INFO=<ID=CSQ,Number=.,Type=String,Description="Format: '
+        'Allele|Consequence|Gene|Feature|cDNA_position|CDS_position|'
+        'Protein_position|Amino_acids|Codons|gnomADe_AF">\n'
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE\n"
+    )
+    donor, recipient = tmp_path / "donor.vcf", tmp_path / "recipient.vcf"
+    for path, genotype in [(donor, "1/1:99:0,30:30"), (recipient, "0/0:99:30,0:30")]:
+        path.write_text(
+            header + "1\t100\t.\tA\tT\t.\tPASS\t"
+            "CSQ=T|missense_variant|ENSG1|ENST1|123|45|42|K/N|aAa/aTa|0.1\t"
+            f"GT:GQ:AD:DP\t{genotype}\n", encoding="utf-8",
+        )
+    output = tmp_path / "output"
+    monkeypatch.setattr(sys, "argv", [
+        "ams_pipeline.py", str(donor), str(recipient), "dr", "no-imputation",
+        "--mode", mode, "--pair", "P001", "-n", "test", "-o", str(output),
+    ])
+    assert ams_pipeline.main() == 0
+    run = output / "runs" / "test"
+    assert list((run / "AMS").rglob("*.pkl"))
+    assert (run / "plots" / "distrib.png").exists() == (mode == "pair")
+    assert (run / "plots" / "test_P001_pie_chart.png").is_file()
 
 
 class TestAmsIntegrationPipeline:

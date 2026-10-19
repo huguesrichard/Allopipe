@@ -109,7 +109,9 @@ def main():
           )
 
     # plots
-    plot_hist.hist(ams_exp_path, run_plots)
+    if args.mode == "pair":
+        # Hist in cohort mode are plotted after all pairs are assembled (in normalize_cohort.py)
+        plot_hist.hist(ams_exp_path, run_plots)
     plot_pie.pie(run_tables, run_plots, args.pair, args.run_name)
     
     return 0

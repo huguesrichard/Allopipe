@@ -24,7 +24,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -42,7 +42,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "rd",
@@ -60,7 +60,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -78,7 +78,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -96,7 +96,7 @@ class TestArgumentsHandlingExtended:
         recipient.write_text("##fileformat=VCFv4.2\n", encoding="utf-8")
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -114,7 +114,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -134,7 +134,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -152,7 +152,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -172,7 +172,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
@@ -192,7 +192,7 @@ class TestArgumentsHandlingExtended:
         _write_dummy_vcf(recipient)
         
         monkeypatch.setattr(sys, "argv", [
-            "ams_pipeline.py",
+            "ams_pipeline.py", "--mode", "pair",
             str(donor),
             str(recipient),
             "dr",
