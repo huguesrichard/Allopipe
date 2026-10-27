@@ -16,27 +16,19 @@ def check_if_valid_k(initial_args, arg):
 
     Parameters:
             initial_args (ArgumentParser object): parser object
-            arg (int): positive integer between 8 and 14 (class 1) or not less than 9 (class 2)
+            arg (str): a single peptide length
     Returns:
             arg (int): positive integer between 8 and 14 (class 1) or not less than 9 (class 2)
     """
     try:
-        ls_args = arg.split(",")
-        if not all(key.isdigit() for key in ls_args):
-            raise ValueError(f"The list of k sizes {arg} contains non integer values")
-        if len(ls_args)==1:
-            arg = int(arg)  
-            if arg < 0:
-                raise ValueError(f"{arg} is not a positive integer")
-            if initial_args.class_type == 1:
-                if not 8 <= arg <= 14 :
-                    raise ValueError(f"A length of peptide of {arg} is not supported by netMHCpan (should be between 8 and 14)")
-            else:
-                if not arg >= 9 :
-                    raise ValueError(f"A length of peptide of {arg} is not supported by netMHCIIpan (should not be less than 9)")
-
-    except ValueError as err:
-        raise argparse.ArgumentTypeError(f"{err}")
+        arg = int(arg)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Peptide length must be a single integer: {arg}")
+    if initial_args.class_type == 1:
+        if not 8 <= arg <= 14:
+            raise argparse.ArgumentTypeError(f"A length of peptide of {arg} is not supported by netMHCpan (should be between 8 and 14)")
+    elif arg < 9:
+        raise argparse.ArgumentTypeError(f"A length of peptide of {arg} is not supported by netMHCIIpan (should not be less than 9)")
     return arg
 
 
@@ -199,7 +191,7 @@ def netmhc_arguments():
     parser.add_argument(
         "-l",
         "--length",
-        help="peptide length, default is 9 (class 1) or 15 (class 2), a list of values separated by commas is accepted",
+        help="single peptide length, default is 9 (class 1) or 15 (class 2)",
         nargs="?",
         default=9 if initial_args.class_type == 1 else 15,
         const=  9 if initial_args.class_type == 1 else 15,

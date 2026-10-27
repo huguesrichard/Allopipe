@@ -22,8 +22,20 @@ class TestCheckIfValidK:
         result = netmhc_arguments.check_if_valid_k(initial_args, "9")
         assert result == 9
         
-        result = netmhc_arguments.check_if_valid_k(initial_args, "8,10,12")
-        assert result == "8,10,12"
+        assert netmhc_arguments.check_if_valid_k(initial_args, "14") == 14
+
+    @pytest.mark.parametrize("class_type", [1, 2])
+    def test_rejects_multiple_lengths(self, class_type):
+        initial_args = type('Args', (), {'class_type': class_type})()
+        with pytest.raises(argparse.ArgumentTypeError, match="single integer"):
+            netmhc_arguments.check_if_valid_k(initial_args, "8,10,12")
+
+    def test_class_2_length_bounds(self):
+        initial_args = type('Args', (), {'class_type': 2})()
+        assert netmhc_arguments.check_if_valid_k(initial_args, "9") == 9
+        assert netmhc_arguments.check_if_valid_k(initial_args, "15") == 15
+        with pytest.raises(argparse.ArgumentTypeError, match="not be less than 9"):
+            netmhc_arguments.check_if_valid_k(initial_args, "-1")
 
     def test_rejects_invalid_hla_format(self):
         """Test rejection of invalid peptide length format"""
