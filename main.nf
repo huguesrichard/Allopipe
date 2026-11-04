@@ -157,7 +157,7 @@ workflow AlloPipe {
 				publishedOutputDir,
 			)
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
-			cohort_vep_vcfs = annotated_multi_vcf_ch.collect()
+			cohort_vep_vcfs = annotated_multi_vcf_ch.mix(VEP_ANNOTATION.out.report).collect()
 			EXTRACT_SAMPLE(
 				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->
 					tuple(sample_id, annotated_multi_vcf)

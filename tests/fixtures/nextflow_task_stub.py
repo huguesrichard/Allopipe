@@ -103,6 +103,7 @@ def run_vep(argv):
     with opener(args.i, "rt", encoding="utf-8") as source:
         with gzip.open(args.o, "wt", encoding="utf-8") as output:
             output.write(source.read())
+    Path(f"{args.o}_summary.html").write_text("<html>VEP summary</html>", encoding="utf-8")
 
 
 if __name__ == "__main__":

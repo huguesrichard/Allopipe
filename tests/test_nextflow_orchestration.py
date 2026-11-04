@@ -152,6 +152,7 @@ def test_cohort_routes_shared_samples_and_per_pair_hla_and_publishes_results(wor
     assert sum("NORMALIZE_COHORT" in row["name"] for row in trace) == 1
     assert sum("VEP_ANNOTATION" in row["name"] for row in trace) == (0 if skip_vep else 1)
     assert bool(list((published / "vcf_vep").glob("*.vcf.gz"))) == (not skip_vep)
+    assert bool(list((published / "vcf_vep").glob("*_VEP.vcf.gz_summary.html"))) == (not skip_vep)
 
 
 @pytest.mark.parametrize("csv_text,error", [

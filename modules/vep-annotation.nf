@@ -12,6 +12,7 @@ process VEP_ANNOTATION {
 	
     output:
     tuple val(sample_id), path("${sample_file.simpleName}_VEP.vcf.gz"), emit: annotated_vcf
+	path "${sample_file.simpleName}_VEP.vcf.gz_summary.html", emit: report
 	
 	script:
 	def frameshift_plugin = params.frameshift ? '--plugin Frameshift' : ''
