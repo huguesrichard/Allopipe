@@ -220,6 +220,8 @@ By default, each new run must use a unique output destination. The directory for
 
 VEP-annotated VCFs and their HTML summary reports are published under `<output_dir>/runs/<run_name>/vcf_vep`. In cohort mode, extracted VCFs and their `.tbi` indexes are published under `<output_dir>/runs/<run_name>/vcf_indiv`. Each completed Allo-Count and Allo-Affinity task also publishes its files progressively into the same run directory, so completed upstream and per-pair results remain available if a downstream task fails or the workflow is interrupted.
 
+To restrict WGS variants to exome regions, pass `--bed_filter`. The filter runs before VEP, or on the supplied annotated VCF when `--skip_vep_annotation` is set. It applies to both pair and cohort modes. By default it uses `tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed`; use `--bed_file <file.bed>` to select another BED. Choose a BED compatible with the VCF assembly and chromosome names; the supplied BED uses GRCh38 and `chr` chromosome names. Variants whose VCF record overlaps a BED interval are retained. Filtered VCFs and their indexes are published in `vcf_vep` alongside any VEP-annotated files. Filtering is disabled by default.
+
 #### Required arguments in pair mode
 
 Use pair mode when you have one VCF file for the donor and one VCF file for the recipient. Because `pair` is the default value of `--mode`, passing `--mode pair` is optional.
@@ -247,7 +249,7 @@ nextflow run main.nf -profile conda \
 	--imputation imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
-	--skip_vep_annotation true
+	--skip_vep_annotation
 ```
 
 #### Required arguments in cohort mode
@@ -279,7 +281,7 @@ nextflow run main.nf -profile conda \
 	--orientation dr \
 	--imputation no-imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
-	--skip_vep_annotation true
+	--skip_vep_annotation
 ```
 
 #### Common optional arguments
@@ -288,10 +290,10 @@ nextflow run main.nf -profile conda \
 | -------- | ----------- |
 | `--output_dir <DIR>` | Base output directory. Default: `output`. |
 | `--force_overwrite` | Remove `<output_dir>/runs/<run_name>` before launching when it already exists. When combined with `-resume`, the published run directory is removed while Nextflow's cached tasks remain available. |
-| `--skip_vep_annotation true` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
+| `--skip_vep_annotation` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
 | `--vep_cache <DIR>` | VEP cache path inside the execution environment. Default: `/cache`. |
 | `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_116.2`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |
-| `--frameshift true` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
+| `--frameshift` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
 | `--frameshift_plugin_path <PATH>` | Path to the VEP `Frameshift.pm` plugin or plugin directory. |
 | `--allo_count_opts "<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
 | `--allo_affinity_opts "<OPTIONS>"` | Extra options passed to the Allo-Affinity step, for example `--length`, `--el_rank`, `--class_type`, `--cleavage`, or `--dry_run` to skip the long NetMHCpan computation. |
@@ -346,12 +348,12 @@ nextflow run main.nf -profile conda \
 	--imputation imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
-	--skip_vep_annotation true
+	--skip_vep_annotation
 ```
 
 More detailed help can be obtained with `nextflow run main.nf --help`.
 
-For instance, you can generate frameshift neoantigen candidates by adding `--frameshift true` to the Nextflow command. Note: you need to have installed the VEP `Frameshift` plugin.
+For instance, you can generate frameshift neoantigen candidates by adding `--frameshift` to the Nextflow command. Note: you need to have installed the VEP `Frameshift` plugin.
 
 <br/>
 
@@ -372,7 +374,7 @@ nextflow run main.nf -profile conda \
 	--orientation dr \
 	--imputation no-imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
-	--skip_vep_annotation true
+	--skip_vep_annotation
 ```
 
 Again, more detailed help can be obtained with `nextflow run main.nf --help`.
@@ -504,7 +506,7 @@ nextflow run main.nf -profile conda \
 	--imputation imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
-	--skip_vep_annotation true \
+	--skip_vep_annotation \
 ```
 
 Nextflow arguments:
@@ -590,7 +592,7 @@ Each row of the table corresponds to a cleaved peptide on a protein that contrib
 
 ## Tutorial <a name="tuto"></a>
 
-The `tutorial/` directory contains GRCh38 VCFs for HG002 and HG007, an annotated joint VCF for HG002, HG003, HG005 and HG007, and the pair list in `tutorial/example.csv`. The files ending in `_VEP.vcf.gz` are already annotated with VEP (you can use the `--skip_vep_annotation true` option with these files).
+The `tutorial/` directory contains GRCh38 VCFs for HG002 and HG007, an annotated joint VCF for HG002, HG003, HG005 and HG007, and the pair list in `tutorial/example.csv`. The files ending in `_VEP.vcf.gz` are already annotated with VEP (you can use the `--skip_vep_annotation` option with these files).
 
 From the root of the AlloPipe directory, run the pair example with the annotated files:
 
@@ -604,7 +606,7 @@ nextflow run main.nf -profile conda \
 	--imputation no-imputation \
 	--ensembl_path data/Ensembl/GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
-	--skip_vep_annotation true
+	--skip_vep_annotation
 ```
 
 The expected AMS are:

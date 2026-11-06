@@ -49,6 +49,7 @@ def run_count(argv):
     recipient_df.to_csv(tables / f"{prefix}R0_{recipient}.tsv", sep="\t", index=False)
     record = {
         "pair": args.pair, "donor": donor, "recipient": recipient,
+        "donor_vcf": Path(args.donor).name, "recipient_vcf": Path(args.recipient).name,
         "orientation": args.orientation, "imputation": args.imputation,
         "frameshift": args.frameshift,
         "mode": args.mode,

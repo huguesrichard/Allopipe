@@ -135,6 +135,10 @@ def test_cohort_routes_shared_samples_and_per_pair_hla_and_publishes_results(wor
         assert count["mode"] == "cohort"
         assert (published / "plots" / f"{pair}_pie_chart.png").read_bytes() == b"pair plot placeholder"
         assert "--run_name" in count["nextflow_command"]
+        assert count["donor_vcf"] == f"{donor}.vcf.gz"
+        assert count["recipient_vcf"] == f"{recipient}.vcf.gz"
+    for table in (published / "run_tables").glob("*0_*.tsv"):
+        assert pd.read_csv(table, sep="\t")["POS"].tolist() == [100, 200]
     ams = pd.read_csv(published / "AMS" / "test" / "AMS_df.tsv", sep="\t")
     assert ams["pair"].tolist() == ["P1", "P2", "P3"]
     assert ams["ams_giab"].tolist() == ams["ams_norm"].tolist() == [1, 2, 3]
@@ -263,6 +267,7 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
     assert count["mode"] == "pair"
     assert (published / "plots" / "pie_chart.png").read_bytes() == b"pair plot placeholder"
     assert count["donor"] == "A" and count["recipient"] == "B"
+    assert count["donor_vcf"] == "A.vcf" and count["recipient_vcf"] == "B.vcf"
     assert affinity == dict(count, hla="HLA-A02:01,HLA-B07:02", ensembl_exists=True)
     assert (published / "AMS" / "test" / "AMS.pkl").is_file()
     assert (published / "AAMS" / "test" / "AAMS_df.pkl").is_file()
@@ -272,3 +277,47 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
         trace = list(csv.DictReader(handle, delimiter="\t"))
     assert len(trace) == 2
     assert all("ALLO_COUNT" in row["name"] or "ALLO_AFFINITY" in row["name"] for row in trace)
+
+
+@pytest.mark.parametrize("mode", ["pair", "cohort"])
+@pytest.mark.parametrize("skip_vep", [True, False])
+def test_bed_filter_routes_variants_before_annotation_or_from_annotated_input(workflow, mode, skip_vep):
+    import gzip
+
+    run, published, folder = workflow
+    bed = folder / "targets.bed"
+    # BED coordinates are zero-based, half-open: keep position 200, not 100.
+    bed.write_text("1\t199\t200\n", encoding="utf-8")
+    args = ["--bed_filter", "--bed_file", str(bed)]
+    if mode == "pair":
+        args += ["--hla_typing", "HLA-A02:01"]
+    result = run(*args, mode=mode, skip_vep=skip_vep)
+    assert result.returncode == 0, result.stdout + result.stderr
+    vcfs = sorted((published / "vcf_vep").glob("*_bed.vcf.gz"))
+    assert len(vcfs) == (2 if mode == "pair" else 1)
+    for vcf in vcfs:
+        assert Path(str(vcf) + ".tbi").is_file()
+        with gzip.open(vcf, "rt") as handle:
+            assert [line.split("\t")[1] for line in handle if not line.startswith("#")] == ["200"]
+    tables = list((published / "run_tables").glob("*0_*.tsv"))
+    assert tables
+    for table in tables:
+        assert pd.read_csv(table, sep="\t")["POS"].tolist() == [200]
+    for log in (published / "logs").glob("*count.json"):
+        count = json.loads(log.read_text())
+        if mode == "pair":
+            suffix = "_bed.vcf.gz" if skip_vep else "_bed_VEP.vcf.gz"
+            assert count["donor_vcf"] == "A" + suffix
+            assert count["recipient_vcf"] == "B" + suffix
+        else:
+            assert count["donor_vcf"] == count["donor"] + ".vcf.gz"
+            assert count["recipient_vcf"] == count["recipient"] + ".vcf.gz"
+    if not skip_vep:
+        annotated = list((published / "vcf_vep").glob("*_VEP.vcf.gz"))
+        assert len(annotated) == len(vcfs)
+        for vcf in annotated:
+            with gzip.open(vcf, "rt") as handle:
+                assert [line.split("\t")[1] for line in handle if not line.startswith("#")] == ["200"]
+    with (folder / "trace.tsv").open() as handle:
+        trace = list(csv.DictReader(handle, delimiter="\t"))
+    assert sum("FILTER_BED" in row["name"] for row in trace) == len(vcfs)

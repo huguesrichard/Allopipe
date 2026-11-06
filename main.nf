@@ -3,6 +3,7 @@ include { EXTRACT_SAMPLE } from './modules/extract-sample'
 include { ALLO_COUNT } from './modules/allo-count'
 include { ALLO_AFFINITY } from './modules/allo-affinity'
 include { NORMALIZE_COHORT } from './modules/normalize-cohort'
+include { FILTER_BED } from './modules/filter-bed'
 
 
 def requireParams(names) {
@@ -118,6 +119,7 @@ workflow AlloPipe {
 		}
 	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
 	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
+	def bedFile = params.bed_filter ? file(params.bed_file ?: "${projectDir}/tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed", checkIfExists: true) : null
 	prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
@@ -132,6 +134,10 @@ workflow AlloPipe {
 			tuple('donor', file(params.donor)),
 			tuple('recipient', file(params.recipient)),
 		)
+		if (params.bed_filter) {
+			FILTER_BED(raw_samples_ch, bedFile, params.run_name, publishedOutputDir)
+			raw_samples_ch = FILTER_BED.out.filtered_vcf
+		}
 		if (!params.skip_vep_annotation) {
 			VEP_ANNOTATION(
 				raw_samples_ch.map { sample_id, sample_file -> tuple(sample_id, sample_file, frameshiftPlugin, vepAssembly) },
@@ -143,23 +149,31 @@ workflow AlloPipe {
 			samples_ch = raw_samples_ch
 		}
 	} else {
+		cohort_input_ch = Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf)))
+		if (params.bed_filter) {
+			FILTER_BED(cohort_input_ch, bedFile, params.run_name, publishedOutputDir)
+			cohort_input_ch = FILTER_BED.out.filtered_vcf
+			cohort_bed_vcfs = FILTER_BED.out.filtered_vcf.map { cohort_id, vcf -> vcf }.mix(FILTER_BED.out.index).collect()
+		} else {
+			cohort_bed_vcfs = Channel.value([])
+		}
 		def sampleRows = pairRows
 			.collectMany { row -> [row.donor, row.recipient] }
 			.unique()
 			.sort()
-			.collect { sample -> tuple(sample, file(params.multi_vcf)) }
+			.collect { sample -> sample }
 		cohort_samples_ch = Channel.from(sampleRows)
 
 		if (!params.skip_vep_annotation) {
 			VEP_ANNOTATION(
-				Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf), frameshiftPlugin, vepAssembly)),
+				cohort_input_ch.map { cohort_id, cohort_vcf -> tuple(cohort_id, cohort_vcf, frameshiftPlugin, vepAssembly) },
 				params.run_name,
 				publishedOutputDir,
 			)
 			def annotated_multi_vcf_ch = VEP_ANNOTATION.out.annotated_vcf.map { cohort_id, annotated_vcf -> annotated_vcf }
 			cohort_vep_vcfs = annotated_multi_vcf_ch.mix(VEP_ANNOTATION.out.report).collect()
 			EXTRACT_SAMPLE(
-				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, multi_vcf, annotated_multi_vcf ->
+				cohort_samples_ch.combine(annotated_multi_vcf_ch).map { sample_id, annotated_multi_vcf ->
 					tuple(sample_id, annotated_multi_vcf)
 				},
 				params.run_name,
@@ -167,7 +181,7 @@ workflow AlloPipe {
 			)
 		} else {
 			cohort_vep_vcfs = Channel.value([])
-			EXTRACT_SAMPLE(cohort_samples_ch, params.run_name, publishedOutputDir)
+			EXTRACT_SAMPLE(cohort_samples_ch.combine(cohort_input_ch.map { cohort_id, cohort_vcf -> cohort_vcf }), params.run_name, publishedOutputDir)
 		}
 		raw_samples_ch = EXTRACT_SAMPLE.out.sample_vcf.map { sample_id, sample_vcf, sample_tbi -> tuple(sample_id, sample_vcf) }
 		samples_ch = raw_samples_ch
@@ -208,6 +222,7 @@ workflow AlloPipe {
 			ALLO_AFFINITY.out.results_dir.map { pair_id, run_name, run_dir -> run_dir }.collect(),
 			EXTRACT_SAMPLE.out.sample_vcf.flatMap { sample_id, sample_vcf, sample_tbi -> [sample_vcf, sample_tbi] }.collect(),
 			cohort_vep_vcfs,
+			cohort_bed_vcfs,
 			params.run_name,
 			publishedOutputDir,
 		)
