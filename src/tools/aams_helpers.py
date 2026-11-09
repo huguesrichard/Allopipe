@@ -815,7 +815,7 @@ def run_netmhcpan(fasta_path, netmhc_dir, args):
         "-xlsfile",
         os.path.relpath(netmhc_out),
         "-a",
-        args.hla_typing,
+        ",".join(dict.fromkeys(args.hla_typing.split(","))) if args.class_type == 1 else args.hla_typing,
     ]
     with open(os.path.relpath(netmhc_run_output), "w", encoding="utf-8") as log_handle:
         result = subprocess.run(netmhc_cmd, stdout=log_handle, stderr=subprocess.STDOUT)

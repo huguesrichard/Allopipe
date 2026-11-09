@@ -52,7 +52,7 @@ After reformating relevant data from the variant-annotated `.VCF` file(s), Allo-
 ### (2) Allo-Affinity imputes minor histocompatibility antigen (mHAgs) candidates
 
 Allo-Affinity **reconstructs peptides** of requested length around the polymorphisms present in the mismatches tables.<br/>
-The affinity of those peptides towards the HLA molecules can then be assessed using third party tools such as [NetMHCpan](https://pubmed.ncbi.nlm.nih.gov/32406916/) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares, to retrieve the candidate mHAgs.
+The affinity of those peptides towards the HLA molecules can then be assessed using third party tools such as [NetMHCpan](https://doi.org/10.3389/fimmu.2025.1616113) or [MixMHCpred](https://www.biorxiv.org/content/10.1101/2024.05.08.593183v1) softwares, to retrieve the candidate mHAgs.
 
 *Please read the terms of use for the NetMHCpan and MixMHCpred softwares. 4-digit HLA typing must be provided by the user for the HLA molecules of interest, including the alpha/beta chain combination for HLA-DR and HLA-DQ molecules.*
 
@@ -114,7 +114,7 @@ For installing AlloPipe you will specifically require the following softwares:
 2. [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed for your operating system. The Nextflow workflow uses Conda to create its execution environment from [`recipes/conda/allopipe.yml`](recipes/conda/allopipe.yml). AlloPipe is currently developed on Python v3.10.
 
 3. To run Allo-Affinity, you need to assess the affinity of the reconstructed peptides towards the HLA molecules. We recommend two groups of software suites for that (only NetMHCpan is supported in command line for now):
-	- [NetMHCpan](https://services.healthtech.dtu.dk/service.php?NetMHCpan-4.1) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
+	- [NetMHCpan 4.2e](https://services.healthtech.dtu.dk/services/NetMHCpan-4.2/) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
 	- [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) (support development in progress).
 4. To predict proteasomal cleavage on the proteins of the donor or the recipient, you will also need the [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool installed as a standalone version. 
 
@@ -479,7 +479,7 @@ gzip -d data/Ensembl/GRCh38/*
 <br/>
 
 Allo-Affinity output those peptides in a fasta file that can be processed by the following third party softwares:
- - [NetMHCpan4.1](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/)
+ - [NetMHCpan 4.2e](https://services.healthtech.dtu.dk/services/NetMHCpan-4.2/)
  - [NetMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) 
  - [MixMHCPred](https://github.com/GfellerLab/MixMHCpred)
  - [MixMHC2Pred](https://github.com/GfellerLab/MixMHC2pred)
@@ -556,8 +556,8 @@ It contains the mismatches information from the AMS run along with information p
 - **hla_peptides (str)**: Potential ligand peptide built from VEP information and Ensembl information
 - **Gene_id (str)**: Ensembl Gene ID
 - **NB (int)**: Number of Weak Binding/Strong Binding peptides accross given HLA
-- **EL-score (float)**: Raw prediction score
-- **EL_Rank (float)**: Rank of the predicted EL-score compared to a set of random natural peptides
+- **EL_score (float)**: Raw prediction score
+- **EL_Rank (float)**: Rank of the predicted EL_score compared to a set of random natural peptides
 - **BA-score (float)**: Binding-Affinity score
 - **BA_Rank (float)**: Rank of the predicted BA-score
 - **HLA (str)**: Specified MHC molecule / Allele name

@@ -11,6 +11,23 @@ import pytest
 from tools import aams_helpers
 
 
+def test_run_netmhcpan_deduplicates_class_i_alleles(tmp_path, monkeypatch):
+    args = SimpleNamespace(class_type=1, pair=None, run_name="test", length=9,
+                           hla_typing="HLA-A02:01,HLA-A02:01,HLA-B07:02")
+    monkeypatch.setattr(aams_helpers, "binary_check", lambda binary: None)
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        Path(command[command.index("-xlsfile") + 1]).touch()
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(aams_helpers.subprocess, "run", run)
+    aams_helpers.run_netmhcpan(str(tmp_path / "input.fa"), str(tmp_path), args)
+    command = commands[0]
+    assert command[command.index("-a") + 1] == "HLA-A02:01,HLA-B07:02"
+
+
 class TestCreateAamsDependencies:
     """Tests for create_aams_dependencies()"""
     

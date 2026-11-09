@@ -4,7 +4,7 @@ import pandas as pd
 # get the columns associated to one HLA and return the subsets columns associated
 def find_subsets(netmhc_file,args):
     # read the netmhcpan output table
-    netmhc_table = pd.read_csv(netmhc_file,sep="\t")
+    netmhc_table = pd.read_csv(netmhc_file, sep="\t", comment="#" if args.class_type == 1 else None)
     # empty list for all the subsets
     subsets = []
     # empty list for one subset
@@ -75,10 +75,15 @@ def format_netMHCpan(netmhc_table,subsets,args):
     df = pd.concat(to_concat)
     # reset the index and drop the former one
     df = df.reset_index(drop=True)
+    if args.class_type == 1:
+        # Keep the existing rank name used by downstream AAMS calculations.
+        df = df.rename(columns={"EL_rank": "EL_Rank"})
     return(df)
 
 def filter_netMHC_table(netmhc_table,args,netmhc_file,NB_min = 0,ELS_thr = 0):
     # convert column types to desired ones
+    if args.class_type == 1 and netmhc_table["NB"].isna().any():
+        raise ValueError(f"Incomplete NetMHCpan output rows in {netmhc_file}; rerun the prediction with distinct HLA alleles")
     netmhc_table["NB"] = netmhc_table["NB"].astype(int)
     rank_column = {
         1: "EL_Rank",
@@ -87,14 +92,14 @@ def filter_netMHC_table(netmhc_table,args,netmhc_file,NB_min = 0,ELS_thr = 0):
     rank_col_cl = rank_column[args.class_type]
     netmhc_table[rank_col_cl] = netmhc_table[rank_col_cl].astype(float)    
     score_column = {
-        1: "EL-score",
+        1: "EL_score",
         2: "Score"
     }
     scor_col_cl = score_column[args.class_type]
     netmhc_table[scor_col_cl] = netmhc_table[scor_col_cl].astype(float)
     # filter the NB column (number of WB/SB of peptide accross all HLA)
     # filter the EL_Rank values (after seeing plots, 2 might be a good value)
-    # filter the EL-score values (no real filter atm, must just not be 0)
+    # filter the EL_score values (no real filter atm, must just not be 0)
     elr_thr = args.el_rank
     # intermediate save before filtering
     netmhc_table.to_csv(netmhc_file.split(".out")[0]+f"_netmhc_ELR_nofilter.csv",index=False)
