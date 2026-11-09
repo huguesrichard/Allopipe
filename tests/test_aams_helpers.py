@@ -28,6 +28,29 @@ def test_run_netmhcpan_deduplicates_class_i_alleles(tmp_path, monkeypatch):
     assert command[command.index("-a") + 1] == "HLA-A02:01,HLA-B07:02"
 
 
+def test_run_netmhcpan_deduplicates_class_ii_alleles(tmp_path, monkeypatch):
+    args = SimpleNamespace(
+        class_type=2, pair=None, run_name="test", length=15,
+        hla_typing="DRB1_0405,DRB1_0401,HLA-DQA10303-DQB10301,"
+                   "HLA-DQA10303-DQB10302,HLA-DQA10303-DQB10301,"
+                   "HLA-DQA10303-DQB10302",
+    )
+    monkeypatch.setattr(aams_helpers, "binary_check", lambda binary: None)
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        Path(command[command.index("-xlsfile") + 1]).touch()
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(aams_helpers.subprocess, "run", run)
+    aams_helpers.run_netmhcpan(str(tmp_path / "input.fa"), str(tmp_path), args)
+    command = commands[0]
+    assert command[command.index("-a") + 1] == (
+        "DRB1_0405,DRB1_0401,HLA-DQA10303-DQB10301,HLA-DQA10303-DQB10302"
+    )
+
+
 class TestCreateAamsDependencies:
     """Tests for create_aams_dependencies()"""
     

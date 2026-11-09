@@ -4,7 +4,7 @@ import pandas as pd
 # get the columns associated to one HLA and return the subsets columns associated
 def find_subsets(netmhc_file,args):
     # read the netmhcpan output table
-    netmhc_table = pd.read_csv(netmhc_file, sep="\t", comment="#" if args.class_type == 1 else None)
+    netmhc_table = pd.read_csv(netmhc_file, sep="\t", comment="#")
     # empty list for all the subsets
     subsets = []
     # empty list for one subset
@@ -78,6 +78,8 @@ def format_netMHCpan(netmhc_table,subsets,args):
     if args.class_type == 1:
         # Keep the existing rank name used by downstream AAMS calculations.
         df = df.rename(columns={"EL_rank": "EL_Rank"})
+    else:
+        df = df.rename(columns={"Score_EL": "Score", "Rank_EL": "Rank"})
     return(df)
 
 def filter_netMHC_table(netmhc_table,args,netmhc_file,NB_min = 0,ELS_thr = 0):

@@ -107,3 +107,42 @@ def test_handle_netmhcpan_42e_output(tmp_path):
         columns = pd.read_csv(tmp_path / name).columns
         assert "EL_score" in columns
         assert "EL-score" not in columns
+
+
+def test_handle_netmhciipan_43k_output(tmp_path):
+    path = tmp_path / "netmhc.out"
+    path.write_text(
+        "#NetMHCIIpan-4.3k command line\n"
+        "\t\t\t\tDRB1_0401\t\t\t\t\t\t\tHLA-DPA10103-DPB10301\t\t\t\t\t\t\t\t\n"
+        "Pos\tPeptide\tID\tTarget\tCore\tInverted\tScore_EL\tRank_EL\tScore_BA\tnM\tRank_BA"
+        "\tCore\tInverted\tScore_EL\tRank_EL\tScore_BA\tnM\tRank_BA\tAve\tNB\n"
+        "1\tGLEEFLSAMQSARGP\tGENE1\tNA\tLSAMQSARG\t0\t0.35\t3.9\t0.57\t105\t2.2"
+        "\tEEFLSAMQS\t0\t0.002\t37.3\t0.34\t1260\t15.7\t0.17\t1\n"
+    )
+    args = type("Args", (), {
+        "hla_typing": "DRB1_0401,HLA-DPA10103-DPB10301", "class_type": 2, "el_rank": 10,
+    })()
+
+    result = netmhc_tables_handler.handle_netMHCpan(str(path), args)
+
+    assert result[["Peptide", "ID", "HLA"]].values.tolist() == [
+        ["GLEEFLSAMQSARGP", "GENE1", "DRB1_0401"]
+    ]
+    assert result["Score"].tolist() == [0.35]
+    assert result["Rank"].tolist() == [3.9]
+    assert result["NB"].tolist() == [1]
+    assert "Target" not in result.columns
+
+
+def test_class_ii_filters_rank_score_and_shared_nb(tmp_path):
+    table = pd.DataFrame({
+        "Pos": [1, 2, 3, 4, 5],
+        "Peptide": ["strong", "weak", "rank8_with_binder", "rank8_no_binder", "zero_score"],
+        "HLA": ["DRB1_0401"] * 5,
+        "Score": [0.5, 0.4, 0.3, 0.3, 0],
+        "Rank": [0.5, 3, 8, 8, 2],
+        "NB": [1, 1, 1, 0, 1],
+    })
+    args = type("Args", (), {"class_type": 2, "el_rank": 10})()
+    result = netmhc_tables_handler.filter_netMHC_table(table, args, str(tmp_path / "test.out"))
+    assert result["Peptide"].tolist() == ["strong", "weak", "rank8_with_binder"]

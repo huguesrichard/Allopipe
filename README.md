@@ -114,7 +114,7 @@ For installing AlloPipe you will specifically require the following softwares:
 2. [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) installed for your operating system. The Nextflow workflow uses Conda to create its execution environment from [`recipes/conda/allopipe.yml`](recipes/conda/allopipe.yml). AlloPipe is currently developed on Python v3.10.
 
 3. To run Allo-Affinity, you need to assess the affinity of the reconstructed peptides towards the HLA molecules. We recommend two groups of software suites for that (only NetMHCpan is supported in command line for now):
-	- [NetMHCpan 4.2e](https://services.healthtech.dtu.dk/services/NetMHCpan-4.2/) and [NetMHCIIpan](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
+	- [NetMHCpan 4.2e](https://services.healthtech.dtu.dk/services/NetMHCpan-4.2/) and [NetMHCIIpan 4.3k](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/), which should be downloaded as command line tools (be careful with version numbers).
 	- [MixMHCpred](https://github.com/GfellerLab/MixMHCpred) and [MixMHC2pred](https://github.com/GfellerLab/MixMHC2pred) (support development in progress).
 4. To predict proteasomal cleavage on the proteins of the donor or the recipient, you will also need the [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool installed as a standalone version. 
 
@@ -480,7 +480,7 @@ gzip -d data/Ensembl/GRCh38/*
 
 Allo-Affinity output those peptides in a fasta file that can be processed by the following third party softwares:
  - [NetMHCpan 4.2e](https://services.healthtech.dtu.dk/services/NetMHCpan-4.2/)
- - [NetMHCIIpan4.3](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/) 
+ - [NetMHCIIpan 4.3k](https://services.healthtech.dtu.dk/services/NetMHCIIpan-4.3/)
  - [MixMHCPred](https://github.com/GfellerLab/MixMHCpred)
  - [MixMHC2Pred](https://github.com/GfellerLab/MixMHC2pred)
 
