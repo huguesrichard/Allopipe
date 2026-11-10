@@ -328,7 +328,7 @@ def read_fasta(file):
                     transcripts (dict): dictionary containing all fasta entries and sequences
     """
     # open file
-    with open(file, "r", encoding="utf-8") as fasta_file:
+    with gzip.open(file, "rt", encoding="utf-8") as fasta_file:
         # create transcripts dictionary
         transcripts = {}
         # initiate bool to tag the first iteration
@@ -373,7 +373,7 @@ def read_pep_fa(file):
                     transcripts (dict): dictionary containing all fasta entries and peptidic sequences
     """
     # open file
-    with open(file, "r", encoding="utf-8") as pep_file:
+    with gzip.open(file, "rt", encoding="utf-8") as pep_file:
         # create peptides dictionary
         peptides = {}
         # initiate bool to tag the first iteration

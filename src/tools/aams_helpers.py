@@ -108,12 +108,18 @@ def contributing_ams_transcripts(merged_pair, ensembl_transcripts, pair_tag=""):
 
 def filter_on_refseq(transcript_candidates_df, refseq_transcripts_path):
     refseq_transcripts = pd.read_csv(refseq_transcripts_path, sep="\t")
-    refseq_transcripts = refseq_transcripts.rename(columns={"transcript_stable_id": "Transcript_id"})
+    transcript_column = next(
+        (name for name in ("transcript_stable_id", "Transcript stable ID")
+         if name in refseq_transcripts.columns),
+        None,
+    )
+    if transcript_column is None:
+        raise ValueError("RefSeq file must contain a 'transcript_stable_id' or 'Transcript stable ID' column.")
     if "Transcript_id" not in transcript_candidates_df.columns:
         raise ValueError("Transcript candidates must contain a 'Transcript_id' column.")
     return transcript_candidates_df[
         transcript_candidates_df["Transcript_id"].isin(
-            refseq_transcripts["Transcript_id"]
+            refseq_transcripts[transcript_column]
         )
     ].drop_duplicates()
 
@@ -633,22 +639,25 @@ def build_peptides(
     pair_tag = arguments_handling.pair_tag(args)
     # Read only once at firt call (without cleavage mode)
     if ens_transcripts is None and peptides_ensembl is None and refseq_file is None:
-        cdna_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.cdna.all.fa")), None)
+        cdna_files = glob.glob(str(args.ensembl_path) + "/*.cdna.all.fa.gz")
+        cdna_file = next(iter(cdna_files), None)
         if cdna_file is None:
-            raise FileNotFoundError(f"No such file or directory matching '.cdna.all.fa' found.")
+            raise FileNotFoundError("No file matching '*.cdna.all.fa.gz' found.")
         print(f"{pair_tag}cDNA file found: {cdna_file}")
         ens_transcripts = parsing.read_fasta(cdna_file)
         # get proteins from ensembl database
-        pep_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.pep.all.fa")), None)
+        pep_files = glob.glob(str(args.ensembl_path) + "/*.pep.all.fa.gz")
+        pep_file = next(iter(pep_files), None)
         if pep_file is None:
-            raise FileNotFoundError(f"No such file or directory matching '*.pep.all.fa' found.")
+            raise FileNotFoundError("No file matching '*.pep.all.fa.gz' found.")
         print(f"{pair_tag}pep file found: {pep_file}")
         proteins = parsing.read_pep_fa(pep_file)
         peptides_ensembl = dict_to_df(proteins)
 
-        refseq_file = next((file for file in glob.glob(str(args.ensembl_path) + "/*.refseq.tsv")), None)
+        refseq_files = glob.glob(str(args.ensembl_path) + "/*.refseq.tsv.gz")
+        refseq_file = next(iter(refseq_files), None)
         if refseq_file is None:
-            raise FileNotFoundError(f"No such file or directory matching '*.refseq.tsv' found.")
+            raise FileNotFoundError("No file matching '*.refseq.tsv.gz' found.")
         print(f"{pair_tag}RefSeq file found: {refseq_file}")
 
     if cleavage_mode:

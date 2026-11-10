@@ -457,24 +457,8 @@ From previously generated files that are the `MISMATCHES-TABLE` and the `TRANSCR
 
 
 #### Required files by Allo-Affinity 
- 
-> To reconstruct the peptides, you will need the following files (*replace XXX by the version of Ensembl used by VEP in the following links*):
-> - `Homo_sapiens.<REFERENCE-GENOME>.cdna.all.fa.gz`: [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/cdna)
-> - `Homo_sapiens.<REFERENCE-GENOME>.pep.fa.gz`: [https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/pep](https://ftp.ensembl.org/pub/release-XXX/fasta/homo_sapiens/pep)
-> - `Homo_sapiens.<REFERENCE-GENOME>.<VEP-VERSION>.refseq.tsv.gz`: [https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/](https://ftp.ensembl.org/pub/release-XXX/tsv/homo_sapiens/)
-> 
->
->
-> **Please be aware the number of the Ensembl release has to be the same as the one used by the VEP tool version that generated the annotated VCF.**
-> 
-> Do not forget to select the reference genome used to perform the alignment.
-> We provide the v111 of those files for GRCh37 and GRCh38 [here](./data/Ensembl).
 
-Before running a Nextflow command that launches Allo-Affinity, unzip the files corresponding to your assembly (GRCh37 or GRCh38):
-
-```
-gzip -d data/Ensembl/GRCh38/*
-```
+See the [Ensembl reference files README](data/Ensembl/README.md) for download links and assembly selection.
 
 <br/>
 
@@ -511,7 +495,7 @@ nextflow run main.nf -profile conda \
 
 Nextflow arguments:
   - `--run_name` is the unique name of the run
-  - `--ensembl_path` is the path to the Ensembl files previously downloaded: `.cdna.fa`, `.pep.fa` and `.refseq.tsv`
+  - `--ensembl_path` is the path to the Ensembl files: `.cdna.all.fa.gz`, `.pep.all.fa.gz` and `.refseq.tsv.gz`
   - `--hla_typing` is the HLA typing, e.g. `HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01`
 
 Python Allo-Affinity arguments passed through `--allo_affinity_opts`:

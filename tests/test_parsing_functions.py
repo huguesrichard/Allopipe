@@ -169,18 +169,25 @@ class TestExtractAaFromVep:
 
 class TestReadFasta:
     """Tests for read_fasta()"""
+
+    def test_reads_gzipped_fasta(self, tmp_path):
+        import gzip
+
+        path = tmp_path / "test.fa.gz"
+        with gzip.open(path, "wt", encoding="utf-8") as handle:
+            handle.write(">ENST0001.1 description\nACGT\n")
+        assert parsing_functions.read_fasta(path) == {"ENST0001": "ACGT"}
     
     def test_reads_valid_fasta(self, tmp_path):
         """Test reading valid FASTA file"""
-        fasta_file = tmp_path / "test.fa"
-        fasta_file.write_text(
+        fasta_file = tmp_path / "test.fa.gz"
+        fasta_file.write_bytes(gzip.compress((
             ">seq1 description\n"
             "MVKKAMVKKA\n"
             "MVKKV\n"
             ">seq2 description\n"
-            "LCCA\n",
-            encoding="utf-8"
-        )
+            "LCCA\n"
+        ).encode("utf-8")))
         
         result = parsing_functions.read_fasta(str(fasta_file))
         
@@ -188,8 +195,8 @@ class TestReadFasta:
 
     def test_handles_empty_fasta(self, tmp_path):
         """Test with empty FASTA file"""
-        fasta_file = tmp_path / "empty.fa"
-        fasta_file.write_text("", encoding="utf-8")
+        fasta_file = tmp_path / "empty.fa.gz"
+        fasta_file.write_bytes(gzip.compress(b""))
         
         # Empty FASTA files cause UnboundLocalError in read_fasta
         with pytest.raises(UnboundLocalError):
@@ -197,15 +204,14 @@ class TestReadFasta:
 
     def test_multiline_sequences(self, tmp_path):
         """Test FASTA with multi-line sequences"""
-        fasta_file = tmp_path / "multiline.fa"
-        fasta_file.write_text(
+        fasta_file = tmp_path / "multiline.fa.gz"
+        fasta_file.write_bytes(gzip.compress((
             ">seq1 description\n"
             "MVKKAMVKKAMVKKA\n"
             "LCCA\n"
             ">seq2 description\n"
-            "AAAA\n",
-            encoding="utf-8"
-        )
+            "AAAA\n"
+        ).encode("utf-8")))
         
         result = parsing_functions.read_fasta(str(fasta_file))
         
@@ -214,18 +220,29 @@ class TestReadFasta:
 
 class TestReadPepFa:
     """Tests for read_pep_fa()"""
+
+    def test_reads_gzipped_peptide_fasta(self, tmp_path):
+        import gzip
+
+        path = tmp_path / "peptides.fa.gz"
+        with gzip.open(path, "wt", encoding="utf-8") as handle:
+            handle.write(
+                ">ENSP0001.1 protein_coding GRCh38:1:1000:2000:-1 "
+                "gene:GENE1.1 transcript:ENST0001.1 gene_biotype:protein_coding\n"
+                "MVKKA\n"
+            )
+        assert parsing_functions.read_pep_fa(path)["ENSP0001"][3] == "MVKKA"
     
     def test_reads_peptide_fasta(self, tmp_path):
         """Test reading peptide FASTA (no description)"""
-        pep_file = tmp_path / "peptides.fa"
+        pep_file = tmp_path / "peptides.fa.gz"
         # read_pep_fa expects protein_coding in header with specific format
-        pep_file.write_text(
+        pep_file.write_bytes(gzip.compress((
             ">ENSP0001.1 protein_coding GRCh38:1:1000:2000:-1 gene:GENE1.1 transcript:ENST0001.1 gene_biotype:protein_coding\n"
             "MVKKA\n"
             ">ENSP0002.1 protein_coding GRCh38:1:3000:4000:1 gene:GENE2.1 transcript:ENST0002.1 gene_biotype:protein_coding\n"
-            "LCCA\n",
-            encoding="utf-8"
-        )
+            "LCCA\n"
+        ).encode("utf-8")))
         
         result = parsing_functions.read_pep_fa(str(pep_file))
         

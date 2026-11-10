@@ -183,6 +183,16 @@ class TestContributingAmsTranscripts:
         assert len(result) == 0
 class TestFilterOnRefseq:
     """Tests for filter_on_refseq()"""
+
+    @pytest.mark.parametrize("header", ["Transcript stable ID", "transcript_stable_id"])
+    def test_accepts_biomart_and_ensembl_headers(self, tmp_path, header):
+        path = tmp_path / "reference.tsv.gz"
+        pd.DataFrame({header: ["ENST0001"]}).to_csv(path, sep="\t", index=False)
+        candidates = pd.DataFrame({"Transcript_id": ["ENST0001", "ENST0002"]})
+
+        result = aams_helpers.filter_on_refseq(candidates, path)
+
+        assert result["Transcript_id"].tolist() == ["ENST0001"]
     
     def test_filters_presence_in_refseq(self):
         """Test filtering by presence in RefSeq"""
