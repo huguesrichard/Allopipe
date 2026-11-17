@@ -46,3 +46,16 @@ def test_length_is_validated_for_the_selected_hla_class(validation_request):
     validation_request["affinity_opts"] = "--class_type 2 --length 8"
     with pytest.raises(SystemExit):
         validate(validation_request)
+
+
+@pytest.mark.parametrize("options, hla, expected", [
+    ("", "HLA-A*02:01", ["netMHCpan"]),
+    ("--class_type 2", "DRB1_0101", ["netMHCIIpan"]),
+    ("--dry_run", "HLA-A*02:01", []),
+    ("--cleavage", "HLA-A*02:01", ["netMHCpan", "netchop"]),
+    ("--dry_run --cleavage", "HLA-A*02:01", ["netchop"]),
+])
+def test_required_executables_follow_validated_options(validation_request, options, hla, expected):
+    validation_request["affinity_opts"] = options
+    validation_request["pairs"] = [{"pair_id": "P1", "hla_typing": hla}]
+    assert validate(validation_request)["required_executables"] == expected

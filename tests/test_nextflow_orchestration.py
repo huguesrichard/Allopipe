@@ -77,6 +77,10 @@ def workflow(tmp_path, nextflow_runtime):
             + target + '"$@"\n', encoding="utf-8",
         )
         wrapper.chmod(0o755)
+    for name in ("netMHCpan", "netMHCIIpan", "netchop"):
+        executable_stub = binaries / name
+        executable_stub.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        executable_stub.chmod(0o755)
     output = tmp_path / "published"
     config = tmp_path / "test.config"
     config.write_text(
@@ -89,11 +93,16 @@ def workflow(tmp_path, nextflow_runtime):
         encoding="utf-8",
     )
     env = dict(os.environ)
+    tool_names = ("netMHCpan", "netMHCIIpan", "netchop")
+    base_path = os.pathsep.join(
+        directory for directory in env.get("PATH", "").split(os.pathsep)
+        if directory and not any((Path(directory) / name).exists() for name in tool_names)
+    )
     env.update({
         "NXF_HOME": str(runtime), "NXF_OFFLINE": "true", "NXF_ANSI_LOG": "false",
         "NXF_DISABLE_CHECK_LATEST": "true", "ALLOPIPE_TEST_PYTHON": sys.executable,
         "ALLOPIPE_TEST_STUB": str(ROOT / "tests" / "fixtures" / "nextflow_task_stub.py"),
-        "PATH": str(binaries) + os.pathsep + str(bcftools.parent) + os.pathsep + env.get("PATH", ""),
+        "PATH": str(binaries) + os.pathsep + str(bcftools.parent) + os.pathsep + base_path,
     })
 
     def run(*extra, csv_text=None, skip_vep=True, mode="cohort"):
@@ -156,6 +165,55 @@ def test_invalid_hla_in_later_pair_is_rejected_before_count(workflow):
     assert "argument validation failed for P2" in result.stdout + result.stderr
     scripts = [p.read_text() for p in (folder / "work").rglob(".command.sh")]
     assert not any("ams_pipeline.py" in script for script in scripts)
+
+
+def test_missing_executable_stops_before_overwrite_and_count(workflow):
+    run, published, folder = workflow
+    (folder / "bin" / "netMHCpan").unlink()
+    published.mkdir(parents=True)
+    sentinel = published / "keep.txt"
+    sentinel.write_text("keep")
+    result = run("--force_overwrite")
+    assert result.returncode != 0
+    assert "required executable 'netMHCpan' was not found" in result.stdout + result.stderr
+    assert sentinel.read_text() == "keep"
+    scripts = [p.read_text() for p in (folder / "work").rglob(".command.sh")]
+    assert not any("prepare_ensembl.py" in script or "ams_pipeline.py" in script for script in scripts)
+
+
+def test_cleavage_dry_run_requires_netchop_but_not_netmhcpan(workflow):
+    run, published, folder = workflow
+    (folder / "bin" / "netMHCpan").unlink()
+    (folder / "bin" / "netchop").unlink()
+    result = run("--allo_affinity_opts", "--dry_run --cleavage")
+    assert result.returncode != 0
+    output = result.stdout + result.stderr
+    assert "required executable 'netchop' was not found" in output
+    assert "required executable 'netMHCpan' was not found" not in output
+    assert not published.exists()
+
+
+def test_dry_run_without_cleavage_does_not_require_affinity_executables(workflow):
+    run, _, folder = workflow
+    for name in ("netMHCpan", "netMHCIIpan", "netchop"):
+        (folder / "bin" / name).unlink()
+    result = run("--hla_typing", "HLA-A*02:01", "--allo_affinity_opts", "--dry_run --length 9", mode="pair")
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_executable_from_before_script_is_visible_to_preflight(workflow):
+    run, _, folder = workflow
+    (folder / "bin" / "netMHCpan").unlink()
+    module_bin = folder / "module-bin"
+    module_bin.mkdir()
+    executable = module_bin / "netMHCpan"
+    executable.write_text("#!/bin/sh\nexit 0\n")
+    executable.chmod(0o755)
+    config = folder / "test.config"
+    with config.open("a") as handle:
+        handle.write(f"process.beforeScript = 'export PATH={module_bin}:$PATH'\n")
+    result = run("--hla_typing", "HLA-A*02:01", mode="pair")
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_validated_options_are_passed_to_scoring_tasks(workflow):
@@ -419,7 +477,7 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
     with (folder / "trace.tsv").open() as handle:
         trace = list(csv.DictReader(handle, delimiter="\t"))
     assert len(trace) == 4
-    assert all(any(stage in row["name"] for stage in ("VALIDATE_ARGUMENTS", "PREPARE_ENSEMBL", "ALLO_COUNT", "ALLO_AFFINITY")) for row in trace)
+    assert all(any(stage in row["name"] for stage in ("CHECK_ARGUMENTS_AND_TOOLS", "PREPARE_ENSEMBL", "ALLO_COUNT", "ALLO_AFFINITY")) for row in trace)
 
 
 @pytest.mark.parametrize("mode", ["pair", "cohort"])

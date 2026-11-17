@@ -1,4 +1,4 @@
-process VALIDATE_ARGUMENTS {
+process CHECK_ARGUMENTS_AND_TOOLS {
 	label 'allopipe'
 	cache false
 	debug true
@@ -13,5 +13,6 @@ process VALIDATE_ARGUMENTS {
 	def quote = { value -> "'" + value.toString().replace("'", "'\"'\"'") + "'" }
 	"""
 	PYTHONPATH=${quote("${projectDir}/src")} python -m tools.validate_arguments ${quote(request)}
+	PYTHONPATH=${quote("${projectDir}/src")} python -m tools.check_executables validated-options.json
 	"""
 }

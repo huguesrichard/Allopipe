@@ -79,6 +79,7 @@ def run_affinity(argv):
     parser.add_argument("-a", required=True)
     parser.add_argument("-o", required=True)
     parser.add_argument("--length", type=int)
+    parser.add_argument("--dry_run", action="store_true")
     args = parser.parse_args(argv)
     run = Path(args.o) / "runs" / args.n
     prefix = args.p + "_" if args.p else ""

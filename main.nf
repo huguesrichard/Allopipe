@@ -1,4 +1,4 @@
-include { VALIDATE_ARGUMENTS } from './modules/validate-arguments'
+include { CHECK_ARGUMENTS_AND_TOOLS } from './modules/check-arguments-and-tools'
 include { PREPARE_ENSEMBL } from './modules/prepare-ensembl'
 include { FILTER_BED } from './modules/filter-bed'
 include { VEP_ANNOTATION } from './modules/vep-annotation'
@@ -174,8 +174,8 @@ workflow AlloPipe {
 		count_opts: params.allo_count_opts ?: '', affinity_opts: params.allo_affinity_opts ?: '',
 		pairs: pairRows.collect { [pair_id: it.pair_id, hla_typing: it.hla_typing] },
 	]).bytes.encodeBase64().toString()
-	VALIDATE_ARGUMENTS(validationRequest)
-	def validatedArguments = VALIDATE_ARGUMENTS.out.options.map { optionsFile ->
+	CHECK_ARGUMENTS_AND_TOOLS(validationRequest)
+	def validatedArguments = CHECK_ARGUMENTS_AND_TOOLS.out.options.map { optionsFile ->
 		prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
 		def options = new groovy.json.JsonSlurper().parseText(optionsFile.text)
 		tuple(optionsFile, options.count_opts, options.affinity_opts)
