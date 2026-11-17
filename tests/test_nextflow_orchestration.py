@@ -1,5 +1,6 @@
 """Run the real Nextflow workflow with deterministic scoring/VEP substitutes."""
 import csv
+import gzip
 import json
 import os
 from pathlib import Path
@@ -55,7 +56,7 @@ def workflow(tmp_path, nextflow_runtime):
     inputs.mkdir()
     multi_vcf = inputs / "cohort.vcf"
     multi_vcf.write_text(
-        "##fileformat=VCFv4.2\n##contig=<ID=1,length=1000>\n"
+        "##fileformat=VCFv4.2\n##VEP-command-line=vep\n##contig=<ID=1,length=1000>\n"
         '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n'
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tA\tB\tC\n"
         "1\t100\t.\tA\tT\t.\tPASS\t.\tGT\t0/0\t0/0\t0/0\n"
@@ -128,6 +129,31 @@ def test_invalid_assembly_stops_before_creating_output(workflow):
     assert result.returncode != 0
     assert "--assembly must be GRCh37 or GRCh38" in result.stdout + result.stderr
     assert not published.exists()
+
+
+def test_unannotated_vcf_does_not_overwrite_existing_run(workflow):
+    run, published, folder = workflow
+    vcf = folder / "inputs" / "cohort.vcf"
+    vcf.write_text(vcf.read_text().replace("##VEP-command-line=vep\n", ""))
+    published.mkdir(parents=True)
+    sentinel = published / "keep.txt"
+    sentinel.write_text("keep")
+    result = run("--force_overwrite")
+    assert result.returncode != 0
+    assert "missing ##VEP-command-line header" in result.stdout + result.stderr
+    assert str(vcf) in result.stdout + result.stderr
+    assert sentinel.read_text() == "keep"
+    assert not list((folder / "work").rglob(".command.sh"))
+
+
+def test_preannotated_compressed_vcf_is_accepted(workflow):
+    run, _, folder = workflow
+    vcf = folder / "inputs" / "cohort.vcf"
+    compressed = vcf.with_suffix(".vcf.gz")
+    with gzip.open(compressed, "wt") as output:
+        output.write(vcf.read_text())
+    result = run("--multi_vcf", str(compressed))
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_invalid_assembly_does_not_overwrite_existing_run(workflow):

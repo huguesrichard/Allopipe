@@ -15,6 +15,29 @@ def requireParams(names) {
 	}
 }
 
+def requireVepAnnotation(path) {
+	def stream = java.nio.file.Files.newInputStream(path)
+	try {
+		def input = path.toString().endsWith('.gz') ? new java.util.zip.GZIPInputStream(stream) : stream
+		def reader = new BufferedReader(new InputStreamReader(input, 'UTF-8'))
+		try {
+			String line
+			while ((line = reader.readLine()) != null && !line.startsWith('#CHROM')) {
+				if (line.startsWith('##VEP-command-line=')) return
+			}
+		} finally {
+			reader.close()
+		}
+	} finally {
+		stream.close()
+	}
+	error "ERROR: --skip_vep_annotation requires a VEP-annotated VCF; missing ##VEP-command-line header in ${path}"
+}
+
+def checkPreRun(inputVcfs) {
+	inputVcfs.each { requireVepAnnotation(file(it)) }
+}
+
 def buildPairRows() {
 	if (params.mode == 'pair') {
 		requireParams(['donor', 'recipient', 'hla_typing'])
@@ -127,7 +150,6 @@ workflow AlloPipe {
 	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
 	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
 	def bedFile = params.bed_filter ? file(params.bed_file ?: "${projectDir}/tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed", checkIfExists: true) : null
-	prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")
@@ -138,6 +160,8 @@ workflow AlloPipe {
 	def inputVcfs = params.skip_vep_annotation ?
 		(params.mode == 'pair' ? [params.donor, params.recipient] : [params.multi_vcf])
 			.collect { file(it, checkIfExists: true).toAbsolutePath().toString() } : []
+	checkPreRun(inputVcfs)
+	prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
 	PREPARE_ENSEMBL(
 		params.assembly,
 		ensemblRelease,
