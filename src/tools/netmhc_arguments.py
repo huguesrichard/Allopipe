@@ -115,7 +115,7 @@ def check_if_valid_float(parser,arg):
     return thresh
     
 
-def netmhc_arguments():
+def netmhc_arguments(argv=None, check_generated_inputs=True):
     """
     Returns the parsed arguments of the aams pipeline
     Returns:
@@ -132,7 +132,7 @@ def netmhc_arguments():
         help="path of directory of Ensembl files",
         action=arguments_handling.UniqueStore,
         required=True,
-        type=lambda x: check_if_existing_path(parser,x)
+        type=lambda x: check_if_existing_path(parser,x) if check_generated_inputs else Path(x)
     )
     parser.add_argument(
         "-o",
@@ -185,7 +185,7 @@ def netmhc_arguments():
     )
     
     # intermediate arg parsing to consider classes 1 & 2
-    initial_args, _ = parser.parse_known_args()
+    initial_args, _ = parser.parse_known_args(argv)
         
     # netMHCpan args
     parser.add_argument(
@@ -214,6 +214,7 @@ def netmhc_arguments():
         type=lambda x: check_if_valid_float(parser,x)
     )
 
-    args = parser.parse_args()
-    check_if_existing_output_run_name(parser, args.run_name, args.output_dir)
+    args = parser.parse_args(argv)
+    if check_generated_inputs:
+        check_if_existing_output_run_name(parser, args.run_name, args.output_dir)
     return args

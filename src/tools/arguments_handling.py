@@ -144,7 +144,7 @@ def pair_tag(args):
     return f"[{pair_id}] " if pair_id else ""
 
 
-def arguments():
+def arguments(argv=None, check_generated_inputs=True):
     """
     Returns the parsed arguments of the ams pipeline
     Returns:
@@ -158,12 +158,12 @@ def arguments():
     parser.add_argument(
         "donor",
         help="donor file, accepted formats are vcf and vcf.gz",
-        type=lambda x: check_file(parser, x),
+        type=lambda x: check_file(parser, x) if check_generated_inputs else x,
     )
     parser.add_argument(
         "recipient",
         help="recipient file, accepted formats are vcf and vcf.gz",
-        type=lambda x: check_file(parser, x),
+        type=lambda x: check_file(parser, x) if check_generated_inputs else x,
     )
     parser.add_argument(
         "orientation",
@@ -198,7 +198,7 @@ def arguments():
     )
     parser.add_argument(
         "--min_ad",
-        help="minimal value for read counts per position",
+        help="minimal allelic depth per position",
         nargs="?",
         default=5,
         const=5,
@@ -215,7 +215,7 @@ def arguments():
     )
     parser.add_argument(
         "--gnomad_af",
-        help="SNPs with AF in combined population below this value will be filtered",
+        help="frequency threshold of existing variant in gnomAD exomes combined population",
         nargs="?",
         default=0.01,
         const=0.01,
@@ -274,7 +274,7 @@ def arguments():
         choices=["pair", "cohort"],
         required=True,
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.min_dp > args.max_dp:
         raise ValueError(
             "The minimal Depth should not be higher than the maximal Depth"

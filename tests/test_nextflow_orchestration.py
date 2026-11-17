@@ -66,7 +66,7 @@ def workflow(tmp_path, nextflow_runtime):
     pairs = inputs / "pairs.csv"
     pairs.write_text(
         'donor,recipient,hla\nA,B,"HLA-A02:01,HLA-B07:02"\n'
-        "A,C,HLA-A03:01,HLA-C07:02\nC,A,HLA-B08:01\n", encoding="utf-8",
+        "A,C,HLA-A03:01,HLA-C07:02\nC,A,HLA-B*08:01\n", encoding="utf-8",
     )
     binaries = tmp_path / "bin"
     binaries.mkdir()
@@ -129,6 +129,43 @@ def test_invalid_assembly_stops_before_creating_output(workflow):
     assert result.returncode != 0
     assert "--assembly must be GRCh37 or GRCh38" in result.stdout + result.stderr
     assert not published.exists()
+
+
+@pytest.mark.parametrize("options, expected", [
+    (("--allo_affinity_opts", "--lenght 9"), "unrecognized arguments: --lenght 9"),
+    (("--allo_affinity_opts", "--length 7"), "not supported by netMHCpan"),
+    (("--allo_count_opts", "--min_dp 500 --max_dp 20"), "minimal Depth"),
+])
+def test_invalid_scoring_options_do_not_overwrite_or_start_pipeline(workflow, options, expected):
+    run, published, folder = workflow
+    published.mkdir(parents=True)
+    sentinel = published / "keep.txt"
+    sentinel.write_text("keep")
+    result = run("--force_overwrite", *options)
+    assert result.returncode != 0
+    assert expected in result.stdout + result.stderr
+    assert sentinel.read_text() == "keep"
+    scripts = [p.read_text() for p in (folder / "work").rglob(".command.sh")]
+    assert not any("prepare_ensembl.py" in script or "ams_pipeline.py" in script for script in scripts)
+
+
+def test_invalid_hla_in_later_pair_is_rejected_before_count(workflow):
+    run, _, folder = workflow
+    result = run(csv_text="donor,recipient,hla\nA,B,HLA-A*02:01\nA,C,typo\n")
+    assert result.returncode != 0
+    assert "argument validation failed for P2" in result.stdout + result.stderr
+    scripts = [p.read_text() for p in (folder / "work").rglob(".command.sh")]
+    assert not any("ams_pipeline.py" in script for script in scripts)
+
+
+def test_validated_options_are_passed_to_scoring_tasks(workflow):
+    run, _, folder = workflow
+    result = run("--hla_typing", "HLA-A*02:01", "--allo_count_opts", '--min_dp "30"',
+                 "--allo_affinity_opts", '--length "10"', mode="pair")
+    assert result.returncode == 0, result.stdout + result.stderr
+    scripts = [p.read_text() for p in (folder / "work").rglob(".command.sh")]
+    assert any("ams_pipeline.py" in script and "--min_dp 30" in script for script in scripts)
+    assert any("aams_pipeline.py" in script and "--length 10" in script for script in scripts)
 
 
 def test_unannotated_vcf_does_not_overwrite_existing_run(workflow):
@@ -226,7 +263,7 @@ def test_cohort_routes_shared_samples_and_per_pair_hla_and_publishes_results(wor
     expected_pairs = [
         ("P1", "A", "B", "HLA-A02:01,HLA-B07:02"),
         ("P2", "A", "C", "HLA-A03:01,HLA-C07:02"),
-        ("P3", "C", "A", "HLA-B08:01"),
+        ("P3", "C", "A", "HLA-B*08:01"),
     ]
     for pair, donor, recipient, hla in expected_pairs:
         count = json.loads((published / "logs" / f"{pair}_count.json").read_text())
@@ -381,8 +418,8 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
     assert (published / "plots" / "distrib.png").is_file()
     with (folder / "trace.tsv").open() as handle:
         trace = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(trace) == 3
-    assert all(any(stage in row["name"] for stage in ("PREPARE_ENSEMBL", "ALLO_COUNT", "ALLO_AFFINITY")) for row in trace)
+    assert len(trace) == 4
+    assert all(any(stage in row["name"] for stage in ("VALIDATE_ARGUMENTS", "PREPARE_ENSEMBL", "ALLO_COUNT", "ALLO_AFFINITY")) for row in trace)
 
 
 @pytest.mark.parametrize("mode", ["pair", "cohort"])
@@ -396,7 +433,7 @@ def test_bed_filter_routes_variants_before_annotation_or_from_annotated_input(wo
     bed.write_text("1\t199\t200\n", encoding="utf-8")
     args = ["--bed_filter", "--bed_file", str(bed)]
     if mode == "pair":
-        args += ["--hla_typing", "HLA-A02:01"]
+        args += ["--hla_typing", "HLA-A*02:01"]
     result = run(*args, mode=mode, skip_vep=skip_vep)
     assert result.returncode == 0, result.stdout + result.stderr
     vcfs = sorted((published / "vcf_vep").glob("*_bed.vcf.gz"))

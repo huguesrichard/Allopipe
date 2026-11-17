@@ -34,6 +34,7 @@ def run_count(argv):
     parser.add_argument("--pair", nargs="?", default="", const="")
     parser.add_argument("-o", required=True)
     parser.add_argument("--frameshift", action="store_true")
+    parser.add_argument("--min_dp", type=int)
     parser.add_argument("--mode", choices=["pair", "cohort"], required=True)
     for name in ["donor", "recipient", "orientation", "imputation"]:
         parser.add_argument(name)
@@ -77,6 +78,7 @@ def run_affinity(argv):
     parser.add_argument("-d", required=True)
     parser.add_argument("-a", required=True)
     parser.add_argument("-o", required=True)
+    parser.add_argument("--length", type=int)
     args = parser.parse_args(argv)
     run = Path(args.o) / "runs" / args.n
     prefix = args.p + "_" if args.p else ""

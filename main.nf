@@ -1,3 +1,4 @@
+include { VALIDATE_ARGUMENTS } from './modules/validate-arguments'
 include { PREPARE_ENSEMBL } from './modules/prepare-ensembl'
 include { FILTER_BED } from './modules/filter-bed'
 include { VEP_ANNOTATION } from './modules/vep-annotation'
@@ -84,7 +85,7 @@ def buildPairRows() {
 	}
 }
 
-def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
+def checkedOutputRunPath(runName, outputDir) {
 	def runsPath = file("${outputDir}/runs").toAbsolutePath().normalize()
 	def outputRunPath = runsPath.resolve(runName.toString()).normalize()
 
@@ -94,6 +95,11 @@ def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
 			"${runsPath}/<run_name>\n\n" +
 			"Use --output_dir to choose a different parent output directory."
 	}
+	return outputRunPath
+}
+
+def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
+	def outputRunPath = checkedOutputRunPath(runName, outputDir)
 	if (!outputRunPath.exists()) {
 		return
 	}
@@ -148,6 +154,7 @@ workflow AlloPipe {
 		error "ERROR: --ensembl_release must be a positive integer"
 	}
 	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
+	checkedOutputRunPath(params.run_name, publishedOutputDir)
 	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
 	def bedFile = params.bed_filter ? file(params.bed_file ?: "${projectDir}/tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed", checkIfExists: true) : null
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
@@ -161,13 +168,28 @@ workflow AlloPipe {
 		(params.mode == 'pair' ? [params.donor, params.recipient] : [params.multi_vcf])
 			.collect { file(it, checkIfExists: true).toAbsolutePath().toString() } : []
 	checkPreRun(inputVcfs)
-	prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
+	def validationRequest = groovy.json.JsonOutput.toJson([
+		run_name: params.run_name, orientation: params.orientation, imputation: params.imputation,
+		mode: params.mode, frameshift: params.frameshift, ensembl_path: ensemblPath,
+		count_opts: params.allo_count_opts ?: '', affinity_opts: params.allo_affinity_opts ?: '',
+		pairs: pairRows.collect { [pair_id: it.pair_id, hla_typing: it.hla_typing] },
+	]).bytes.encodeBase64().toString()
+	VALIDATE_ARGUMENTS(validationRequest)
+	def validatedArguments = VALIDATE_ARGUMENTS.out.options.map { optionsFile ->
+		prepareOutputRun(params.run_name, publishedOutputDir, params.force_overwrite, workflow.resume)
+		def options = new groovy.json.JsonSlurper().parseText(optionsFile.text)
+		tuple(optionsFile, options.count_opts, options.affinity_opts)
+	}
+	def argumentsReady = validatedArguments.map { marker, countOptions, affinityOptions -> marker }
+	def validatedCountOptions = validatedArguments.map { marker, countOptions, affinityOptions -> countOptions }
+	def validatedAffinityOptions = validatedArguments.map { marker, countOptions, affinityOptions -> affinityOptions }
 	PREPARE_ENSEMBL(
 		params.assembly,
 		ensemblRelease,
 		ensemblPath,
 		params.skip_vep_annotation ? '' : params.vep_version,
 		inputVcfs,
+		argumentsReady,
 	)
 	def referencesReady = PREPARE_ENSEMBL.out.ready
 	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
@@ -247,7 +269,7 @@ workflow AlloPipe {
 		params.orientation,
 		params.imputation,
 		params.frameshift,
-		params.allo_count_opts,
+		validatedCountOptions,
 		publishedOutputDir,
 		nextflowCommandBase64,
 	)
@@ -257,7 +279,7 @@ workflow AlloPipe {
 	ALLO_AFFINITY(
 		affinity_inputs_ch,
 		ensemblPath,
-		params.allo_affinity_opts,
+		validatedAffinityOptions,
 		publishedOutputDir,
 	)
 

@@ -11,6 +11,7 @@ process PREPARE_ENSEMBL {
 	val reference_dir
 	val vep_version
 	val input_vcfs
+	val arguments_ready
 
 	output:
 	path 'ensembl.ready', emit: ready
