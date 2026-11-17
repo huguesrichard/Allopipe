@@ -292,7 +292,8 @@ nextflow run main.nf -profile conda \
 | `--force_overwrite` | Remove `<output_dir>/runs/<run_name>` before launching when it already exists. When combined with `-resume`, the published run directory is removed while Nextflow's cached tasks remain available. |
 | `--skip_vep_annotation` | Skip the built-in VEP annotation step when the input VCFs are already VEP-annotated. |
 | `--vep_cache <DIR>` | VEP cache path inside the execution environment. Default: `/cache`. |
-| `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_116.2`. To change the workflow default, edit `params.vep_version` in `nextflow.config`. |
+| `--vep_version <TAG>` | VEP container tag used by the VEP process. Default: `release_116.2` (Ensembl 116 was the latest release when this default was set), defined as `params.vep_version` in [`nextflow.config`](nextflow.config). |
+| `--ensembl_release <VERSION>` | Ensembl release used to download missing GRCh38 references. By default, it is derived from `--vep_version` (for example, `release_116.2` gives `116`). Specify it explicitly if the VEP tag does not use this format. |
 | `--frameshift` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
 | `--frameshift_plugin_path <PATH>` | Path to the VEP `Frameshift.pm` plugin or plugin directory. |
 | `--allo_count_opts "<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
@@ -495,7 +496,7 @@ nextflow run main.nf -profile conda \
 
 Nextflow arguments:
   - `--run_name` is the unique name of the run
-  - `--assembly` selects `GRCh37` or `GRCh38`; the corresponding Ensembl files must be present in `data/Ensembl/<assembly>/` (automatic download on the first pipeline run)
+  - `--assembly` selects `GRCh37` or `GRCh38`; missing Ensembl files are downloaded into `data/Ensembl/<assembly>/` on first use and reused on subsequent runs
   - `--hla_typing` is the HLA typing, e.g. `HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01`
 
 Python Allo-Affinity arguments passed through `--allo_affinity_opts`:

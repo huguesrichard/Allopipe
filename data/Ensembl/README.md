@@ -2,7 +2,11 @@
 
 To reconstruct peptides, Allo-Affinity reads the following reference files for the selected genome assembly:
 
-Only the GRCh37 RefSeq TSV is included in the repository. The other files are planned to be downloaded automatically into `data/Ensembl/GRCh37/` or `data/Ensembl/GRCh38/` when the pipeline is first run.
+Only the GRCh37 RefSeq TSV is included in the repository. At the start of a Nextflow run, missing files are downloaded into `data/Ensembl/GRCh37/` or `data/Ensembl/GRCh38/`. Downloads are checked against the Ensembl `CHECKSUMS` files, and their source, checksum and download time (UTC) are recorded in `.ensembl_downloads.json`. Files downloaded by an earlier run are checked against the recorded checksum before reuse.
+
+For GRCh38, `--ensembl_release` selects the release to download. By default, it is derived from `--vep_version` (for example, `release_116.2` gives `116`). Specify `--ensembl_release` explicitly if the VEP tag has another format. Before changing the release, remove the previously downloaded GRCh38 references so that files from different releases are not mixed. GRCh37 FASTA files come from the Ensembl GRCh37 archive; the provided GRCh37 RefSeq TSV is retained unchanged.
+
+The pipeline warns if an identifiable VEP release differs from the GRCh38 reference release. With `--skip_vep_annotation`, it reads the VEP version from the input VCF headers; otherwise, it uses `--vep_version`.
 
 ## GRCh38 reference files
 

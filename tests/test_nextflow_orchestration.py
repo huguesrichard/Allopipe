@@ -38,6 +38,19 @@ def nextflow_runtime(tmp_path_factory):
 @pytest.fixture
 def workflow(tmp_path, nextflow_runtime):
     executable, runtime, bcftools = nextflow_runtime
+    # Isolate reference preparation from real project data and external downloads.
+    project = tmp_path / "project"
+    project.mkdir()
+    shutil.copy2(ROOT / "main.nf", project / "main.nf")
+    shutil.copytree(ROOT / "modules", project / "modules")
+    (project / "src").symlink_to(ROOT / "src", target_is_directory=True)
+    for assembly in ("GRCh37", "GRCh38"):
+        refs = project / "data" / "Ensembl" / assembly
+        refs.mkdir(parents=True)
+        for suffix in ("cdna.all.fa.gz", "pep.all.fa.gz"):
+            (refs / f"Homo_sapiens.{assembly}.{suffix}").touch()
+        name = f"Homo_sapiens.{assembly}.refseq.tsv.gz" if assembly == "GRCh37" else "Homo_sapiens.GRCh38.116.refseq.tsv.gz"
+        (refs / name).touch()
     inputs = tmp_path / "inputs"
     inputs.mkdir()
     multi_vcf = inputs / "cohort.vcf"
@@ -69,7 +82,7 @@ def workflow(tmp_path, nextflow_runtime):
         "process.executor = 'local'\nprocess.maxForks = 2\n"
         "process.container = null\nprocess.shell = ['/bin/bash', '-euo', 'pipefail']\n"
         "docker.enabled = false\nsingularity.enabled = false\nconda.enabled = false\n"
-        "params.vep_version = 'test'\nparams.vep_cache = '/unused'\n"
+        "params.vep_version = 'release_116.2'\nparams.vep_cache = '/unused'\nparams.ensembl_release = null\n"
         "params.frameshift = false\nparams.frameshift_plugin_path = null\n"
         "params.force_overwrite = false\nparams.allo_count_opts = ''\nparams.allo_affinity_opts = ''\n",
         encoding="utf-8",
@@ -86,7 +99,7 @@ def workflow(tmp_path, nextflow_runtime):
         if csv_text is not None:
             pairs.write_text(csv_text, encoding="utf-8")
         command = [
-            executable, "-C", str(config), "run", str(ROOT / "main.nf"),
+            executable, "-C", str(config), "run", str(project / "main.nf"),
             "-work-dir", str(tmp_path / "work"), "-with-trace", str(tmp_path / "trace.tsv"),
             "--mode", mode, "--run_name", RUN_NAME, "--orientation", "dr",
             "--imputation", "imputation", "--assembly", "GRCh38",
@@ -131,6 +144,39 @@ def test_invalid_assembly_does_not_overwrite_existing_run(workflow):
     assert not list((folder / "work").rglob(".command.sh"))
 
 
+@pytest.mark.parametrize("options, expected_release", [
+    ((), "116"),
+    (("--vep_version", "release_113.4"), "113"),
+    (("--vep_version", "custom-tag", "--ensembl_release", "111"), "111"),
+])
+def test_reference_release_defaults_to_vep_tag_and_allows_override(workflow, options, expected_release):
+    run, _, folder = workflow
+    result = run("--assembly", "GRCh37", "--hla_typing", "HLA-A02:01,HLA-B07:02", *options, mode="pair", skip_vep=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+    scripts = [p.read_text(encoding="utf-8") for p in (folder / "work").rglob(".command.sh")]
+    preparation = [s for s in scripts if "prepare_ensembl.py" in s]
+    assert len(preparation) == 1
+    assert f"--release '{expected_release}'" in preparation[0]
+
+
+def test_unrecognized_vep_tag_requires_explicit_reference_release(workflow):
+    run, published, folder = workflow
+    result = run("--vep_version", "custom-tag")
+    assert result.returncode != 0
+    assert "cannot derive Ensembl release" in result.stdout + result.stderr
+    assert not published.exists()
+    assert not list((folder / "work").rglob(".command.sh"))
+
+
+@pytest.mark.parametrize("release", ["0", "invalid"])
+def test_invalid_reference_release_stops_before_creating_output(workflow, release):
+    run, published, _ = workflow
+    result = run("--ensembl_release", release)
+    assert result.returncode != 0
+    assert "--ensembl_release must be a positive integer" in result.stdout + result.stderr
+    assert not published.exists()
+
+
 @pytest.mark.parametrize("assembly", ["GRCh37", "GRCh38"])
 def test_assembly_is_passed_to_vep_and_reference_directory(workflow, assembly):
     run, _, folder = workflow
@@ -143,7 +189,7 @@ def test_assembly_is_passed_to_vep_and_reference_directory(workflow, assembly):
     assert len(vep_scripts) == 2
     assert all(f"--assembly {assembly}" in script for script in vep_scripts)
     assert len(affinity_scripts) == 1
-    assert f'-d "{ROOT / "data" / "Ensembl" / assembly}"' in affinity_scripts[0]
+    assert f'-d "{folder / "project" / "data" / "Ensembl" / assembly}"' in affinity_scripts[0]
 
 
 @pytest.mark.parametrize("skip_vep", [True, False], ids=["preannotated", "vep-stage"])
@@ -183,6 +229,7 @@ def test_cohort_routes_shared_samples_and_per_pair_hla_and_publishes_results(wor
     }
     with (folder / "trace.tsv").open() as handle:
         trace = list(csv.DictReader(handle, delimiter="\t"))
+    assert sum("PREPARE_ENSEMBL" in row["name"] for row in trace) == 1
     assert sum("EXTRACT_SAMPLE" in row["name"] for row in trace) == 3
     assert sum("ALLO_COUNT" in row["name"] for row in trace) == 3
     assert sum("ALLO_AFFINITY" in row["name"] for row in trace) == 3
@@ -308,8 +355,8 @@ def test_pair_mode_routes_single_donor_recipient_without_cohort_normalization(wo
     assert (published / "plots" / "distrib.png").is_file()
     with (folder / "trace.tsv").open() as handle:
         trace = list(csv.DictReader(handle, delimiter="\t"))
-    assert len(trace) == 2
-    assert all("ALLO_COUNT" in row["name"] or "ALLO_AFFINITY" in row["name"] for row in trace)
+    assert len(trace) == 3
+    assert all(any(stage in row["name"] for stage in ("PREPARE_ENSEMBL", "ALLO_COUNT", "ALLO_AFFINITY")) for row in trace)
 
 
 @pytest.mark.parametrize("mode", ["pair", "cohort"])

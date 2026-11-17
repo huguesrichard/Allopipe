@@ -1,9 +1,10 @@
+include { PREPARE_ENSEMBL } from './modules/prepare-ensembl'
+include { FILTER_BED } from './modules/filter-bed'
 include { VEP_ANNOTATION } from './modules/vep-annotation'
 include { EXTRACT_SAMPLE } from './modules/extract-sample'
 include { ALLO_COUNT } from './modules/allo-count'
 include { ALLO_AFFINITY } from './modules/allo-affinity'
 include { NORMALIZE_COHORT } from './modules/normalize-cohort'
-include { FILTER_BED } from './modules/filter-bed'
 
 
 def requireParams(names) {
@@ -111,6 +112,18 @@ workflow AlloPipe {
 	if (!(params.assembly in ['GRCh37', 'GRCh38'])) {
 		error "ERROR: --assembly must be GRCh37 or GRCh38"
 	}
+	def ensemblRelease = params.ensembl_release
+	if (ensemblRelease == null) {
+		def vepTag = params.vep_version?.toString() ?: ''
+		def match = vepTag =~ /^release_(\d+)(?:\.\d+)?$/
+		if (!match.matches()) {
+			error "ERROR: cannot derive Ensembl release from --vep_version '${vepTag}'; specify --ensembl_release"
+		}
+		ensemblRelease = match.group(1)
+	}
+	if (!(ensemblRelease.toString() ==~ /[0-9]+/) || ensemblRelease.toBigInteger() < 1) {
+		error "ERROR: --ensembl_release must be a positive integer"
+	}
 	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
 	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
 	def bedFile = params.bed_filter ? file(params.bed_file ?: "${projectDir}/tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed", checkIfExists: true) : null
@@ -122,13 +135,24 @@ workflow AlloPipe {
 	def ensemblPath = "${projectDir}/data/Ensembl/${vepAssembly}".toString()
 
 	def pairRows = buildPairRows()
+	def inputVcfs = params.skip_vep_annotation ?
+		(params.mode == 'pair' ? [params.donor, params.recipient] : [params.multi_vcf])
+			.collect { file(it, checkIfExists: true).toAbsolutePath().toString() } : []
+	PREPARE_ENSEMBL(
+		params.assembly,
+		ensemblRelease,
+		ensemblPath,
+		params.skip_vep_annotation ? '' : params.vep_version,
+		inputVcfs,
+	)
+	def referencesReady = PREPARE_ENSEMBL.out.ready
 	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
 
 	if (params.mode == 'pair') {
 		raw_samples_ch = Channel.of(
 			tuple('donor', file(params.donor)),
 			tuple('recipient', file(params.recipient)),
-		)
+		).combine(referencesReady).map { sample_id, sample_file, ready -> tuple(sample_id, sample_file) }
 		if (params.bed_filter) {
 			FILTER_BED(raw_samples_ch, bedFile, params.run_name, publishedOutputDir)
 			raw_samples_ch = FILTER_BED.out.filtered_vcf
@@ -145,6 +169,7 @@ workflow AlloPipe {
 		}
 	} else {
 		cohort_input_ch = Channel.of(tuple(file(params.multi_vcf).simpleName, file(params.multi_vcf)))
+			.combine(referencesReady).map { cohort_id, cohort_vcf, ready -> tuple(cohort_id, cohort_vcf) }
 		if (params.bed_filter) {
 			FILTER_BED(cohort_input_ch, bedFile, params.run_name, publishedOutputDir)
 			cohort_input_ch = FILTER_BED.out.filtered_vcf
