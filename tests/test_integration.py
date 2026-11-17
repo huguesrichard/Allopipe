@@ -161,7 +161,7 @@ class TestAamsIntegrationPipeline:
         run_name = "aams_test"
         
         aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
-            run_name, output_dir
+            run_name, output_dir, cleavage=True
         )
         
         assert Path(aams_run_tables).exists()

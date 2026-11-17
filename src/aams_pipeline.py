@@ -16,7 +16,7 @@ def main():
     pair_tag = arguments_handling.pair_tag(args)
     str_params, mismatches_path = aams_helpers.get_ams_params(args.run_name, args.output_dir)
     aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
-        args.run_name, args.output_dir
+        args.run_name, args.output_dir, cleavage=args.cleavage
     )
     log_file = aams_helpers.append_log(args)
     if args.cleavage == True:

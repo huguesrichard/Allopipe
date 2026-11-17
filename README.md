@@ -555,6 +555,8 @@ It contains the mismatches information from the AMS run along with information p
 
 AlloPipe can also run the [NetChop](https://services.healthtech.dtu.dk/services/NetChop-3.1/) tool to annotate the potential proteasomal cleavage sites on the proteins that contain mismatch. This then give you a reduced set of candidate peptides that you can compare with their affinity values.
 
+Enable this mode with `--allo_affinity_opts=--cleavage`. The `netChop/` directory is created when cleavage is enabled.
+
 The cleaved sites are predicted on a protein sequence which depends of the directionality of the run:
 - `dr` direction: Proteins reconstructed from the genotype of the *donor*.
 - `rd` direction: Proteins reconstructed from the genotype of the *recipient*.

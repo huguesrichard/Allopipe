@@ -60,7 +60,7 @@ class TestCreateAamsDependencies:
         run_name = "aams_run"
         
         aams_run_tables, netmhc_dir, aams_path, netchop_dir = aams_helpers.create_aams_dependencies(
-            run_name, output_dir
+            run_name, output_dir, cleavage=True
         )
         
         # All paths should exist

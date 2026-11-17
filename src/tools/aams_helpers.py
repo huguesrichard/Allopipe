@@ -17,11 +17,12 @@ import tools.parsing_functions as parsing
 from tools import arguments_handling
 
 
-def create_aams_dependencies(ams_run_directory, output_dir):
+def create_aams_dependencies(ams_run_directory, output_dir, cleavage=False):
     """
     Returns directory paths after completing the creation of the required directories
         Parameters :
                 ams_run_directory (str): name of the ams run directory
+                cleavage (bool): whether to create the netChop directory
         Returns:
                 aams_run_tables (str): path to the aams_run_tables dir
                 netmhc_dir (str): path to the netMHCpan_out dir
@@ -36,7 +37,8 @@ def create_aams_dependencies(ams_run_directory, output_dir):
     aams_path = os.path.join(run_path, "AAMS")
     Path(aams_path).mkdir(parents=True, exist_ok=True)
     netchop_dir = os.path.join(run_path, "netChop")
-    Path(netchop_dir).mkdir(parents=True, exist_ok=True)
+    if cleavage:
+        Path(netchop_dir).mkdir(parents=True, exist_ok=True)
     return aams_run_tables, netmhc_dir, aams_path, netchop_dir
 
 
