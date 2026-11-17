@@ -24,7 +24,7 @@ process ALLO_AFFINITY {
 	python \${allopipe_src_dir}/aams_pipeline.py \
 		-n ${run_name} \
 		-p ${pair_id} \
-		-d ${projectDir}/${ensembl_path} \
+		-d "${ensembl_path}" \
 		-a ${hla_typing} \
 		${allo_affinity_opts} \
 		-o ./

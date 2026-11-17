@@ -60,15 +60,6 @@ def buildPairRows() {
 	}
 }
 
-def inferVepAssemblyFromEnsemblPath(ensemblPath) {
-	def matcher = ensemblPath.toString() =~ /(?i)(GRCh3[78])/
-	if (!matcher.find()) {
-		error "ERROR: --ensembl_path must contain GRCh37 or GRCh38 to select the VEP assembly"
-	}
-	def assembly = matcher.group(1).toUpperCase()
-	return assembly == 'GRCH37' ? 'GRCh37' : 'GRCh38'
-}
-
 def prepareOutputRun(runName, outputDir, forceOverwrite, resumeRun) {
 	def runsPath = file("${outputDir}/runs").toAbsolutePath().normalize()
 	def outputRunPath = runsPath.resolve(runName.toString()).normalize()
@@ -110,13 +101,16 @@ workflow AlloPipe {
 		error "ERROR: --mode must be either 'pair' or 'cohort'"
 	}
 	if (params.mode == 'pair') {
-		requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path', 'hla_typing'])
+		requireParams(['run_name', 'orientation', 'imputation', 'assembly', 'hla_typing'])
 		} else {
-			requireParams(['run_name', 'orientation', 'imputation', 'ensembl_path'])
+			requireParams(['run_name', 'orientation', 'imputation', 'assembly'])
 			if (params.hla_typing) {
 				log.warn "--hla_typing is ignored in cohort mode; per-pair HLA typing is read from the mandatory 'hla' column in the CSV file provided with --pairs"
 			}
 		}
+	if (!(params.assembly in ['GRCh37', 'GRCh38'])) {
+		error "ERROR: --assembly must be GRCh37 or GRCh38"
+	}
 	def publishedOutputDir = file(params.output_dir).toAbsolutePath().normalize().toString()
 	def nextflowCommandBase64 = workflow.commandLine.bytes.encodeBase64().toString()
 	def bedFile = params.bed_filter ? file(params.bed_file ?: "${projectDir}/tutorial/Twist_Exome_Core_Covered_Targets_hg38.bed", checkIfExists: true) : null
@@ -124,7 +118,8 @@ workflow AlloPipe {
 	def frameshiftPlugin = params.frameshift && params.frameshift_plugin_path ?
 		file(params.frameshift_plugin_path, checkIfExists: true) :
 		file("${projectDir}/modules/vep-annotation.nf")
-	def vepAssembly = inferVepAssemblyFromEnsemblPath(params.ensembl_path)
+	def vepAssembly = params.assembly
+	def ensemblPath = "${projectDir}/data/Ensembl/${vepAssembly}".toString()
 
 	def pairRows = buildPairRows()
 	pairs_ch = Channel.from(pairRows).map { row -> tuple(row.pair_id, row.donor, row.recipient, row.hla_typing) }
@@ -212,7 +207,7 @@ workflow AlloPipe {
 
 	ALLO_AFFINITY(
 		affinity_inputs_ch,
-		params.ensembl_path,
+		ensemblPath,
 		params.allo_affinity_opts,
 		publishedOutputDir,
 	)

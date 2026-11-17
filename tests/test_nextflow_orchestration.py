@@ -54,10 +54,6 @@ def workflow(tmp_path, nextflow_runtime):
         'donor,recipient,hla\nA,B,"HLA-A02:01,HLA-B07:02"\n'
         "A,C,HLA-A03:01,HLA-C07:02\nC,A,HLA-B08:01\n", encoding="utf-8",
     )
-    # The main workflow prefixes this path with projectDir.
-    ensembl = tmp_path / "GRCh38"
-    ensembl.mkdir()
-    relative_ensembl = os.path.relpath(ensembl, ROOT)
     binaries = tmp_path / "bin"
     binaries.mkdir()
     for name, target in [("python", ""), ("vep", "vep ")]:
@@ -93,7 +89,7 @@ def workflow(tmp_path, nextflow_runtime):
             executable, "-C", str(config), "run", str(ROOT / "main.nf"),
             "-work-dir", str(tmp_path / "work"), "-with-trace", str(tmp_path / "trace.tsv"),
             "--mode", mode, "--run_name", RUN_NAME, "--orientation", "dr",
-            "--imputation", "imputation", "--ensembl_path", relative_ensembl,
+            "--imputation", "imputation", "--assembly", "GRCh38",
             "--output_dir", str(output), "--multi_vcf", str(multi_vcf), "--pairs", str(pairs),
             "--skip_vep_annotation", str(skip_vep).lower(), *extra,
         ]
@@ -111,6 +107,43 @@ def workflow(tmp_path, nextflow_runtime):
         return result
 
     return run, output / "runs" / RUN_NAME, tmp_path
+
+
+def test_invalid_assembly_stops_before_creating_output(workflow):
+    run, published, _ = workflow
+    result = run("--assembly", "invalid")
+    assert result.returncode != 0
+    assert "--assembly must be GRCh37 or GRCh38" in result.stdout + result.stderr
+    assert not published.exists()
+
+
+def test_invalid_assembly_does_not_overwrite_existing_run(workflow):
+    run, published, folder = workflow
+    published.mkdir(parents=True)
+    sentinel = published / "keep.txt"
+    sentinel.write_text("keep", encoding="utf-8")
+
+    result = run("--assembly", "invalid", "--force_overwrite")
+
+    assert result.returncode != 0
+    assert "--assembly must be GRCh37 or GRCh38" in result.stdout + result.stderr
+    assert sentinel.read_text(encoding="utf-8") == "keep"
+    assert not list((folder / "work").rglob(".command.sh"))
+
+
+@pytest.mark.parametrize("assembly", ["GRCh37", "GRCh38"])
+def test_assembly_is_passed_to_vep_and_reference_directory(workflow, assembly):
+    run, _, folder = workflow
+    result = run("--assembly", assembly, "--hla_typing", "HLA-A02:01,HLA-B07:02", mode="pair", skip_vep=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    scripts = [path.read_text(encoding="utf-8") for path in (folder / "work").rglob(".command.sh")]
+    vep_scripts = [script for script in scripts if "--assembly" in script and "--dir_cache" in script]
+    affinity_scripts = [script for script in scripts if "aams_pipeline.py" in script]
+    assert len(vep_scripts) == 2
+    assert all(f"--assembly {assembly}" in script for script in vep_scripts)
+    assert len(affinity_scripts) == 1
+    assert f'-d "{ROOT / "data" / "Ensembl" / assembly}"' in affinity_scripts[0]
 
 
 @pytest.mark.parametrize("skip_vep", [True, False], ids=["preannotated", "vep-stage"])

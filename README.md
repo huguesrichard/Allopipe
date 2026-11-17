@@ -181,7 +181,7 @@ Where:
 This command line works for individual `.VCF` files or joint `.VCF` files, whether compressed (`.vcf.gz`) or not (`.vcf`). 
 Run this command for every file you want to input in AlloPipe.
 
-When using the Nextflow workflow with automatic VEP annotation enabled, AlloPipe selects the VEP assembly from `--ensembl_path`. The path must contain `GRCh37` or `GRCh38`; for example, `--ensembl_path data/Ensembl/GRCh38` uses `GRCh38` for VEP annotation.
+Use `--assembly GRCh37` or `--assembly GRCh38` to select the reference assembly for VEP and Allo-Affinity.
 
 **Once the variant-annotation of your file(s) is(are) complete, you are now ready to run your first AlloPipe run!**
 
@@ -234,7 +234,7 @@ Use pair mode when you have one VCF file for the donor and one VCF file for the 
 | `--run_name <NAME>` | yes | Name used for the output run directory. An existing directory is accepted with Nextflow `-resume`, or replaced when `--force_overwrite` is passed. |
 | `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison: `dr` for donor-to-recipient, `rd` for recipient-to-donor. |
 | `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Individual VCFs usually use `imputation`. |
-| `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can automatically select the VEP assembly. |
+| `--assembly <ASSEMBLY>` | yes | Genome assembly: `GRCh37` or `GRCh38`. |
 | `--hla_typing <HLA_LIST>` | yes | Comma-separated HLA typing used by Allo-Affinity. |
 
 Example:
@@ -247,7 +247,7 @@ nextflow run main.nf -profile conda \
 	--run_name test_pair \
 	--orientation dr \
 	--imputation imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
 	--skip_vep_annotation
 ```
@@ -264,7 +264,7 @@ Use `--mode cohort` when several donor/recipient pairs must be extracted from on
 | `--run_name <NAME>` | yes | Name used for the output run directory. An existing directory is accepted with Nextflow `-resume`, or replaced when `--force_overwrite` is passed. |
 | `--orientation dr` or `--orientation rd` | yes | Direction of the mismatch comparison for all pairs in the run. |
 | `--imputation imputation` or `--imputation no-imputation` | yes | Missing genotype handling mode. Joint VCF cohort runs usually use `no-imputation`. |
-| `--ensembl_path <DIR>` | yes | Ensembl data directory used by Allo-Affinity. The path must contain `GRCh37` or `GRCh38` so the workflow can select the VEP assembly. |
+| `--assembly <ASSEMBLY>` | yes | Genome assembly: `GRCh37` or `GRCh38`. |
 
 The cohort CSV must contain at least the columns `donor`, `recipient`, and `hla`. The `hla` column is mandatory and must be the last column because HLA values are comma-separated.
 
@@ -280,7 +280,7 @@ nextflow run main.nf -profile conda \
 	--run_name test_cohort \
 	--orientation dr \
 	--imputation no-imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--skip_vep_annotation
 ```
 
@@ -336,7 +336,7 @@ We provide the possibility to impute genotype missing data as being ref/ref (e.g
 
 #### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (a) Running Allo-Count for a single pair <a name="single_ams"></a>
 
-Once variant annotation is complete, run Allo-Count through the Nextflow pair workflow from the root of the AlloPipe directory. The workflow also launches the Allo-Affinity step, so `--hla_typing` and `--ensembl_path` are required.
+Once variant annotation is complete, run Allo-Count through the Nextflow pair workflow from the root of the AlloPipe directory. The workflow also launches the Allo-Affinity step, so `--hla_typing` and `--assembly` are required.
 
 ```
 nextflow run main.nf -profile conda \
@@ -346,7 +346,7 @@ nextflow run main.nf -profile conda \
 	--run_name test_pair \
 	--orientation dr \
 	--imputation imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
 	--skip_vep_annotation
 ```
@@ -373,7 +373,7 @@ nextflow run main.nf -profile conda \
 	--run_name test_cohort \
 	--orientation dr \
 	--imputation no-imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--skip_vep_annotation
 ```
 
@@ -488,14 +488,14 @@ nextflow run main.nf -profile conda \
 	--run_name test_pair_affinity \
 	--orientation dr \
 	--imputation imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
 	--skip_vep_annotation \
 ```
 
 Nextflow arguments:
   - `--run_name` is the unique name of the run
-  - `--ensembl_path` is the path to the Ensembl files: `.cdna.all.fa.gz`, `.pep.all.fa.gz` and `.refseq.tsv.gz`
+  - `--assembly` selects `GRCh37` or `GRCh38`; the corresponding Ensembl files must be present in `data/Ensembl/<assembly>/` (automatic download on the first pipeline run)
   - `--hla_typing` is the HLA typing, e.g. `HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01`
 
 Python Allo-Affinity arguments passed through `--allo_affinity_opts`:
@@ -588,7 +588,7 @@ nextflow run main.nf -profile conda \
 	--run_name test-run \
 	--orientation dr \
 	--imputation no-imputation \
-	--ensembl_path data/Ensembl/GRCh38 \
+	--assembly GRCh38 \
 	--hla_typing "HLA-A*01:01,HLA-A*02:01,HLA-B*08:01,HLA-B*27:05,HLA-C*01:02,HLA-C*07:01" \
 	--skip_vep_annotation
 ```
