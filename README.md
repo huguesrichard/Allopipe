@@ -296,8 +296,10 @@ nextflow run main.nf -profile conda \
 | `--ensembl_release <VERSION>` | Ensembl release used to download missing GRCh38 references. By default, it is derived from `--vep_version` (for example, `release_116.2` gives `116`). Specify it explicitly if the VEP tag does not use this format. |
 | `--frameshift` | Enable frameshift neoantigen handling. Requires VEP Frameshift plugin annotation. |
 | `--frameshift_plugin_path <PATH>` | Path to the VEP `Frameshift.pm` plugin or plugin directory. |
-| `--allo_count_opts "<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
-| `--allo_affinity_opts "<OPTIONS>"` | Extra options passed to the Allo-Affinity step, for example `--length`, `--el_rank`, `--class_type`, `--cleavage`, or `--dry_run` to skip the long NetMHCpan computation. |
+| `--allo_count_opts="<OPTIONS>"` | Extra options passed to the Allo-Count step, for example filtering thresholds. |
+| `--allo_affinity_opts="<OPTIONS>"` | Extra options passed to the Allo-Affinity step, for example `--length`, `--el_rank`, `--class_type`, `--cleavage`, or `--dry_run` to skip the long NetMHCpan computation. |
+
+For example, use `--allo_affinity_opts=--cleavage` or `--allo_count_opts="--min_dp 30 --max_dp 300"`.
 
 ### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (i)Running Allo-Count  <a name="ams_run"></a>
 
@@ -506,8 +508,8 @@ Python Allo-Affinity arguments passed through `--allo_affinity_opts`:
 
 For example:
 
-```
---allo_affinity_opts "--length --el_rank"
+```bash
+--allo_affinity_opts="--length 10 --el_rank 1"
 ```
 
  
